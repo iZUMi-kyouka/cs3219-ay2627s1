@@ -1,0 +1,7 @@
+node_modules/
+_site/
+_temp/
+*.log
+
+# Copyrighted NUS course PDFs are kept locally only — never published.
+assets/**/*.pdf

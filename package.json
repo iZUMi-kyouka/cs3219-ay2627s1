@@ -1,0 +1,15 @@
+{
+  "name": "cs3219-website",
+  "version": "1.0.0",
+  "description": "CS3219 — Software Design and Architecture (AY2026/27 S1) self-learning MarkBind site",
+  "main": "index.js",
+  "scripts": {
+    "build": "markbind build",
+    "serve": "markbind serve"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "markbind-cli": "^7.2.1"
+  }
+}

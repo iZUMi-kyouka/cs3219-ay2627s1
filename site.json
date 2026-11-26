@@ -1,0 +1,37 @@
+{
+  "baseUrl": "/cs3219-ay2627s1",
+  "titlePrefix": "CS3219",
+  "style": {
+    "codeTheme": "light",
+    "darkMode": true
+  },
+  "timeZone": "Asia/Singapore",
+  "ignore": [
+    "_site/*",
+    "_temp/*",
+    ".git/*",
+    "node_modules/*",
+    "*.log",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "pages": [
+    { "src": "index.md", "searchable": "no" },
+    { "glob": "schedule/index.md", "searchable": "no" },
+    { "glob": "schedule/**/index.md" },
+    { "glob": "schedule/**/lecture.md" },
+    { "glob": "schedule/**/tutorial.md" },
+    { "glob": "se-book-adapted/index.md", "searchable": "no" },
+    { "glob": "se-book-adapted/print.md", "searchable": "no" },
+    { "glob": "se-book-adapted/glossary.md" },
+    { "glob": "se-book-adapted/chapters/*.md" }
+  ],
+  "pagesExclude": [
+    "**/*-fragment.md"
+  ],
+  "plugins": [
+    "mermaid"
+  ],
+  "enableSearch": true,
+  "headingIndexingLevel": 4
+}

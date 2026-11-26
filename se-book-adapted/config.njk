@@ -1,0 +1,29 @@
+{#
+Textbook configuration, CS2103(T)-style: the book is organised into
+sections, each holding one or more chapter pages under se-book-adapted/chapters/.
+`week` links the chapter to its weekly material under schedule/weekN/.
+#}
+
+{% set topics = [
+  {heading: "Foundations", chapters: [
+    {name: "week-01-software-development-processes", heading: "Software Development Processes", week: 1},
+    {name: "week-02-modern-software-engineering",    heading: "Modern Software Engineering",    week: 2},
+    {name: "week-03-requirements",                   heading: "Requirements",                   week: 3}
+  ]},
+  {heading: "Architecture", chapters: [
+    {name: "week-04-architecture-i",           heading: "Architecture (I) & Product Backlog",   week: 4},
+    {name: "week-05-cloud-native-paradigm",    heading: "Cloud-Native Paradigm (Guest Lecture)", week: 5},
+    {name: "week-06-architecture-ii-and-rest", heading: "Architecture (II) & REST",             week: 6}
+  ]},
+  {heading: "Distributed Systems & Microservices", chapters: [
+    {name: "week-07-microservices-i",             heading: "Microservices (I)",             week: 7},
+    {name: "week-08-microservices-ii",            heading: "Microservices (II)",            week: 8},
+    {name: "week-09-event-driven-architecture",   heading: "Event-Driven Architecture",     week: 9},
+    {name: "week-10-asynchronous-communication",  heading: "Asynchronous Communication",    week: 10},
+    {name: "week-11-messaging",                   heading: "Messaging",                     week: 11},
+    {name: "week-12-scalability",                 heading: "Scalability",                   week: 12}
+  ]},
+  {heading: "Wrap-Up", chapters: [
+    {name: "week-13-course-recap", heading: "Course Recap", week: 13}
+  ]}
+] %}
