@@ -9,11 +9,7 @@ pageNav: 2
 
 <box type="important">
 
-<!-- TODO(index): course pitch — what this site is for (self-learning revision),
-     where to start (Textbook → Full Book, or the week you are revising), and
-     what the weekly pages contain. Keep it short; remove this comment when done. -->
-
-**This is a self-learning site**: it distils the course's **lecture slides, tutorials and quizzes** into a weekly set of pages and a continuous textbook. It contains no course logistics — only the material.
+**This is a self-learning site**: it distils the course's **lecture slides, tutorials and quizzes** into a weekly set of pages and a continuous textbook. It contains no course logistics — only the material. Lecture slide decks and tutorial/quiz papers are kept offline (copyright); every concept they teach is explained here.
 
 </box>
 
@@ -35,7 +31,7 @@ pageNav: 2
 **This site is your one-stop resource:**
 
 * {{ icon_chapter }} **[Textbook]({{ baseUrl }}/se-book-adapted/index.html)** — one chapter per week, readable continuously: concepts, examples and key terms.
-* {{ icon_lecture }} **Lecture material** — the week's slide decks with a curated walkthrough (see each week's *Lecture* tab).
+* {{ icon_lecture }} **Lecture material** — the week's slide decks (kept offline) distilled into a curated walkthrough (see each week's *Lecture* tab).
 * {{ icon_tutorial }} **Tutorials** — the week's tutorial sheet and, where available, its solution.
 * {{ icon_quiz }} **Past quizzes** — four 30-minute quizzes for self-testing ([Textbook → Quizzes]({{ baseUrl }}/se-book-adapted/index.html#quizzes)).
 * {{ icon_print }} **[Full Book]({{ baseUrl }}/se-book-adapted/print.html)** — all chapters in one continuous page.

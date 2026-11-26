@@ -1,25 +1,28 @@
 {% from "schedule/macros-fragment.md" import term, example with context %}
-<h2 id="title">Week 8 — Microservices (II)</h2>
+<h2>Week 8 — Microservices (II)</h2>
 
-<span id="prereqs">
+<span>
+
 Builds on **Week 4** (architecture and deployment styles), **Week 6** (architecture II, REST) and especially **Week 7** — the microservice style, its principles, and the first look at domain-driven design. Tutorial 5 consolidates the diagramming and REST skills those weeks taught.
 </span>
 
-<span id="outcomes">
+<span>
+
 * **Can** explain DDD's problem-space/solution-space split — domain, subdomain, bounded context — and use event storming to propose microservice candidates.
-* **Can** choose among the data patterns — database-per-service, shared database, data lake, saga — and justify the trade-offs for a given system.
+* **Can** choose among the data patterns — database-server-per-service, shared database, data lake, saga — and justify the trade-offs for a given system.
 * **Can** explain event sourcing and CQRS, how they combine, and what each buys and costs.
 * **Can** describe the supporting patterns — interprocess communication styles, API gateway, orchestration vs choreography, service discovery — and where each applies.
+
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
 **Revision priority:** ★ = core; ★★ = supporting detail; ★★★ = extension; ★★★★ = optional context.
 </box>
 
-**This chapter completes the {{ term("microservice", "an independently deployable service modelled around a business domain") }} toolkit.** Week 7 asked *what* a microservice is; this week asks how to carve them out of a business (DDD, event storming) and which patterns keep them decoupled once carved (data patterns, event sourcing, CQRS, gateway and discovery). Source for the whole chapter unless stated otherwise: L8 slides.
+**This chapter completes the {{ term("microservice", "an independently deployable service modeled around a business domain") }} toolkit.** Week 7 asked *what* a microservice is; this week asks how to carve them out of a business (DDD, event storming) and which patterns keep them decoupled once carved (data patterns, event sourcing, CQRS, gateway and discovery). Source for the whole chapter unless stated otherwise: L8 slides.
 
 ## Core concepts
 
@@ -28,6 +31,12 @@ Builds on **Week 4** (architecture and deployment styles), **Week 6** (architect
 ### W8.1 Domain-driven design: from domain to bounded context ★
 
 **Microservices fail when they are cut along technical layers instead of business lines, so you need a disciplined way to find the cuts.** {{ term("domain-driven design", "an approach to software design that models a system around the business domain, its subdomains, and bounded contexts") }} (DDD) supplies that discipline: it names the problem space first (domains and subdomains) and only then designs the solution space (bounded contexts).
+
+<panel type="seamless" minimized header="%%What is domain-driven design?%%">
+
+<include src="../../se-book-adapted/common/defs-week-07.md#def-ddd" trim />
+
+</panel>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-domain" trim />
@@ -122,7 +131,7 @@ flowchart TB
 
 %%Notation: a rectangle is a command or an aggregate; the diamond is a policy; a solid arrow is synchronous control flow — a command acting on an aggregate, or a policy triggering the next command; a dashed arrow is a domain event published to the rest of the system.%%
 
-How to read it: a command acts on an aggregate, the aggregate records an event, and a policy listening to that event fires the next command — so `PostErrand → Errand → … → ErrandCompleted → SettleCredits → Wallet → CreditReserved` is one storming pass over errand fulfillment and the credit economy. Each aggregate family plus its commands and policies is a microservice candidate: an *Order* service around `Errand`, a *Credit* service around `Wallet` (Source: L8 slide 4; Tutorial 6 Q2 repeats these steps on a food-delivery platform).
+How to read it: a command acts on an aggregate, the aggregate records an event, and a policy listening to that event fires the next command — so `PostErrand → Errand → … → ErrandCompleted → SettleCredits → Wallet → CreditReserved` is one storming pass over errand fulfillment and the credit economy. Each aggregate family plus its commands and policies is a microservice candidate: an *Order* service around `Errand`, a *Credit* service around `Wallet` (Source: L8 slide 4; Tutorial 6 — you will meet it in Week 9 — repeats these steps on a food-delivery platform).
 
 <box type="warning" seamless>
 
@@ -161,12 +170,24 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 
 **Database-per-service buys loose coupling and per-service freedom.** Each service scales its database independently and may pick or replace the database technology that fits its access pattern — a search index for one service, a relational store for another (L8 slide 8).
 
+<panel type="seamless" minimized header="%%What is loose coupling?%%">
+
+<include src="../../se-book-adapted/common/defs-week-07.md#def-loose-coupling" trim />
+
+</panel>
+
 <box type="warning" seamless>
 
-**Trade-off — the pattern has costs.** Different kinds of databases must be operated; a large application sees an explosion in the number of databases; and the setup is expensive to manage (L8 slide 8). Weaker forms of independence (private tables, schemas, RBAC users) trade some of that freedom for fewer moving parts (L8 slide 9).
+**Trade-off — the pattern has costs.**
+
+* Different kinds of databases must be operated.
+* A large application sees an explosion in the number of databases.
+* The setup is expensive to manage (L8 slide 8).
+
+Weaker forms of independence (private tables, schemas, RBAC users) trade some of that freedom for fewer moving parts (L8 slide 9).
 </box>
 
-**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties across them all — but the coupling costs are exactly the ones microservices exist to avoid.
+**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties (atomicity, consistency, isolation, durability) across them all — but the coupling costs are exactly the ones microservices exist to avoid.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-atomicity" trim />
@@ -199,7 +220,7 @@ flowchart TB
 How to read it: on the left, each flight-domain service touches only its own store, so a schema change or a technology swap in Reservations cannot break Flight search. On the right, all three write one store — the schema change now needs all three teams to coordinate (development-time coupling), their writes can conflict at runtime, and one engine must satisfy three different access patterns (L8 slide 10).
 
 {% call example("L8 slide 9 — data independence without separate servers") %}
-The same flight platform can keep one database server yet stay independent: create different database users with specific read/write permissions on their own tables (RBAC), or give each of Flight search, Reservations, and Flight tracking its own private set of tables, or its own private schema within the shared server.
+The same flight platform can keep one database server yet stay independent: create different database users with specific read/write permissions on their own tables (RBAC), or give each of Flight search, Reservations, and Flight tracking its own private set of tables, or its own private schema within the shared server %%("schema" here: a named namespace of tables inside one database — a stronger separation than private tables, since the names in different schemas cannot collide)%%.
 {% endcall %}
 
 #### The data lake: queries across services
@@ -212,8 +233,16 @@ The same flight platform can keep one database server yet stay independent: crea
 
 **Streaming, not direct reads, keeps the ownership rule intact.** Owner microservices push data-change events through a messaging infrastructure such as RabbitMQ or Kafka into the lake; a consumer such as an Analytics service queries the lake, never the owners (L8 slide 11).
 
+<panel type="seamless" minimized header="%%What are RabbitMQ and Kafka?%%">
+
+<include src="../../se-book-adapted/common/defs-week-10.md#def-rabbitmq" trim />
+
+<include src="../../se-book-adapted/common/defs-week-10.md#def-kafka" trim />
+
+</panel>
+
 {% call example("L8 slide 11 — analytics over three flight services") %}
-Flight search, Reservations, and Flight tracking each own their own database. For delivery-time dashboards, all three stream their data-change events into one data sink (the data lake); the Analytics service queries that lake instead of joining three live databases.
+Flight search, Reservations, and Flight tracking each own their own database. For cross-service analytics dashboards %%("delivery-time dashboards" is the FoC variant of this slide's Analytics service — see the Week 9 chapter)%%, all three stream their data-change events into one data sink (the data lake); the Analytics service queries that lake instead of joining three live databases.
 {% endcall %}
 
 #### The saga: transactions across services
@@ -235,7 +264,7 @@ Flight search, Reservations, and Flight tracking each own their own database. Fo
 The booking saga books payment, reserves the seat, and notifies the customer. If the seat reservation fails after payment succeeded, the compensation initiates a refund — which "completes in some time". If the failure happens after the notification was sent, the only compensation is to send a *new* message asking the customer to discard the previous one — which is why notifications move to the end of the saga.
 {% endcall %}
 
-{% call example("Tutorial 7 Q1 — reserving credits for an FoC errand") %}
+{% call example("Tutorial 7 (Week 10) Q1 — reserving credits for an FoC errand") %}
 In the microservices design of the errand workflow, the Order service (errand `PENDING`) asks the Credit service to reserve credits, then tries to mark the errand `OPEN`. If that last local step fails, the compensation runs: the Credit service releases the reserved credits and the Order service marks the errand `CANCELLED`. (Source: Tutorial 7 solutions, Q1.)
 {% endcall %}
 
@@ -289,7 +318,7 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
 <include src="../../se-book-adapted/common/defs-week-08.md#def-event-sourcing" trim />
 </box>
 
-**Event sourcing stores facts, not state.** In relational or NoSQL modeling you usually store *the state* of something; in event sourcing you store the facts — the incremental changes — and the current state becomes a derivative, a value calculated from the sequence of events (L8 slides 17, 20).
+**Event sourcing stores facts, not state.** In relational or NoSQL modeling %%(NoSQL: the non-relational database family — document, key–value, column, and graph stores)%% you usually store *the state* of something; in event sourcing you store the facts — the incremental changes — and the current state becomes a derivative, a value calculated from the sequence of events (L8 slides 17, 20).
 
 {% call example("L8 slide 17 — recording a chess game") %}
 A chess score sheet does not store a picture of the board after every move; it records the moves. The state of the board at any moment is the sum of all moves that have happened — replay the moves and you get the position back.
@@ -301,7 +330,7 @@ A chess score sheet does not store a picture of the board after every move; it r
 In an event-sourced order processing system, `OrderPlaced`, `PaymentReceived`, and `OrderShipped` are appended as they happen. When a customer places an order, the order request is stored as an event in the log *before* validation happens; when the order is validated, that outcome is appended as an entirely new event rather than overwriting the existing order. To determine the current order status, all relevant events are played from the beginning, reconstructing the order state; a database attached to the resulting event stream derives an event-sourced view of current orders.
 {% endcall %}
 
-The diagram shows the write path appending to the log and the read path replaying it into a view — the "command/write at (1), query/read at (4)" observation the deck makes on slide 21.
+The diagram shows the write path appending to the log and the read path replaying it into a view — the "command/write in (1) and query/read in (4)" note on slide 21.
 
 <mermaid>
 flowchart LR
@@ -327,7 +356,13 @@ How to read it: writes only ever append to the log on the left; the view on the 
 
 **The split buys two things: recoverability and independent optimization.** Should something go wrong, the internal state of the database can be recovered from the log; and writes and reads can be optimized independently, because nothing forces one model to serve both (L8 slide 22).
 
-**One write model can push data into many read models.** Writes go into Kafka — a distributed, publish–subscribe event-streaming platform (the course gives it a full treatment in Weeks 9–10) — on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24).
+**One write model can push data into many read models.** Writes go into Kafka on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24).
+
+<panel type="seamless" minimized header="%%What is Kafka?%%">
+
+<include src="../../se-book-adapted/common/defs-week-10.md#def-kafka" trim />
+
+</panel>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-materialized-view" trim />
@@ -335,7 +370,7 @@ How to read it: writes only ever append to the log on the left; the view on the 
 
 <box type="important" seamless>
 
-**CQRS does not always need events or event sourcing — they are just mostly used together.** You can segregate commands from queries with plain CRUD on two stores; event sourcing simply makes the write side a natural, ready-made event feed for the read side. (Source: L9 slide 2, the deck's own clarification.)
+**CQRS does not always need events or event sourcing — they are just mostly used together.** You can segregate commands from queries with plain CRUD (create, read, update, delete — the basic data-table operations) on two stores; event sourcing simply makes the write side a natural, ready-made event feed for the read side. (Source: L9 slide 2, the deck's own clarification.)
 </box>
 
 <box type="info" seamless>
@@ -347,25 +382,25 @@ How to read it: writes only ever append to the log on the left; the view on the 
 | The lever it pulls | **What is stored:** the append-only log of facts, not the current state | **What is separated:** the write model (commands) from the read model (queries) | **What is precomputed:** the result of a predefined query, stored instead of computed on demand |
 | State of the world without it | You'd store current state and overwrite it | One model serves reads and writes | Queries are computed live when asked |
 | Needs the others? | No — it's a storage choice | No — CQRS "fits well with" event styles but is not defined by them (Fowler's CQRS bliki); L9 slide 2: "CQRS doesn't always need events/event sourcing" | No — a plain database can have one |
-| Course example | The order log: `OrderPlaced` → `OrderValidated` appended, never overwritten (L8 slide 21) | Tutorial 7 Q2: the order service writes; the validation, tax, and email services each enrich the order; queries hit the *orders view* | The *orders view* itself — the read model derived from the order events (L8 slides 23–24) |
+| Course example | The order log: `OrderPlaced` → `OrderValidated` appended, never overwritten (L8 slide 21) | Tutorial 7 Q2: the order service writes; the validation, tax, and email services each enrich the order; queries hit the *orders view* | The *orders view* itself — the read model derived from the order events (Tutorial 7 Q2; the concept from L8 slides 23–24) |
 
 They combine naturally — the event log (sourcing) is a ready-made feed from which read models (CQRS) materialize their views — but each can be adopted alone, and the slide 21 note "command/write in (1), query/read in (4)" is where all three meet.
 
 </box>
 
-{% call example("Tutorial 7 Q2 — CQRS in an order-acceptance flow") %}
+{% call example("Tutorial 7 (Week 10) Q2 — CQRS in an order-acceptance flow") %}
 An order is accepted in the *orders* service (write path: the order event is recorded). A validation service picks it up and validates it, a Tax service adds sales tax, and an Email service is given the information for a confirmation email. The updated order flows back to the orders service, where it can be queried via the *orders view* — a read model derived from the order events. The user clicks through from the confirmation email to that view. (Source: Tutorial 7 sheet, Q2.)
 {% endcall %}
 
 <box type="warning" seamless>
 
-**Pitfall — derived views lag the log.** A materialized view is only as fresh as its last computation, and an event-sourced view is derived by replaying events; a query answered from the read path can trail the most recent write. Design consumers of the view for that gap instead of promising read-your-writes everywhere (L8 slides 21, 23–24).
+**Pitfall — derived views lag the log.** A materialized view is only as fresh as its last computation, and an event-sourced view is derived by replaying events; a query answered from the read path can trail the most recent write. Design consumers of the view for that gap instead of promising read-your-writes consistency — the guarantee that a user sees the results of their own latest write on their very next read — everywhere (L8 slides 21, 23–24).
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** In an event-sourced system, how do you answer "what is this order's status?"
-<panel type="seamless" minimized header="%%Answer%%">Replay the order's events from the beginning (or from the last snapshot) — `OrderPlaced` → `PaymentReceived` → `OrderShipped` — and the resulting state is the status. You never read a "status column", because there isn't one (L8 slide 19).</panel>
+<panel type="seamless" minimized header="%%Answer%%">Replay the order's events from the beginning (or from the last snapshot — a saved intermediate state that replay resumes from) — `OrderPlaced` → `PaymentReceived` → `OrderShipped` — and the resulting state is the status. You never read a "status column", because there isn't one (L8 slide 19).</panel>
 
 **Q2.** A colleague asks why `ChargeCard` and `GetBalance` cannot live in the same model. Answer in one sentence each.
 <panel type="seamless" minimized header="%%Answer%%">`ChargeCard` is a command: it changes state and returns no data. `GetBalance` is a query: it returns data and changes nothing. CQRS exists precisely because optimizing one model for both is what couples their scaling and recovery (L8 slides 22, 25).</panel>
@@ -429,7 +464,7 @@ Tutorial 5 asks you to architect a single-page application performing CRUD opera
 <include src="../../se-book-adapted/common/defs-week-08.md#def-choreography" trim />
 </box>
 
-The diagram contrasts the two on the same A → B → C workflow — the exact shape Tutorial 7 Q3 asks you to draw.
+The diagram contrasts the two on the same A → B → C workflow — the exact shape Tutorial 7 (Week 10) Q3 asks you to draw.
 
 <mermaid>
 flowchart TB
@@ -449,12 +484,13 @@ flowchart TB
         S1["Event stream 1"] --> A2["Service A"]
         A2 -.->|"publishes to stream 2"| B2["Service B"]
         B2 -.->|"publishes to stream 3"| C2["Service C"]
-    end    ORCH ~~~ CHOR
+    end
+    ORCH ~~~ CHOR
 </mermaid>
 
 %%Notation: rectangles are services (or the orchestrator); solid arrows are synchronous instructions from the orchestrator; dashed arrows are asynchronous events on streams.%%
 
-How to read it: in the orchestration half, the workflow lives in one place — the orchestrator calls A, then B, then C and collects their acknowledgments. In the choreography half, no one holds the workflow: A reacts to stream 1 and publishes to stream 2, B reacts to stream 2 and publishes to stream 3, C reacts to stream 3. Reordering B and C in the choreographed version means rewiring who publishes to which stream — the concern Tutorial 7 Q3(b) asks you to spot (L8 slide 32; Tutorial 7 sheet, Q3).
+How to read it: in the orchestration half, the workflow lives in one place — the orchestrator calls A, then B, then C and collects their acknowledgments. In the choreography half, no one holds the workflow: A reacts to stream 1 and publishes to stream 2, B reacts to stream 2 and publishes to stream 3, C reacts to stream 3. Reordering B and C in the choreographed version means rewiring who publishes to which stream — the concern Tutorial 7 (Week 10) Q3(b) asks you to spot (L8 slide 32; Tutorial 7 sheet, Q3).
 
 #### Service discovery
 
@@ -474,10 +510,10 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 <include src="../../se-book-adapted/common/defs-week-08.md#def-server-side-discovery" trim />
 </box>
 
-* **Client-side discovery** — the client queries the service registry, determines the network locations of the available instances, and uses a load-balancing algorithm to pick one (L8 slide 34).
-* **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus or an AWS Elastic Load Balancer (ELB) (L8 slide 35).
+* **Client-side discovery** — the client queries the service registry, determines the network locations of the available instances, and uses a load-balancing algorithm %%load balancing: spreading requests across multiple instances so no single one is overwhelmed; Week 12 develops it in full%% to pick one (L8 slide 34).
+* **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus (a commercial version of the widely used NGINX web server, sold with load-balancing features) or an AWS Elastic Load Balancer (ELB — Amazon's managed service that automatically distributes incoming traffic across multiple targets such as EC2 instances and containers) (L8 slide 35).
 
-**Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. Registries in practice include Apache Zookeeper, Consul, and Etcd — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in (L8 slides 36–37).
+**Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. Registries in practice include Apache Zookeeper, Consul, and Etcd %%all distributed infrastructure tools commonly repurposed as registries: Zookeeper is a distributed coordination service, while Consul and Etcd are distributed key–value stores that keep one entry per service instance%% — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in %%they track the instances they deploy themselves, so no separate registry product is needed%% (L8 slides 36–37).
 
 <box type="warning" seamless>
 
@@ -492,8 +528,11 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 **Q2.** Your client team complains they must know the address of every service. Which pattern fixes it, and where does the registry lookup happen in its two flavors?
 <panel type="seamless" minimized header="%%Answer%%">Service discovery behind an API gateway. Client-side: the client queries the registry and load-balances itself; server-side: the client calls a load balancer, which queries the registry and routes (L8 slides 31, 34–35).</panel>
 
-**Q3.** Tutorial 7 Q3(b): the workflow A → B → C must become A → C → B. In the choreographed design, what changes?
+**Q3.** Tutorial 7 (Week 10) Q3(b): the workflow A → B → C must become A → C → B. In the choreographed design, what changes?
 <panel type="seamless" minimized header="%%Answer%%">The event streams must be rewired: A now publishes to the stream C consumes, and C's output feeds B — the "workflow" lives in those wirings, so changing the order means re-plumbing streams (and re-checking what each service expects), whereas in orchestration you change the orchestrator's script (Tutorial 7 sheet, Q3).</panel>
+
+**Q4.** (Quiz 4 Q5.) A media platform has no orchestrator. Conversion charges the card (`ConversionPaid`), then fails permanently and publishes `ConversionFailed`. Who refunds, and how is each service's data ownership preserved?
+<panel type="seamless" minimized header="%%Answer%%">Payment subscribes to `ConversionFailed` and issues the refund **under its own rules**, then publishes `PaymentRefunded`. That is a saga's compensating action (W8.2) carried out by *choreography* (W8.4): the failure event is the trigger, no central brain orders the refund, and Conversion never touches Payment's charge records — so each service still owns its data (L8 slide 32; Quiz 4 Q5).</panel>
 
 </panel>
 
@@ -501,8 +540,15 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 
 **Section summary**
 
-* **DDD gives microservice carving its vocabulary:** subdomains are the problem-space cuts; bounded contexts are the solution-space designs that become services; event storming finds both via events → commands → aggregates → policies.
-* **Data independence is the line in the sand:** own your data (per-service database or weaker variants); never share a database; answer cross-service queries from a data lake; coordinate cross-service writes with sagas of local transactions and compensations.
+* **DDD gives microservice carving its vocabulary:**
+  * Subdomains are the problem-space cuts.
+  * Bounded contexts are the solution-space designs that become services.
+  * Event storming finds both via events → commands → aggregates → policies.
+* **Data independence is the line in the sand:**
+  * Own your data (per-service database or weaker variants).
+  * Never share a database.
+  * Answer cross-service queries from a data lake.
+  * Coordinate cross-service writes with sagas of local transactions and compensations.
 * **Event sourcing stores facts, CQRS splits readers from writers** — and CQRS does not require event sourcing; they are just mostly used together.
 * **The supporting patterns wire it up:** three interprocess styles, an API gateway as the single tailored entry point, orchestration vs choreography for process control, and service discovery via a registry.
 </box>
@@ -511,6 +557,7 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 
 | Term | Definition | Unit |
 |---|---|---|
+| Domain-driven design | Design approach that models the business domain — its subdomains and bounded contexts — before designing the solution | [W8.1](#W8-c1) |
 | Domain | The problem space a business occupies and provides a solution for | [W8.1](#W8-c1) |
 | Subdomain | A problem-space component of the domain with one set of responsibilities | [W8.1](#W8-c1) |
 | Bounded context | The solution-space boundary of inputs, outputs, events, processes, and data models for one subdomain | [W8.1](#W8-c1) |
@@ -541,13 +588,13 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 
 | Concept | Lecture | Tutorial | Other weeks |
 |---|---|---|---|
-| Domain / subdomain / bounded context | L8 slides 2–3 | Tutorial 6 Q1 (bank subdomains) | Week 7 (DDD introduced) |
-| Event storming | L8 slide 4 | Tutorial 6 Q2 (food delivery) | Week 9 (events as the EDA currency) |
+| Domain / subdomain / bounded context | L8 slides 2–3 | Tutorial 6 Q1 (bank subdomains; Week 9) | Week 7 (DDD introduced) |
+| Event storming | L8 slide 4 | Tutorial 6 Q2 (food delivery; Week 9) | Week 9 (events as the EDA currency) |
 | Data ownership / database-per-service | L8 slides 6–9 | — | Week 9 slide 22 ("observe database-per-service here") |
-| Shared database, data lake, saga | L8 slides 10–15 | Tutorial 7 Q1 (FoC saga) | Week 12 (scalability of stores) |
-| Event sourcing, CQRS | L8 slides 17–28 | Tutorial 7 Q2 (orders view) | Week 9 (two of the four views of an event) |
+| Shared database, data lake, saga | L8 slides 10–15 | Tutorial 7 Q1 (FoC saga; Week 10) | Week 12 (scalability of stores) |
+| Event sourcing, CQRS | L8 slides 17–28 | Tutorial 7 Q2 (orders view; Week 10) | Week 9 (two of the four views of an event) |
 | Interprocess communication styles | L8 slide 30 | — | Weeks 9–10 (async becomes the default) |
-| API gateway, orchestration/choreography, discovery | L8 slides 31–37 | Tutorial 5 Q1 (SPA architecture), Tutorial 7 Q3 (A→B→C) | Week 6 (REST request–reply) |
+| API gateway, orchestration/choreography, discovery | L8 slides 31–37 | Tutorial 5 Q1 (SPA architecture), Tutorial 7 Q3 (A→B→C; Week 10) | Week 6 (REST request–reply) |
 
 ## Further reading
 

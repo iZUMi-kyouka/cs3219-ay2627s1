@@ -1,13 +1,13 @@
 {% from "schedule/macros-fragment.md" import term, example, icon_outcome with context %}
-<h2 id="title">Week 11 — Messaging</h2>
+<h2>Week 11 — Messaging</h2>
 
-<span id="prereqs">
+<span>
 
 This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts) (events, fire-and-forget) and [Week 10 — Asynchronous Communication]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts) (messages, persistence, pub-sub). You should know the difference between a message and an event — *intent matters* — before reading on.
 
 </span>
 
-<span id="outcomes">
+<span>
 
 {{ icon_outcome }} **Can explain why enterprise integration uses messaging and name the EIP categories** (W11.1)
 
@@ -21,7 +21,7 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -42,15 +42,19 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 
 **Applications that must integrate rarely speak the same language.** They run on different platforms, use different programming languages and data formats, and the network between them is unreliable. They also change at different times, so the integration must cope with change in an application, its protocol, or its data format. (Source: L11 slide 5 — the Modreg ↔ Canvas example.)
 
-**Enterprise integration has three classic topologies, and only one of them ages well.** Point-to-point integration connects every pair of applications directly; hub-and-spoke routes everything through a central mediator, which becomes a central point of failure and a bottleneck; the enterprise service bus gives every application a message-based abstraction for connecting to apps and data. (Source: L11 slide 7.)
+**Enterprise integration has three classic topologies, and only one of them ages well** (Source: L11 slide 7):
 
-**Enterprise Integration Patterns (EIP) are a technology-independent catalogue of solutions to common integration problems.** EIP gives developers and architects a shared vocabulary for describing integrations, independent of any vendor. The catalogue documents 65 patterns in six categories — message construction, message channels, message routing, message transformation, message endpoints, and system management — and every MOM is expected to support these capabilities. (Source: L11 slides 8, 14–15.)
+- **Point-to-point** integration connects every pair of applications directly.
+- **Hub-and-spoke** routes everything through a central mediator, which becomes a central point of failure and a bottleneck.
+- **The enterprise service bus** gives every application a message-based abstraction for connecting to apps and data.
+
+**Enterprise Integration Patterns (EIP) are a technology-independent catalogue of solutions to common integration problems.** EIP gives developers and architects a shared vocabulary for describing integrations, independent of any vendor. The catalogue is the 2003 book *Enterprise Integration Patterns* by Gregor Hohpe and Bobby Woolf — the deck's cited source (L11 slide 4). The catalogue documents 65 patterns in six categories — message construction, message channels, message routing, message transformation, message endpoints, and system management — and every MOM is expected to support these capabilities. (Source: L11 slides 8, 14–15.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-enterprise-integration-patterns" trim />
 </box>
 
-%%Many messaging products implement EIP under their own feature names — e.g. JMS providers such as Apache ActiveMQ, and Amazon MQ, SQS (Simple Queue Service) and SNS (Simple Notification Service). The deck marks this vendor detail optional/not examinable (slides 9–13, 18, 21, 28, 30, 41–45).%%
+%%Many messaging products implement EIP under their own feature names — e.g. JMS (the Java Message Service, Java's messaging standard — defined in W10.3) providers such as Apache ActiveMQ, and Amazon MQ, SQS (Simple Queue Service) and SNS (Simple Notification Service). The deck marks the vendor-specific slides optional/not examinable: SQS message lifecycle (slide 13), JMS message types (slide 18), the JMS request/reply example (slide 21), SQS dead-letter mechanics (slide 28), RabbitMQ's direct exchange (slide 30), and SNS message filtering (slides 41–45).%%
 
 **A message broker buffers messages and hides the network from both sides.** It passes information between software components while minimising how much they need to know about each other, buffers incoming messages, and shields applications from many operating-system and network complexities. (Source: L11 slides 11, 64.)
 
@@ -107,9 +111,21 @@ EIP are technology-independent solutions with agreed names, so many vendors impl
 
 **The payload you put in a message decides what the receiver may do with it — confuse an instruction with a record, and the receiver does the wrong thing.** That distinction is examined directly: Quiz 4 Q1 asks you to redesign a mislabelled message.
 
-**A message separates metadata from data.** The *header* specifies the type of information being transmitted, its origin, destination, size and other structural information; the *body* carries the actual information; optional *properties* are used mostly for message selection and filtering. %%The deck's three kinds are JMS terms (L11 slides 12, 16): *application-related* properties are set by your code, *provider-related* ones by the messaging vendor, and *standard* ones — such as JMSXDeliveryCount, the JMS-specified count of delivery attempts for a message — are defined by the JMS specification itself.%% The deck summarises: message = metadata + data. (Source: L11 slides 16–17.)
+**A message separates metadata from data** (Source: L11 slides 16–17):
 
-**There are three kinds of payload, and they differ in intent.** A **command** tells the receiver to do something; a **document** gives the receiver data to process at its own discretion; an **event** notifies the receiver that something has happened. This is the same "message vs event — intent matters!" line from Weeks 9–10, now completed with commands and documents. (Source: L11 slide 17; L13 slides 5–7.)
+- The *header* specifies the type of information being transmitted, its origin, destination, size and other structural information.
+- The *body* carries the actual information.
+- Optional *properties* are used mostly for message selection and filtering.
+
+%%The deck's three kinds are JMS terms (L11 slides 16–17): *application-related* properties are set by your code, *provider-related* ones by the messaging vendor, and *standard* ones — such as JMSXDeliveryCount, the JMS-specified count of delivery attempts for a message — are defined by the JMS specification itself.%% The deck summarises: message = metadata + data.
+
+**There are three kinds of payload, and they differ in intent** (Source: L11 slide 17; L13 slides 5–7):
+
+- A **command** tells the receiver to do something.
+- A **document** gives the receiver data to process at its own discretion.
+- An **event** notifies the receiver that something has happened.
+
+This is the same "message vs event — intent matters!" line from Weeks 9–10, now completed with commands and documents.
 
 <box type="info" seamless>
 
@@ -117,11 +133,11 @@ EIP are technology-independent solutions with agreed names, so many vendors impl
 
 | Payload kind | The receiver should… | Is a reply expected? | Course example |
 |---|---|---|---|
-| **Command** | Act — perform the instruction | Typically yes (request-reply) | `ReserveEquipment` → the Reservation service checks availability and reserves or rejects (Quiz 4 Q1) |
+| **Command** | Act — perform the instruction | Maybe — request-reply is common, but no data *value* returns (W9.1) | `ReserveEquipment` → the Reservation service checks availability and reserves or rejects (Quiz 4 Q1) |
 | **Document** | Process the data at its own discretion | No | The purchase-order document translated to XML for the order-management system (W11.5) |
 | **Event** | Just *know* — react if it cares | No — it records a completed fact | `EquipmentReserved`, published only after a reservation succeeds (Quiz 4 Q1) |
 
-**Two nearby taxonomies are easily confused with this one.** (1) W10.2's event-vs-message table classifies by the *sender's* intent — a broadcast fact vs a directed request; the payload kinds above say what a message can carry: a command is W10's "request to be executed", an event message is W10's event, and the document kind is the addition Week 11 makes. (2) W9.1's four views (discovery, storage, structure, content) are roles one event artifact plays in *design*, not payload kinds — `EquipmentReserved` stays one event whether you view it as a notification or as event-carried state transfer (W9's content view).
+**Two nearby taxonomies are easily confused with this one.** (1) W10.2's event-vs-message table classifies by the *sender's* intent — a broadcast fact vs a directed request; the payload kinds above say what a message can carry: a command is W10's "request to be executed", an event message is W10's event, and the document kind is the addition Week 11 makes. W10's *query* is not a fourth kind here: a query travels as a command message whose instruction is "answer this query", with the answer coming back as the reply %%L11 slide 17 lists only command/document/event; L10 slide 13 defined query as the second half of a message%%. (2) W9.1's four views (discovery, storage, structure, content) are roles one event artifact plays in *design*, not payload kinds — `EquipmentReserved` stays one event whether you view it as a notification or as event-carried state transfer (W9's content view).
 
 </box>
 
@@ -141,7 +157,9 @@ EIP are technology-independent solutions with agreed names, so many vendors impl
 <include src="../../se-book-adapted/common/defs-week-11.md#def-event-message" trim />
 </box>
 
-**Choosing the payload kind is an architecture decision, not a naming detail.** An event invites consumers to react; a command obliges one receiver to act; a document merely informs. Picking the wrong kind couples the sender to the receiver's behaviour.
+- An event invites consumers to react
+- A command obliges one receiver to act
+- A document merely informs
 
 {% call example("EquipmentReserved vs ReserveEquipment (Quiz 4 Q1)") %}
 A university equipment platform sends a message named EquipmentReserved to the Reservation service, which is *expected to check availability and either reserve the equipment or reject the request*. As named, the message is an event — a record of a reservation that already succeeded — so it cannot carry an instruction. The correct redesign is a ReserveEquipment **command** for the request; the Reservation service publishes EquipmentReserved as an **event** only after a reservation succeeds.
@@ -161,7 +179,7 @@ A university equipment platform sends a message named EquipmentReserved to the R
 
 **Q2.** Which part of a message do message filters typically inspect, and why are properties "optional"?
 <panel type="seamless" minimized header="%%Answer%%">
-The filter's criteria are applied to the message content — the EIP definition matches on what the message *contains*, which is why the message filter is a content-based router (L11 slide 37). Properties are optional because they exist mostly to *support* that selection and filtering — e.g. SNS subscribers filter on message attributes (L11 slides 16, 41–45) — not to carry the payload itself (L11 slide 17).
+The filter's criteria are applied to the message content — the EIP definition matches on what the message *contains*, which is why the message filter is a content-based router (L11 slide 37). Properties are optional because they exist mostly to *support* that selection and filtering (L11 slide 17) — e.g. in AWS SNS each subscriber sets a *subscription filter policy*, and SNS pushes to it only messages whose attributes match the policy %%L11 slides 41–45, optional vendor detail%% — not to carry the payload itself.
 </panel>
 
 </panel>
@@ -178,7 +196,7 @@ The filter's criteria are applied to the message content — the EIP definition 
 
 **A channel transmits messages in one direction, so a two-way exchange needs two channels.** In the request/reply setup, the requestor sends a request message on the request channel and the replier answers on a separate reply channel. (Source: L11 slide 20.)
 
-**Point-to-point and publish-subscribe channels differ in who receives a message.** On a point-to-point channel, exactly one consumer consumes each message. On a publish-subscribe channel, any message published to a topic is immediately received by all subscribers of the topic — used when multiple parties are interested in the same messages. A pub-sub *request-response* variant uses a pub-sub channel for the requests but a point-to-point channel for the responses, so one requester can collect and aggregate replies from many parallel workers. (Source: L11 slides 31–32.)
+**Point-to-point and publish-subscribe channels differ in who receives a message.** On a point-to-point channel, exactly one consumer consumes each message. On a publish-subscribe channel, any message published to a topic is immediately received by all subscribers of the topic — used when multiple parties are interested in the same messages. A pub-sub *request-response* variant uses a pub-sub channel for the requests but a point-to-point channel for the responses, so one requester can collect and aggregate replies from many parallel workers. (Source: L11 slides 19, 31–32, and 39 — the single-consumer property is in the slide-39 comparison table.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-point-to-point-channel" trim />
@@ -194,8 +212,8 @@ The filter's criteria are applied to the message content — the EIP definition 
 
 | Term | What it describes | What it means | Course example |
 |---|---|---|---|
-| Point-to-point **integration** (L11 slide 7) | Topology between applications | Every pair of applications connects directly, each link hard-coding knowledge of the other side — with ten applications that is 45 pairwise integrations | The Modreg ↔ Canvas ↔ Library mesh in W11.1's diagram |
-| Point-to-point **channel** (L11 slides 20, 31–32) | Delivery on one channel | Exactly one consumer consumes each message, even if several consumers listen — implemented by a queue | The `ReserveEquipment` command on a queue: exactly one reservation worker picks it up |
+| Point-to-point **integration** (L11 slide 7) | Topology between applications | Every pair of applications connects directly, each link hard-coding knowledge of the other side — with ten applications that is 45 pairwise integrations (10×9/2) %%count derived; the slide shows the mesh as a figure%% | The Modreg ↔ Canvas ↔ Library mesh in W11.1's diagram |
+| Point-to-point **channel** (L11 slides 19, 39) | Delivery on one channel | Exactly one consumer consumes each message, even if several consumers listen — implemented by a queue | The `ReserveEquipment` command on a queue: exactly one reservation worker picks it up |
 
 The deck's slide-50 heading "pub/sub, P2P, aggregator, content-based router" uses the second sense — the same "point-to-point" as the queue column of W10.2's event-vs-message table.
 
@@ -324,13 +342,19 @@ An order-processing system runs a November promotion — all widgets are 10 % of
 | Typical use | Business transactions, e.g. orders | Event notifications / informational messages |
 | Fits best | Queue-based channels | Publish-subscribe channels |
 
+%%The deck's shorthand: *predictive* because the router decides ahead of time, from its central knowledge of recipients, which channel each kind of message goes to; *reactive* because nothing upstream decides — subscribers react to whatever arrives and filter it themselves.%%
+
 **Some routing decisions do not look at content at all.** A context-based router chooses the destination from the *context* — commonly for load balancing, testing or failover, e.g. re-routing messages to another processing component when one fails. (Source: L11 slide 40.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-context-based-router" trim />
 </box>
 
-**Splitter, aggregator and scatter-gather reshape message streams.** A splitter turns a single message into multiple messages (one per order item); an aggregator — a special filter — collects correlated messages and publishes one aggregated message once a complete set has arrived; scatter-gather broadcasts one message to many participants concurrently and reassembles their replies into one message. (Source: L11 slides 47–48, 52.)
+**Splitter, aggregator and scatter-gather reshape message streams** (Source: L11 slides 47–48, 52):
+
+- A **splitter** turns a single message into multiple messages (one per order item).
+- An **aggregator** — a special filter — collects correlated messages and publishes one aggregated message once a complete set has arrived.
+- **Scatter-gather** broadcasts one message to many participants concurrently and reassembles their replies into one message.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-splitter" trim />
@@ -383,7 +407,14 @@ flowchart TB
 
 %%Notation: boxes are pattern components or systems, parallelograms are channels, dashed arrows are asynchronous messages. The two routers make different decisions: the first routes per item, the second routes the aggregated result.%%
 
-How to read it: one composite order is split into item messages; each item is routed to the inventory system that owns its category; the aggregator correlates the item results back into a single order message; finally a content-based router forwards validated orders to VALIDATED_ORDER and everything else to INVALID_ORDER, where an exception process notifies the customer. In the deck's fuller version of this chain (slide 51), a pub-sub channel plays the *fork*, the aggregator the *join*, and the content-based router the *condition* over the aggregated result; the diagram above draws the fork as the per-item content-based router of slide 49 instead.
+How to read it:
+
+- **Split:** one composite order is split into item messages.
+- **Route:** each item is routed to the inventory system that owns its category.
+- **Aggregate:** the aggregator correlates the item results back into a single order message.
+- **Validate:** a content-based router forwards validated orders to VALIDATED_ORDER and everything else to INVALID_ORDER, where an exception process notifies the customer.
+
+In the deck's fuller version of this chain (slide 51), a pub-sub channel plays the *fork*, the aggregator the *join*, and the content-based router the *condition* over the aggregated result; the diagram above draws the fork as the per-item content-based router of slide 49 instead.
 
 {% call example("Tutorial 9 Q3 — multi-item order → inventories → confirmation") %}
 Tutorial 9 Q3 poses the same design task: an e-commerce system receives an order with multiple items and must route each item to the correct inventory system, then recombine the results into a single confirmation. The model solution is the same chain — splitter (one message per item), content-based router (route on item type or location), aggregator (combine "confirmed"/"out of stock" replies into one Order Confirmation), which also yields parallel item processing (Tutorial 9 solutions, Q3; cf. L11 slide 49).
@@ -406,6 +437,11 @@ With a content-based router, the router's configuration must be updated to inclu
 One aggregator reassembles the replies gathered from the participants of the scatter (the per-branch results), and the second combines the branch results into the single overall outcome — two levels of correlation, two aggregators (L11 slides 52–53).
 </panel>
 
+**Q3.** (Quiz 4 Q6.) A certificate may be issued only when *attendance confirmed* and *payment settled* are both true. The two facts arrive on separate streams, in either order, each carrying the booking ID. How do you decide when to issue it without assuming cross-stream order?
+<panel type="seamless" minimized header="%%Answer%%">
+Treat the two facts as **correlated messages**: store the first one by booking ID; when the second fact with the same ID arrives, the aggregator has a complete set and emits the issue-certificate command. The correlation key is the booking ID; neither stream's order is assumed, and per-partition ordering (W9.4) does not help across the two streams (Quiz 4 Q6; L11 slide 48).
+</panel>
+
 </panel>
 
 <span id="W11-c5"></span>
@@ -421,7 +457,7 @@ One aggregator reassembles the replies gathered from the participants of the sca
 </box>
 
 {% call example("EDI 850 → XML order (L11 slide 56)") %}
-An EDI 850 purchase-order record must reach an order-management system that speaks XML over HTTP and uses its own Order object definition. %%EDI stands for *Electronic Data Interchange*, and 850 is the ANSI X12 purchase-order transaction set — as the slide's own "850-to-PurchaseOrder" label says. (The deck's footnote expands EDI as "Electronic Data Invoice", but the 850 is a purchase order, not an invoice.)%% A message translator (EDI-to-XML, 850-to-PurchaseOrder) — with a channel adapter handling the transport-layer difference — converts the incoming EDI record into the XML document the order system expects, without changing either system.
+An EDI 850 purchase-order record must reach an order-management system that speaks XML over HTTP and uses its own Order object definition. %%EDI stands for *Electronic Data Interchange*, and 850 is the purchase-order document of ANSI X12, the US standard family for electronic business documents — as the slide's own "850-to-PurchaseOrder" label says. (The deck's footnote expands EDI as "Electronic Data Invoice", but the 850 is a purchase order, not an invoice.)%% A message translator (EDI-to-XML, 850-to-PurchaseOrder) — with a channel adapter handling the transport-layer difference — converts the incoming EDI record into the XML document the order system expects, without changing either system.
 {% endcall %}
 
 <box type="definition" seamless>
@@ -453,7 +489,7 @@ flowchart LR
 
 How to read it: adding application D costs three new translators on the left but exactly one on the right — one canonical-format adapter. That is the indirection the deck recommends for large integration landscapes.
 
-**Two transformation patterns adjust the *contents* of a message rather than its format.** The content filter removes data items the receiver does not need; the content enricher adds data items the message needs but does not carry, usually by looking them up elsewhere. (Source: L11 slide 15, pattern map.)
+**Two transformation patterns adjust the *contents* of a message rather than its format.** The content filter removes data items the receiver does not need; the content enricher adds data items the message needs but does not carry, usually by looking them up elsewhere. (Source: eaipatterns.com message-transformation patterns %%— the external catalog the deck links at L11 slide 15%%.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-content-filter" trim />
@@ -463,7 +499,9 @@ How to read it: adding application D costs three new translators on the left but
 <include src="../../se-book-adapted/common/defs-week-11.md#def-content-enricher" trim />
 </box>
 
-%%External example%% — a content enricher in a plain setting: an OrderItem message arriving at the shipping service carries only `sku` and `quantity`; an enricher looks up the package weight for the SKU from the catalogue and adds `weightKg` before the message reaches the shipping service, which cannot compute postage without it.
+{% call example("A content enricher (external example)") %}
+An OrderItem message arriving at the shipping service carries only `sku` and `quantity`; an enricher looks up the package weight for the SKU from the catalogue and adds `weightKg` before the message reaches the shipping service, which cannot compute postage without it. %%External example — not from the course decks.%%
+{% endcall %}
 
 <box type="warning" seamless>
 
@@ -479,7 +517,7 @@ Pairwise: one new translator to each existing application — four new translato
 
 **Q2.** A downstream service only needs `orderId` and `status`, but the event carries the full customer record. Which pattern applies, and what is its counterpart?
 <panel type="seamless" minimized header="%%Answer%%">
-A content filter strips the unneeded data items before the message is passed on; its counterpart, the content enricher, adds missing data items instead (L11 slide 15).
+A content filter strips the unneeded data items before the message is passed on; its counterpart, the content enricher, adds missing data items instead (eaipatterns.com message-transformation patterns %%— linked from L11 slide 15%%).
 </panel>
 
 </panel>

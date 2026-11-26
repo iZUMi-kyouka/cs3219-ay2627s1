@@ -34,7 +34,14 @@
 
 **Event-driven microservices are the hybrid: microservice boundaries plus event wiring.** A service that accepts an order, validates it, applies payment, and adjusts inventory is acceptable in EDA but violates single responsibility in microservice architecture; split it, give each service its own data, wire by events (slides 29–31). Each event stream has exactly one producing owner; consumers read input streams and produce output streams (slide 32). → [W9.4]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#W9-c4)
 
-**The event broker is a store as much as a pipe: an immutable, append-only, ordered log with offsets, partitions, retention, and replay.** Consumers track their {{ term("offset", "the index-ID of the last event read in a partition; consumers scan sequentially from it — defined in W9.4") }} per {{ term("partition", "an append-only substream of a stream, strictly ordered within — defined in W9.4") }} and read sequentially; immutability means corrections are new events; partitions enable parallel scaling (slides 33–40). The balance sheet (slide 41): performance, scalability, maintainability, evolvability, fault tolerance — against complexity and test effort. Events wear two hats: notification (trigger action) and replication (copy data) (slides 42–43). → [W9.4]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#W9-c4)
+**The event broker is a store as much as a pipe: an immutable, append-only, ordered log with offsets, partitions, retention, and replay.**
+- Consumers track their {{ term("offset", "the index-ID of the last event read in a partition; consumers scan sequentially from it — defined in W9.4") }} per {{ term("partition", "an append-only substream of a stream, strictly ordered within — defined in W9.4") }} and read sequentially
+- Immutability means corrections are new events
+- Partitions enable parallel scaling
+
+(slides 33–40)
+
+The balance sheet (slide 41): performance, scalability, maintainability, evolvability, fault tolerance — against complexity and test effort. Events wear two hats: notification (trigger action) and replication (copy data) (slides 42–43). → [W9.4]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#W9-c4)
 
 </span>
 

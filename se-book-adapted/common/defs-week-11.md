@@ -215,7 +215,7 @@
 
 **Point-to-point channel** — a channel (a queue) on which exactly one consumer consumes each message, even if several consumers listen on it — the shape that lets competing consumers share the load.
 
-(Sources: L11 slides 20, 24, 31–32.)
+(Sources: L11 slides 20, 31–32; L10 slide 24.)
 
 </span>
 

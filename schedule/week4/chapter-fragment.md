@@ -1,13 +1,13 @@
 {% from "schedule/macros-fragment.md" import term, example with context %}
-<h2 id="title">Week 4 — Architecture (I) & Product Backlog</h2>
+<h2>Week 4 — Architecture (I) & Product Backlog</h2>
 
-<span id="prereqs">
+<span>
 
 This chapter builds on [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c1) — requirements and quality attributes are the *inputs* architecture must satisfy — and on Week 1's deployment mechanisms (W1.4), the deployment targets that architectural deployment decisions allocate the system to.
 
 </span>
 
-<span id="outcomes">
+<span>
 
 * Can explain what software architecture is, and what makes components, connectors, and configuration its building blocks
 * Can distinguish control flow from data flow, and call-and-return from message- and event-based interaction
@@ -17,16 +17,17 @@ This chapter builds on [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-req
 
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
 **Revision priority:** ★ = core; ★★ = supporting detail; ★★★ = extension; ★★★★ = optional context.
+
 </box>
 
 **Architecture is where requirements stop being statements and start being structure.** The Week 4 deck ("High Level Design: Software Architecture") gives the definition and vocabulary, the two ways an arrow can mean something ({{ term("control flow", "the flow that reasons about computation order — how the focus of control moves through the execution") }} vs {{ term("data flow", "the flow that reasons about data availability, transformation, and latency — how data moves through computations") }}), the two ways components interact ({{ term("call-and-return", "interaction where control moves from one component to another and back — hierarchical or not") }} vs {{ term("messages", "data sent to a specific address; the recipient awaits messages and reacts to them") }} and {{ term("events", "data emitted when a component's state changes, for anyone listening — immutable and ordered") }}), and the two big decomposition questions (how is the code divided? how is it deployed?). The same lecture's second deck (L4-AlternativeExamplesForProductBacklog) supplies the fully-worked requirements that this chapter keeps using as the running example — FoC, the campus errand and pickup platform (see [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c3)'s running example).
 
-%%Deep dives into the layered style, MVC, and SPA are Week 6; event-driven architecture is Week 9; microservices are Weeks 7–8. This chapter covers exactly what the Week 4 deck covers.%%
+%%Deep dives into the layered style, MVC, and SPA (single-page applications) are Week 6; event-driven architecture is Week 9; microservices are Weeks 7–8. This chapter covers exactly what the Week 4 deck covers.%%
 
 ## Core concepts
 
@@ -64,17 +65,30 @@ flowchart LR
 
 How to read it: in the errand platform, the Order component *shows* "place order" and "requires payment" to the rest of the system while hiding its errand-state code; Payment *shows* a secure charge service; and the Order→Payment relationship is call & return while Order→Notification is a fire-and-forget message — sent and forgotten, with no reply awaited (Week 9 defines the term). The three visible properties of Notification are all its consumers may depend on — which is exactly what lets its implementation change freely (W4.2 reads the same ideas on the platform's real component diagram).
 
-**"Externally visible properties" is the load-bearing phrase.** The deck's shorthand: externally visible properties ≡ functionalities + NFR — exactly the artifacts Weeks 3 produces. Private details of a component's internals are not architectural (Source: L4 slide 4).
+**"Externally visible properties" is the load-bearing phrase.** The deck's shorthand: externally visible properties ≡ functionalities + NFR (non-functional requirements — the "how well" constraints of W3.2) — exactly the artifacts Weeks 3 produces. Private details of a component's internals are not architectural (Source: L4 slide 4).
 
 **Architecture design decisions are questions, and each maps to a later topic of this course.** How will structural components be decomposed into subcomponents? Is there a generic application architecture that can act as a template? What architectural patterns or styles can be used? What component organization will best deliver the NFR? What kind of deployment should the architecture support — single-core or multi-core, single- or multi-processor, stand-alone or distributed? (Source: L4 slide 7.)
 
-**The deck gives a repeatable six-step process, refined in a loop.** (1) Identify architectural drivers — functional requirements, quality attributes, constraints; (2) choose a feature or capability; (3) propose a structure — layers, modules, components, data flow, responsibilities; (4) define boundaries and contracts — module interfaces, API endpoints, database interactions; (5) verify with requirements and refine decisions; (6) document the high-level design via an architecture diagram — then repeat as the software evolves (Source: L4 slide 8).
+**The deck gives a repeatable six-step process, refined in a loop.** (Source: L4 slide 8):
+
+1. Identify architectural drivers — functional requirements, quality attributes, constraints.
+1. Choose a feature or capability.
+1. Propose a structure — layers, modules, components, data flow, responsibilities.
+1. Define boundaries and contracts — module interfaces, API endpoints, database interactions.
+1. Verify with requirements and refine decisions.
+1. Document the high-level design via an architecture diagram — then repeat as the software evolves.
 
 {% call example("FoC — naming the architectural drivers") %}
-Step 1 on the errand platform: the drivers are the functional requirements (trusted users perform important actions; wallet credits move exactly once; couriers are matched one-per-errand), the quality attributes (dependability — nothing becomes inconsistent when services restart or messages arrive late; capacity — support the entire campus without slowing down), and the constraints (university email for accounts; the credit economy is closed). Steps 3–4 then propose a structure and contracts per capability — which is what Tutorial 2 rehearses (Source: L4-AlternativeExamplesForProductBacklog, order service F7, NFR; user service F2; L4-Architecture slide 8).
+Step 1 on the errand platform — the drivers are:
+
+- **Functional requirements** — trusted users perform important actions; wallet credits move exactly once; a student holds at most one outstanding errand (F7.1)
+- **Quality attributes** — dependability (nothing becomes inconsistent when services restart or messages arrive late) and capacity (support the entire campus without slowing down)
+- **Constraints** — university email for accounts; the credit economy is closed
+
+Steps 3–4 then propose a structure and contracts per capability — which is what Tutorial 2 rehearses (Source: L4-AlternativeExamplesForProductBacklog, order service F7, NFR; user service F2; L4-Architecture slide 8).
 {% endcall %}
 
-**Reference architectures and architectural patterns are the templates behind "numerous applications, same framework".** A reference architecture explains high-level structures of similar applications (e.g., web applications; the address-book developer guide's Logic/Storage/UI/Model organization) and leads to architectural patterns (Source: L4 slide 9).
+**Reference architectures and architectural patterns are the templates behind "numerous applications, same framework".** A reference architecture explains high-level structures of similar applications (e.g., web applications; the developer guide of AddressBook-Level3 — se-education.org's sample address-book application — and its Logic/Storage/UI/Model organization) and leads to architectural patterns (Source: L4 slide 9).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-reference-architecture" trim />
@@ -86,7 +100,8 @@ Step 1 on the errand platform: the drivers are the functional requirements (trus
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
-**Q1.** Which of these are architecture and which are detailed design? (a) FoC's wallet is a separate service with a documented API; (b) the wallet stores replay tags in a Redis hash versus a sorted set; (c) the edge proxy decodes JWTs and rejects missing or expired credentials.
+**Q1.** Which of these are architecture and which are detailed design? (a) FoC's wallet is a separate service with a documented API; (b) the wallet stores replay tags in a Redis hash versus a sorted set — a *hash* and a *sorted set* being two of Redis's built-in data structures (a hash keeps field→value pairs under one key; a sorted set keeps members ordered by a score); both can hold replay tags, and picking between them changes nothing outside the wallet service; (c) the edge proxy decodes JWTs (JSON Web Tokens — signed credentials proving who the caller is; W3.5) and rejects missing or expired credentials.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Architecture — a component boundary with an externally visible contract. (b) Detailed design — internal to the wallet component. (c) Architecture — the edge proxy is a component whose externally visible behavior (reject with error code) other services rely on (Source: L4 slide 4; L4-AlternativeExamplesForProductBacklog user service F2.2, credit service NFR6).
@@ -94,6 +109,7 @@ Step 1 on the errand platform: the drivers are the functional requirements (trus
 </panel>
 
 **Q2.** Why does the deck's architecture process loop back to "refine decisions" after verification?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Because proposed structures are hypotheses: verification against the drivers (FRs, quality attributes, constraints) may show a boundary or contract that cannot deliver an NFR, so the structure is refined — and the loop repeats as the software evolves (Source: L4 slide 8).
@@ -138,16 +154,18 @@ flowchart LR
 
 %%Notation: box = component/service; solid arrow = synchronous call; dashed arrow = asynchronous message or event; cylinder = data store.%%
 
-How to read it for the running example: the browser calls the edge proxy, which verifies the JWT before anything else runs ("for every private screen/API call, the edge proxy shall decode the JWT and answer with an error code when the credential is absent, expired or wrong"); the order service calls the credit service synchronously to reserve credits, while wallet-change confirmations travel as Kafka messages carrying a replay tag — the dashed arrows — and each service keeps its own data store (Source: L4-AlternativeExamplesForProductBacklog, user service F2.2; credit service NFR6.1.1–6.1.2).
+How to read it for the running example: the browser calls the edge proxy, which verifies the JWT (JSON Web Token — the signed credential that proves who the caller is; W3.5) before anything else runs ("for every private screen/API call, the edge proxy shall decode the JWT and answer with an error code when the credential is absent, expired or wrong"); the order service calls the credit service synchronously to reserve credits, while wallet-change confirmations travel as Kafka messages (Kafka being the message-streaming platform the course introduces properly in Week 10 — read it here as "the channel the wallet update travels on") carrying a replay tag — the dashed arrows — and each service keeps its own data store (Source: L4-AlternativeExamplesForProductBacklog, user service F2.2; credit service NFR6.1.1–6.1.2).
 
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** A component is not a special programming construct — it is whatever unit the team agrees to treat as one part with one responsibility, and a connector arrow describes reliance, not necessarily a method call. Always say (in a legend or caption) what your arrows mean (Source: L4 slide 6; cf. the se-book's component discussion).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** In the FoC diagram above, identify one component, one connector of each kind, and one configuration fact.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Component: the credit service. Synchronous connector: order service → credit service (reserve credits). Asynchronous connector: credit service → order service wallet events over Kafka. Configuration fact: the edge proxy sits in front of the services, and each service owns its own data store (Source: L4-AlternativeExamplesForProductBacklog F2.2, NFR6; L4 slide 6).
@@ -174,7 +192,9 @@ Component: the credit service. Synchronous connector: order service → credit s
 <include src="../../se-book-adapted/common/defs-week-04.md#def-data-flow" trim />
 </box>
 
-The deck's example is a language-processing system; the diagram below reads it both ways so you can see the difference on one picture.
+The deck's example is a language-processing system %%— the classic KWIC ("key word in context") index builder: for each input title it generates every circular shift (each word of the title brought to the front in turn, the rest of the title rotated after it), alphabetizes the shifts, and outputs an index in which any word of any title can be looked up%%; the diagram below reads it both ways so you can see the difference on one picture.
+
+%%The deck's example — input → circular shift → alphabetizer → output — is the classic KWIC (Key Word In Context) index system: it builds an alphabetized index in which every word of every line appears in every cyclic rotation of that line. It is the same example Parnas's 1972 modularity paper (cited in W4.5) decomposes, and the deck uses it for both the data-flow and the call-and-return sketches.%%
 
 <mermaid>
 flowchart LR
@@ -188,6 +208,7 @@ How to read it for the running example: "accept an errand" is control flow — t
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** For each question, name the flow it belongs to: (a) "How long until the errand record reaches the courier's screen?"; (b) "Which component runs first when a courier taps accept?"
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Data flow — data availability and latency. (b) Control flow — computation order (Source: L4 slide 10).
@@ -202,15 +223,21 @@ How to read it for the running example: "accept an errand" is control flow — t
 
 **Components interact in two fundamentally different ways: one component drives, or components react.** The choice shapes reliability, coupling, and how you trace an NFR to code.
 
-**Call and return is the style where control moves out and comes back.** Control moves from one component to another and back; it can be hierarchical (a master control calling subordinates — the deck's language-processing example) or non-hierarchical (objects calling each other's operations through a manager for a shared abstract data type (ADT) — slide 11's "Manager ADT" sketch). The deck's pointed question on this slide: *can you trace an NFR to code?* — with call-and-return, the path is explicit (Source: L4 slide 11).
+**Call and return is the style where control moves out and comes back.** Control moves from one component to another and back; it can be hierarchical (a master control calling subordinates — the deck's language-processing example) or non-hierarchical (objects calling each other's operations through a manager for a shared abstract data type — an ADT being a type known by the operations it offers rather than by how it stores its data; the slide's "Manager ADT" sketch shows objects invoking operations `op` on each other through such a manager). The deck's pointed question on this slide: *can you trace an NFR to code?* — with call-and-return, the path is explicit (Source: L4 slide 11).
+
+<panel type="seamless" minimized header="%%What is an abstract data type (ADT)?%%">
+
+<include src="../../se-book-adapted/common/defs-week-04.md#def-abstract-data-type" trim />
+
+</panel>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-call-and-return" trim />
 </box>
 
-**Messages are data sent to a specific address.** In message-driven systems, each component has a unique address to which other components can send messages; each recipient awaits messages and reacts to them. Communication can be asynchronous or synchronous, point-to-point (Source: L4 slide 12).
+**Messages are data sent to a specific address.** In message-driven systems, each component has a unique address to which other components can send messages; each recipient awaits messages and reacts to them. Communication can be asynchronous or synchronous, and point-to-point — sent from one sender to one named recipient rather than emitted for anyone listening (Source: L4 slide 12).
 
-**Events are data emitted for anyone listening.** An event is emitted by a component when its state changes — a record of something that has happened; events are immutable (cannot be changed or deleted), are ordered in their creation sequence, and are sent to publishing infrastructure where consumers may later retrieve them (Source: L4 slide 12).
+**Events are data emitted for anyone listening.** An event is emitted by a component when its state changes — a record of something that has happened; events are immutable (cannot be changed or deleted), are ordered in their creation sequence, and are sent to publishing infrastructure — the middleman service (a broker or event log; Week 9's event broker) that receives and stores events so consumers may later retrieve them (Source: L4 slide 12).
 
 The diagram below contrasts the three interaction shapes on one canvas — who initiates, and who must be listening.
 
@@ -232,16 +259,18 @@ flowchart LR
 
 %%Notation: boxes are components; solid arrows are interactions initiated now; dashed arrows are later, possibly-never consumption; in the event shape the sender does not know how many consumers exist.%%
 
-How to read it for the course example: the Grab-like taxi-booking application in the deck maps booking operations onto events and messages — and the slide's tag names the quality attribute satisfied: **reliability** — a booking event recorded in the publishing infrastructure survives the momentary absence of any one consumer (Source: L4 slide 13). FoC's wallet uses the same logic: wallet-changing messages between the order and credit services carry a replay tag, and duplicates are "acknowledged as successful by sending the previous transfer result without updating balances" — exactly-once wallet effects over unreliable message delivery (Source: L4-AlternativeExamplesForProductBacklog, credit service NFR6).
+How to read it for the course example: the deck's Grab-like taxi-booking application is where you map booking operations onto events and messages %%— the slide gives the instruction and the tag "Quality attribute satisfied: Reliability" only; the mapping is the exercise%% — and that tag names the quality attribute this interaction shape buys: **reliability**, because a booking event recorded in the publishing infrastructure survives the momentary absence of any one consumer (Source: L4 slide 13). FoC's wallet uses the same logic: wallet-changing messages between the order and credit services carry a replay tag, and on duplicates the credit service shall "also acknowledge it as successful by sending the previous transfer result without updating balances" — exactly-once wallet effects over unreliable message delivery (Source: L4-AlternativeExamplesForProductBacklog, credit service NFR6).
 
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** Call-and-return makes the NFR trace explicit but couples the caller to the callee's availability; messages and events decouple senders from receivers (and add reliability through infrastructure) but make the computation order indirect — Weeks 9–11 build out this trade-off in full.
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Classify: (a) the order service asks the credit service to reserve credits and waits for the answer; (b) the credit service emits "DeliveryConfirmed" for anyone listening; (c) the browser sends a checkout request to one named endpoint.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Call and return (control moves out and back). (b) Event — emitted on state change, immutable, ordered, published for any consumer. (c) Message — data sent to a specific address whose recipient awaits and reacts (Source: L4 slides 11–12; L4-AlternativeExamplesForProductBacklog credit service 5.4, NFR6).
@@ -249,6 +278,7 @@ How to read it for the course example: the Grab-like taxi-booking application in
 </panel>
 
 **Q2.** Which properties of events make replay-tag-style recovery possible?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Immutability (a recorded event cannot be silently altered) and ordering (creation sequence is preserved) — so duplicates and gaps are detectable, which is what a replay tag relies on (Source: L4 slide 12; L4-AlternativeExamplesForProductBacklog NFR6).
@@ -263,7 +293,15 @@ Immutability (a recorded event cannot be silently altered) and ordering (creatio
 
 **"How do you break it up?" is the architecture question — and there are two perpendicular ways to slice the same system.**
 
-**The deck's decomposition guidelines read like a checklist.** Divide and conquer; keep abstraction as high as possible; increase {{ term("cohesion", "the degree to which the facilities within a module belong together — higher is better") }}; reduce {{ term("coupling", "the degree to which one module depends on other modules — lower is better") }} where possible; reuse — design for reuse and reuse design; design for flexibility; and others (testability, defensive design, portability) (Source: L4 slide 14).
+**The deck's decomposition guidelines read like a checklist.** (Source: L4 slide 14):
+
+- Divide and conquer.
+- Keep abstraction as high as possible.
+- Increase {{ term("cohesion", "the degree to which the facilities within a module belong together — higher is better") }}.
+- Reduce {{ term("coupling", "the degree to which one module depends on other modules — lower is better") }} where possible.
+- Reuse — design for reuse and reuse design.
+- Design for flexibility.
+- Others: testability, defensive design, portability.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-modularity" trim />
@@ -281,17 +319,23 @@ flowchart LR
 
 %%Notation: the left node is the unmodular big-chunk design; the middle node is the decomposition — modules (hidden insides) each publishing a well-defined interface; the three right nodes are Parnas's expected benefits, each labelled with the *mechanism* that produces it.%%
 
-How to read it: every benefit arrow names the same cause — an interface others can rely on. In the errand platform: **managerial** — Tutorial 2's milestone splits the platform into per-service modules precisely so team members can build with little cross-communication; **product flexibility** — the credit service's replay-tag choice (a Redis hash versus a sorted set) is a drastic internal change that touches no other module, because consumers see only the wallet API; **comprehensibility** — you can study the credit service one module at a time and reason about the whole wallet economy from its API alone (Sources: L4 slide 15; L4-AlternativeExamplesForProductBacklog credit service 5.2–5.4; Tutorial 2).
+How to read it: every benefit arrow names the same cause — an interface others can rely on. In the errand platform:
+
+- **Managerial** — Tutorial 2's milestone splits the platform into per-service modules precisely so team members can build with little cross-communication
+- **Product flexibility** — the credit service's replay-tag choice (swap one Redis data structure for another — see W4.1's self-check) is a drastic internal change that touches no other module, because consumers see only the wallet API
+- **Comprehensibility** — you can study the credit service one module at a time and reason about the whole wallet economy from its API alone
+
+(Sources: L4 slide 15; L4-AlternativeExamplesForProductBacklog credit service 5.2–5.4; Tutorial 2)
 
 **Modularity is the precondition the rest of the course builds on.** Slicing decides *where* the module boundaries go (below), coupling and cohesion grade *how good* they are (W4.6), and every distributed style from W7 onward assumes you can draw them.
 
-**Horizontal slicing cuts by technical layer: one slice = one layer, spanning every domain.** In the deck's errand-platform grid, the horizontal slice is a layer — presentation (Profile UI, Vendor list UI, Errand board UI, Wallet UI), API and controllers (/users, /vendors, /orders, /credits), business logic (auth & roles, catalog rules, lifecycle & expiry, reserve & transfer), persistence (users, vendors, orders, credit ledger tables) — the boundary follows the technology (Source: L4 slide 16).
+**Horizontal slicing cuts by technical layer: one slice = one layer, spanning every domain.** In the deck's errand-platform grid, the horizontal slice is a layer — presentation (Profile UI, Vendor list UI, Errand board UI, Wallet UI), API and controllers (the request-handling code behind each endpoint: /users, /vendors, /orders, /credits), business logic (auth & roles, catalog rules, lifecycle & expiry, reserve & transfer), persistence (users, vendors, orders, credit ledger tables) — the boundary follows the technology (Source: L4 slide 16).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-horizontal-slicing" trim />
 </box>
 
-**Vertical slicing cuts by business domain: one slice = one capability, top to bottom.** The same grid sliced vertically carves out everything needed for one capability — for "accept an errand": errand board UI → /orders endpoint → lifecycle & expiry logic → orders table — the boundary follows the domain, and the domain is "the problem space you are modeling and what the software is meant to address" (Source: L4 slides 16, 20).
+**Vertical slicing cuts by business domain: one slice = one capability, top to bottom.** The same grid sliced vertically carves out everything needed for one capability — for "accept an errand": errand board UI → /orders endpoint → lifecycle & expiry logic → orders table — the boundary follows the domain, and the domain is "the problem space you are modeling and what the software is meant to address" (Source: L4 slides 16, 20). %%The slide's typo ("meant address") is silently corrected in the quote.%%
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-vertical-slicing" trim />
@@ -321,6 +365,7 @@ The slide is titled "Decomposition, Componentizing & Packaging — e.g., your ow
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** You want four teams to own the four domains end-to-end. Which slicing do you pick, and which guideline from the deck does that serve?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Vertical slicing by business domain — each team owns one capability from UI to persistence; it serves "increase cohesion" (each module is one domain's facilities) and "reduce coupling" (domains interact through well-defined interfaces instead of shared layers) (Source: L4 slides 14, 16, 20).
@@ -343,7 +388,15 @@ Vertical slicing by business domain — each team owns one capability from UI to
 <include src="../../se-book-adapted/common/defs-week-04.md#def-coupling" trim />
 </box>
 
-**Cohesion types, best first — each step down the ladder is a weaker reason to call parts one module.** Functional (the strongest reason: the facilities perform one computation, with no side effects); layer (related services kept together, everything else kept out, in a strict hierarchy in which higher-level services can access only lower-level ones — accessing a service may result in side effects); communicational (facilities operating on the same data); sequential (procedures that work in sequence — the output of one is the input to the next); procedural (procedures merely called one after another); temporal (procedures used in the same general phase of execution, e.g., initialization or termination); utility (grouped only because no stronger form applies) (Source: L4 slide 17, quoting Lethbridge & Laganière, *Object-Oriented Software Engineering*, ch. 9).
+**Cohesion types, best first — each step down the ladder is a weaker reason to call parts one module.** ("Facilities" — the word every type below leans on — means the operations and sub-functions a module provides; cohesion grades how well *they* belong together.) (Source: L4 slide 17, quoting Lethbridge & Laganière, *Object-Oriented Software Engineering*, ch. 9):
+
+- **Functional** — the strongest reason: the facilities perform one computation, with no side effects.
+- **Layer** — related services kept together, everything else kept out, in a strict hierarchy in which higher-level services can access only lower-level ones; accessing a service may result in side effects.
+- **Communicational** — facilities operating on the same data.
+- **Sequential** — procedures that work in sequence: the output of one is the input to the next.
+- **Procedural** — procedures merely called one after another.
+- **Temporal** — procedures used in the same general phase of execution (e.g., initialization or termination).
+- **Utility** — grouped only because no stronger form applies.
 
 <box type="info" seamless>
 
@@ -359,14 +412,22 @@ Vertical slicing by business domain — each team owns one capability from UI to
 |---|---|---|
 | Communicational | The **same data** — facilities that operate on it, in no required order | The credit service groups load-bonus-credits, charge-the-difference, transfer, and refund — all facilities over the one credit ledger (L4-backlog deck, credit service) |
 | Sequential | **Data flow** — one part's output is the next part's input | The wallet pipeline: replay-tag check → wallet operation → balance update and tag saved to Redis — each stage consumes the previous stage's output (L4-backlog deck, credit service NFR6.1–6.2.1) |
-| Procedural | **Control-flow order** — parts called one after another within one procedure, each serving a different function; no data passes between them | An account-safety procedure: verify the user → disable the profile after 3 failed password or OTP attempts → email the re-enable link — three different functions, one procedure's order (L4-backlog deck, user service F2, N2.2.1–N2.2.2) |
+| Procedural | **Control-flow order** — parts called one after another within one procedure, each serving a different function; no data passes between them | An account-safety procedure: verify the user → disable the profile after 3 failed password or OTP (one-time passcode) attempts → email the re-enable link — three different functions, one procedure's order (L4-backlog deck, user service F2, N2.2.1–N2.2.2) |
 | Temporal | **Clock time** — parts run in the same execution phase, regardless of order or data | %%external example%% A startup routine that loads the config, connects the database, and warms the cache — three unrelated tasks bundled because they all run at startup |
 
 That ranking is also *why* the ladder orders the types as it does: each step down is a weaker reason to group — one computation (functional), then a strict service hierarchy (layer), then the same data (communicational), then data passing in sequence (sequential), then merely the same procedure (procedural), then merely the same time (temporal), then nothing left (utility).
 
 </box>
 
-**Coupling types, worst first.** Content (a component modifies another's internal data); common/global (all modules using one global variable are coupled to each other); control (one module passes a flag dictating what another does); data (modules share data via parameters); external (a dependency on elements outside the system — OS, shared libraries, hardware); temporal (bundled only because they happen at the same time — the between-modules counterpart of temporal cohesion above); inclusion/import (including a file or importing a package) (Source: L4 slide 18).
+**Coupling types, worst first.** (Source: L4 slide 18):
+
+- **Content** — a component modifies another's internal data (the worst).
+- **Common/global** — all modules using one global variable are coupled to each other.
+- **Control** — one module passes a flag dictating what another does.
+- **Data** — modules share data via parameters.
+- **External** — a dependency on elements outside the system (OS, shared libraries, hardware).
+- **Temporal** — bundled only because they happen at the same time (the between-modules counterpart of temporal cohesion above).
+- **Inclusion/import** — including a file or importing a package.
 
 %%Each cohesion and coupling type above also has its own one-line entry in the [Glossary]({{baseUrl}}/se-book-adapted/glossary.html), so you can revise the ladder and the anti-patterns in one place.%%
 
@@ -377,6 +438,7 @@ The order service asks the credit service to reserve credits by passing errand a
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Name the coupling type: (a) five services read one shared global config object; (b) a request handler passes `mode: "urgent"` so the downstream module picks a branch; (c) two cleanup jobs are grouped because they both run at midnight.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Common/global coupling. (b) Control coupling — passing information on what the other should do. (c) Temporal coupling — bundled only because they occur at the same time (Source: L4 slide 18).
@@ -384,6 +446,7 @@ The order service asks the credit service to reserve credits by passing errand a
 </panel>
 
 **Q2.** Which is the stronger cohesion, and why: a "user module" containing registration, profile pictures, and password hashing — or a "password hashing module"?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 The password-hashing module — functional cohesion: one computation, no side effects. The user module mixes concerns (registration, media, crypto), which the deck would classify at best communicational/procedural (Source: L4 slide 17).
@@ -439,14 +502,21 @@ flowchart LR
 
 How to read it for the running example: FoC's four services (users, suppliers, credits, orders) are domain partitioning — each is a business capability; a strict presentation/services/persistence layering shared by all four would be technical partitioning (Source: L4 slides 16, 20; L4-AlternativeExamplesForProductBacklog deck structure).
 
-**The 2×2 categorization names the classical styles.** Monolithic × technical → {{ term("layered", "an architectural style organizing the system as layers with downward-only dependencies — deep-dived in Week 6") }}; monolithic × domain → **modular monolith**; distributed × technical → {{ term("event-driven", "a distributed style where components react to events rather than call each other — deep-dived in Week 9") }}; distributed × domain → {{ term("microservices", "a distributed style structuring one application as a suite of small independently deployable services — deep-dived in Weeks 7–8") }} (Source: L4 slide 22).
+**The 2×2 categorization names the classical styles.**
+
+- Monolithic × technical → {{ term("layered", "an architectural style organizing the system as layers with downward-only dependencies — deep-dived in Week 6") }}
+- Monolithic × domain → **modular monolith**
+- Distributed × technical → {{ term("event-driven", "a distributed style where components react to events rather than call each other — deep-dived in Week 9") }}
+- Distributed × domain → {{ term("microservices", "a distributed style structuring one application as a suite of small independently deployable services — deep-dived in Weeks 7–8") }}
+
+(Source: L4 slide 22)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-modular-monolith" trim />
 </box>
 
 {% call example("L4 slide 22 — filling in the 2×2 for the errand platform") %}
-Deploy FoC's four domain-partitioned services as separate processes talking over the network → microservices (distributed × domain). Package the same four modules into one deployable process with enforced internal boundaries → modular monolith (monolithic × domain). Organize the whole app as presentation → services → persistence in one process → layered (monolithic × technical). Route everything through events on a broker → event-driven (distributed × technical). Same requirements (Week 3), four different styles (Source: L4 slide 22; L4-AlternativeExamplesForProductBacklog deck structure).
+Deploy FoC's four domain-partitioned services as separate processes talking over the network → microservices (distributed × domain). Package the same four modules into one deployable process with enforced internal boundaries → modular monolith (monolithic × domain). Organize the whole app as presentation → services → persistence in one process → layered (monolithic × technical). Route everything through events on a broker (a middleman service that receives events and delivers them to consumers — Week 11 defines it properly) → event-driven (distributed × technical). Same requirements (Week 3), four different styles (Source: L4 slide 22; L4-AlternativeExamplesForProductBacklog deck structure).
 {% endcall %}
 
 **This chapter ends where the style deep-dives begin.** Week 6 unpacks the layered style, {{ term("MVC", "Model-View-Controller: an architectural style separating an interactive application into view, controller, and model (Week 6)") }}, and {{ term("SPAs", "single-page applications: a program downloaded into the browser that runs continuously there, fetching data without page refreshes (Week 6)") }}; Weeks 7–8 take on microservices; Week 9 covers event-driven architecture. The categorization above is the map that tells you which chapter to revisit when (Source: L4 slide 22; L6 topics slide).
@@ -454,21 +524,29 @@ Deploy FoC's four domain-partitioned services as separate processes talking over
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** Styles are philosophies, not laws — "software is built for specific purpose". A startup's modular monolith can later split along its domain seams into microservices precisely because vertical slicing kept the boundaries meaningful (Source: L4 slides 19, 16, 22).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Fill in the 2×2: for each cell, name the style and one system from the course materials that exemplifies it.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
-Monolithic × technical: layered (the classic web-app tier diagrams; Week 6's deep dive). Monolithic × domain: modular monolith (the errand platform packaged as one process). Distributed × technical: event-driven (message/event interaction over a broker; Week 9). Distributed × domain: microservices (FoC's four services as separate processes; Weeks 7–8) (Source: L4 slide 22).
+- Monolithic × technical: **layered** — the classic web-app tier diagrams; Week 6's deep dive.
+- Monolithic × domain: **modular monolith** — the errand platform packaged as one process.
+- Distributed × technical: **event-driven** — message/event interaction over a broker; Week 9.
+- Distributed × domain: **microservices** — FoC's four services as separate processes; Weeks 7–8.
+
+(Source: L4 slide 22.)
 
 </panel>
 
 **Q2.** Your FoC prototype is a layered monolith and the campus load is growing. Which axis do you change first, and why?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
-Either, deliberately: moving to a modular monolith (re-partition by domain within one deployment) preserves single-process deployability while preparing domain seams for later distribution; moving to distributed × domain (microservices) buys independent scaling at the cost of network communication complexity — the capacity NFR's "three Docker containers per microservice behind Nginx" shows the distributed choice already made (Source: L4 slides 21–22; L4-AlternativeExamplesForProductBacklog order service NFR).
+Either, deliberately: moving to a modular monolith (re-partition by domain within one deployment) preserves single-process deployability while preparing domain seams for later distribution; moving to distributed × domain (microservices) buys independent scaling at the cost of network communication complexity — the capacity NFR's "three Docker containers per microservice behind {{ term("Nginx", "an open-source web server also used as a reverse proxy and load balancer: it fronts the containers and forwards each request to an instance behind it") }}" shows the distributed choice already made (Source: L4 slides 21–22; L4-AlternativeExamplesForProductBacklog order service NFR).
 
 </panel>
 
@@ -496,7 +574,12 @@ Either, deliberately: moving to a modular monolith (re-partition by domain withi
 
 ## Further reading
 
-All cited on the slides: Bass, Clements & Kazman, *Software Architecture in Practice* (2e) — the definition's source; Lethbridge & Laganière, *Object-Oriented Software Engineering*, ch. 9 — the cohesion and coupling tables; David Parnas's work on modularity; the se-education.org addressbook-level3 developer guide — the reference-architecture example.
+All cited on the slides:
+
+- Bass, Clements & Kazman, *Software Architecture in Practice* (2e) — the definition's source.
+- Lethbridge & Laganière, *Object-Oriented Software Engineering*, ch. 9 — the cohesion and coupling tables.
+- David Parnas's work on modularity.
+- The se-education.org addressbook-level3 developer guide — the reference-architecture example.
 
 ## Summary
 

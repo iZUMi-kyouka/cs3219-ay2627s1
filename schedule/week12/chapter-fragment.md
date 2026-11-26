@@ -1,13 +1,13 @@
 {% from "schedule/macros-fragment.md" import term, example, icon_outcome with context %}
-<h2 id="title">Week 12 — Scalability</h2>
+<h2>Week 12 — Scalability</h2>
 
-<span id="prereqs">
+<span>
 
 This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#core-concepts) (scalability as a quality attribute), [Week 4 — Architecture (I)]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts) (the modular monolith) and [Week 7 — Microservices (I)]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts) (extracting services). Week 11's queues and consumers return here as buffers and scaling units.
 
 </span>
 
-<span id="outcomes">
+<span>
 
 {{ icon_outcome }} **Can explain scalability as a quality attribute and name the dimensions a system can scale in** (W12.1)
 
@@ -21,7 +21,7 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -55,7 +55,7 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 **Growth is easiest to see with a physical analogy: add kiosks, or add stores.** A supermarket chain handles more shoppers by adding checkout kiosks (more capacity in one place) or more stores (more places); the software behind it faces exactly the same two levers. (Source: L12 slide 5.)
 
 {% call example("The room-booking platform faces summer (Quiz 3 Q1)") %}
-"A room-booking platform is developed as a modular monolith, containing search, reservation, and notification modules. At the start of summer, search consumes 80% of the system resources, while reservation and notification modules consume 5% each, just sufficient to keep the application running. Search uses a separate indexing to make it efficient. The team maintaining this software wants to scale the system to handle the increased load during summer." Everything that follows in this chapter zooms in on this decision — which scaling change best handles summer while keeping capital and operational costs low (Quiz 3 Q1).
+"A room-booking platform is developed as a modular monolith, containing search, reservation, and notification modules. At the start of summer, search consumes 80% of the system resources, while reservation and notification modules consume 5% each, just sufficient to keep the application running. Search uses a separate indexing to make it efficient. The team maintaining this software wants to scale the system to handle the increased load during summer." (The quiz paper's typo "is a developed" is silently corrected.) Everything that follows in this chapter zooms in on this decision — which scaling change best handles summer while keeping capital and operational costs low (Quiz 3 Q1).
 {% endcall %}
 
 <box type="warning" seamless>
@@ -83,13 +83,17 @@ Because capacity added anywhere else is mostly wasted: 80% of the load comes fro
 
 **Response time is a distribution, not a number — and the users at the tail are the ones who notice.** An average response time of 2 s under normal load can still leave 1 in 100 users waiting 10 s. (Source: L12 slide 7.)
 
-**Percentile metrics describe the distribution from typical to worst case.** P50 (the median) is a typical user's experience; P95 means 95% of requests are faster than this number — a standard threshold for service-level objectives; P99 captures the worst-case scenarios. (Source: L12 slide 7.)
+**Percentile metrics describe the distribution from typical to worst case** (Source: L12 slide 7):
+
+- **P50** (the median) is a typical user's experience.
+- **P95** means 95% of requests are faster than this number — a standard threshold for service-level objectives.
+- **P99** captures the worst-case scenarios.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-percentile" trim />
 </box>
 
-%%Two terms in that sentence: a *service-level objective* (SLO) is a measurable target for a service level — e.g. a percentile response time held over a window — that a team commits to (Wikipedia: "a target value or range of values for a service level"); the errand requirement below is one. And "the tail" means the slowest few percent of the response-time distribution: P99 says 99% of requests beat the threshold, so the slowest 1% live *beyond* it — it is not the single worst request.%%
+%%The two def-boxes below define the two terms in that sentence, and the errand requirement in the example below is an SLO. One nuance the short forms hide: the *tail* is the whole slow region beyond the threshold — P99 still leaves the slowest 1% beyond it, so the tail is a range of requests, not the single worst one.%%
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-service-level-objective" trim />
@@ -99,7 +103,7 @@ Because capacity added anywhere else is mostly wasted: 80% of the load comes fro
 <include src="../../se-book-adapted/common/defs-week-12.md#def-tail-latency" trim />
 </box>
 
-{% call example("Errand platform browse SLA (L12 slide 7)") %}
+{% call example("Errand platform browse SLO (L12 slide 7)") %}
 The deck phrases a measurable requirement for the errand platform: "95% of successful browse errand requests complete in <200 ms; 99% complete in <500 ms, in a 7-day window." Two percentiles plus a window — that is a requirement you can measure, alert on, and use to plan scaling.
 {% endcall %}
 
@@ -127,7 +131,7 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 
 ### W12.3 Two strategies to scale — and why late scaling hurts ★★
 
-**There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries, rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP). (Source: L12 slide 8.)
+**There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries (an *index* is a data structure the database maintains so it can find rows without scanning the whole table), rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP — PHP is normally interpreted line by line, so compiling it ahead of time makes the same server execute the same code much faster). (Source: L12 slide 8; %%HipHop is deck-faithful; the interpreted-vs-compiled gloss is from Wikipedia.%%)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-replicating-resources" trim />
@@ -141,7 +145,7 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 <include src="../../se-book-adapted/common/defs-week-12.md#def-throughput" trim />
 </box>
 
-**Scaling after deployment is expensive: downtime, hardware cost, and redesign.** The deck's hypothetical: a web server handling 100 requests/second must handle 100,000 — upgrading the database server takes 15 hours and a more powerful machine, schema updates to handle request hotspots mean a DB redesign, and the rapid-development Ruby web server must be reimplemented in C++ to be efficient and scalable. (Source: L12 slide 9.)
+**Scaling after deployment is expensive: downtime, hardware cost, and redesign.** The deck's hypothetical: a web server handling 100 requests/second must handle 100,000 — upgrading the database server takes 15 hours and a more powerful machine, schema updates to handle request hotspots — the parts of the data that receive a disproportionate share of the requests, e.g. one popular table or row — mean a DB redesign, and the rapid-development Ruby web server must be reimplemented in C++ to be efficient and scalable. (Source: L12 slide 9.)
 
 **Scalability is an architectural decision, incorporated from the beginning.** You must estimate the evolution of the software over time: resources and effort costs are tied to scalability from day one. (Source: L12 slide 9.)
 
@@ -157,7 +161,7 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 Optimizing the available resources — better use of existing capacity, no new copies (L12 slide 8).
 </panel>
 
-**Q2.** The room-booking team proposes splitting reservation and payment into separate databases "because independent databases are good practice in microservices", with no scaling or release requirement and non-negotiable atomicity. What is the best-supported decision?
+**Q2.** The room-booking team proposes splitting reservation and payment into separate databases "because having independent databases is a good practice in microservices", with no scaling or release requirement and non-negotiable atomicity. What is the best-supported decision?
 <panel type="seamless" minimized header="%%Answer%%">
 Retain the current design until the proposed design demonstrates how atomicity is preserved — there is no requirement that necessitates the split, and a database transaction currently enforces "both or neither" (Quiz 3 Q2).
 </panel>
@@ -180,7 +184,7 @@ Retain the current design until the proposed design demonstrates how atomicity i
 
 **Systems start small and monolithic, and that is fine — until it isn't.** A typical n-tiered web application hosted on a single server is a monolith, which grows in complexity as it becomes feature-rich; it is good enough while request loads stay relatively low. When the load grows, performance drops — latency increases because CPU and memory cannot handle concurrent requests — and the single server becomes the bottleneck. (Source: L12 slide 10.)
 
-**Scale up: pay money, keep the architecture.** Upgrading the service hardware — e.g. from a t3.xlarge instance (4 CPU, 16 GB) to a t3.2xlarge (8 CPU, 32 GB) — is simple, money is the only cost, and larger workloads are supported seamlessly; but there are hard limits on how many CPUs and how much memory one machine can have. (Source: L12 slide 11.)
+**Scale up: pay money, keep the architecture.** Upgrading the service hardware — e.g. on AWS EC2, moving from one instance size to the next in the same family: t3.xlarge (4 CPU, 16 GB memory) to t3.2xlarge (8 CPU, 32 GB) — is simple, money is the only cost, and larger workloads are supported seamlessly; but there are hard limits on how many CPUs and how much memory one machine can have — and with everything on one machine, there is nothing left to take over when it fails. (Source: L12 slide 11; the failure point is the deck's scale-up-DB argument on slide 17.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-single-point-of-failure" trim />
@@ -195,7 +199,7 @@ Retain the current design until the proposed design demonstrates how atomicity i
 | | Scale up (vertical) | Scale out (horizontal) |
 |---|---|---|
 | You add | Capability to the machines you have (CPU, memory) | Machines running copies of the service |
-| What caps it | The single machine's limits — there is a largest instance, and the box remains a single point of failure (L12 slide 11) | Nothing in the count — but every copy carries the whole system, so capacity spent on non-hot parts is wasted (AKF: "data sets have to be replicated in their entirety"; Quiz 3's ~5% modules), and it needs the W12.5 elements: load balancer + session store |
+| What caps it | The single machine's limits — there is a largest instance (L12 slide 11), and the box remains a single point of failure (L3 slide 20; L12 slide 17 flags the same for scale-up databases: a single node whose failure takes everything down) | Nothing in the count — but every copy carries the whole system, so capacity spent on non-hot parts is wasted (AKF: "data sets have to be replicated in their entirety"; Quiz 3's ~5% modules), and it needs the W12.5 elements: load balancer + session store |
 
 Whichever direction you pick, deciding it late is the expensive part — W12.3's downtime, hardware and redesign are the price of scaling post-hoc.
 
@@ -312,7 +316,7 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 
 **After you scale out the services, the shared database is the next bottleneck — a single database's capability limits response time.** Potential solutions: query the database infrequently by using caching, or scale out the database itself. (Source: L12 slide 15.)
 
-**Caching keeps frequently read, rarely changed data out of the database's critical path.** A cache stores recently retrieved and commonly accessed database results in memory — e.g. Redis or Memcached — so future requests read from the cache instead. The processing logic changes: for frequently read data that changes rarely, check the distributed cache first and return immediately; on a miss, query the database, load the results into the cache, then return — and decide, based on the nature of the data, when to remove or invalidate cached results to prevent stale results. (Source: L12 slide 16.)
+**Caching keeps frequently read, rarely changed data out of the database's critical path.** A cache stores recently retrieved and commonly accessed database results in memory — e.g. Redis or Memcached — so future requests read from the cache instead. The cache is *distributed* — one shared copy that all service replicas read over the network, not a private per-instance cache like the one W12.5 warns about. The processing logic changes: for frequently read data that changes rarely, check the distributed cache first and return immediately; on a miss, query the database, load the results into the cache, then return — and decide, based on the nature of the data, when to remove or invalidate cached results to prevent stale results. (Source: L12 slide 16.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-caching" trim />
@@ -324,7 +328,7 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 <include src="../../se-book-adapted/common/defs-week-12.md#def-read-replica" trim />
 </box>
 
-**Partitioning splits one logical table across several physical stores.** Horizontal partitioning splits a logical table into multiple physical partitions, allocating rows by a partitioning strategy — e.g. value-based or a hash of the primary key. Vertical partitioning partitions by columns — e.g. storing static, read-only data apart from dynamic data. (Source: L12 slide 18.)
+**Partitioning splits one logical table across several physical stores.** Horizontal partitioning splits a logical table into multiple physical partitions, allocating rows by a partitioning strategy — e.g. value-based (rows with a value in a range go to the same partition, like the bookings-by-city split shown below) or a hash of the primary key. Vertical partitioning partitions by columns — e.g. storing static, read-only data apart from dynamic data. (Source: L12 slide 18.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-partitioning" trim />
@@ -484,7 +488,13 @@ How to read it: from the room-booking monolith you can go out along X (replicate
 
 <box type="info" seamless>
 
-**Why this closes the course arc:** Y-axis decomposition is precisely the monolith → modular monolith → microservices story of Weeks 4–7; X-axis replication is this week's load balancing; Z-axis partitioning is the data-tier scaling of W12.6. One cube ties architecture and scalability together.
+**Why this closes the course arc:**
+
+- **Y-axis decomposition** is precisely the monolith → modular monolith → microservices story of Weeks 4–7.
+- **X-axis replication** is this week's load balancing.
+- **Z-axis partitioning** is the data-tier scaling of W12.6.
+
+One cube ties architecture and scalability together.
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -494,9 +504,15 @@ How to read it: from the room-booking monolith you can go out along X (replicate
 (a) X-axis — horizontal copies behind a load balancer; (b) Z-axis — same code on a subset of data, segmented by geography; (c) Y-axis — functional decomposition (L12 slide 24).
 </panel>
 
-**Q2.** Quiz 3 Q1 asks for the change that handles summer load "while keeping the capital expenditure and operational costs low". Which cube path is that, and why do the alternatives cost more?
+**Q2.** Quiz 3 Q1 asks for the change that handles summer load "while keeping the capital expenditure (e.g. equipment costs) and operational costs (e.g., subscription fees) low". Which cube path is that, and why do the alternatives cost more?
 <panel type="seamless" minimized header="%%Answer%%">
-Y then X: extract search as an independent microservice and increase its instances based on demand. Replicating the whole monolith (X alone) pays for reservation/notification replicas that use ~5% each; a larger machine for search (scale-up) hits hardware limits and keeps a single point of failure; extracting the *small* modules leaves search — the actual bottleneck — un-scaled (Quiz 3 Q1).
+Y then X: extract search as an independent microservice and increase its instances based on demand.
+
+- Replicating the whole monolith (X alone) pays for reservation/notification replicas that use ~5% each
+- A larger machine for search (scale-up) hits hardware limits and keeps a single point of failure
+- Extracting the *small* modules leaves search — the actual bottleneck — un-scaled
+
+(Quiz 3 Q1)
 </panel>
 
 </panel>

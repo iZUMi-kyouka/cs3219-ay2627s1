@@ -274,3 +274,19 @@ An **architectural pattern** is an architectural solution that forms the basis f
 <sub>-- L4 slide 21</sub>
 
 </span>
+
+<span id="def-abstract-data-type">
+
+An **abstract data type (ADT)** is a data type defined by the operations it supports and what they mean, rather than by how the data is stored internally — code that uses an ADT depends only on that operation interface, never on the representation behind it.
+
+%%Source: L4 slide 11's "Manager ADT" sketch (objects calling each other's operations through a manager for a shared ADT); the deck names the sketch without defining the term — standard definition, e.g. Lethbridge & Laganière, *Object-Oriented Software Engineering*.%%
+
+</span>
+
+<span id="def-nginx">
+
+**Nginx** is an open-source web server that is also widely used as a reverse proxy and load balancer: client requests arrive at Nginx, which forwards them to the application instances behind it — the pattern of the capacity NFR "three Docker containers per microservice behind Nginx".
+
+%%Source: named in the L4-AlternativeExamplesForProductBacklog deck's order-service capacity NFR (the deck names Nginx without defining it — standard definition).%%
+
+</span>

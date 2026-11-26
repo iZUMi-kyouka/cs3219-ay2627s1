@@ -1,18 +1,20 @@
 {% from "schedule/macros-fragment.md" import term, example with context %}
-<h2 id="title">Week 10 — Asynchronous Communication</h2>
+<h2>Week 10 — Asynchronous Communication</h2>
 
-<span id="prereqs">
-Builds on **Week 9** — events, fire-and-forget communication, EDA, and event-driven microservices ([W9.1](#W9-c1)–[W9.4](#W9-c4)) — and on the interprocess communication styles of [W8.4](#W8-c4). Tutorial 7 exercises sagas, CQRS, and choreography/orchestration across these weeks.
+<span>
+
+Builds on **Week 9** — events, fire-and-forget communication, EDA, and event-driven microservices ([W9.1]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#W9-c1)–[W9.4]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#W9-c4)) — and on the interprocess communication styles of [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4). Tutorial 7 exercises sagas ([W8.2]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c2)), CQRS ([W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3)), and choreography/orchestration ([W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4)) across these weeks.
 </span>
 
-<span id="outcomes">
+<span>
+
 * **Can** contrast synchronous and asynchronous communication and design asynchronicity inside a request–reply API.
 * **Can** decide between an event and a message from the sender's intent, and state the channel and ownership consequences.
 * **Can** choose point-to-point vs publish–subscribe communication and describe how brokers (Kafka, AMQP/RabbitMQ) realize each.
 * **Can** classify communication as persistent or transient, combine it with (a)synchronicity, and reason about the guarantees each combination gives.
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -45,6 +47,12 @@ Builds on **Week 9** — events, fire-and-forget communication, EDA, and event-d
 | Failure handling | Sender learns of failure immediately and has to handle it | Failures surface later, in different places, per consumer — error handling is more complex and fragmented (W9.2; L9 slide 16) |
 | Reach | One receiver at a time | Enables one-to-many sends |
 | Protocol examples | HTTP/HTTPS | AMQP |
+
+<panel type="seamless" minimized header="%%What is loose coupling?%%">
+
+<include src="../../se-book-adapted/common/defs-week-07.md#def-loose-coupling" trim />
+
+</panel>
 
 {% call example("L10 slide 5 — the login call") %}
 A login action is synchronous by nature: the caller must get a reply — "authenticated" or "rejected" — before it can proceed. Contrast the fire-and-forget world of Week 9, where the Order service publishes `DeliveryConfirmed` and moves on without waiting for the Notification service.
@@ -126,7 +134,7 @@ The Research service asks the Archive service to locate an old dataset; the sear
 | | Event | Message |
 |---|---|---|
 | What it carries | A **fact** — a state change; something that happened in the past | A **request to be executed** — a command (perform an action) or a query (get data) |
-| Delivery | **Broadcast** to other services (pub–sub pattern) | **Point-to-point** between two services |
+| Delivery | **Broadcast** to other services (pub–sub — publish–subscribe: one sender, many subscribers; treated fully in W10.3) | **Point-to-point** between two services |
 | Broker construct | **Topic** (e.g., Kafka, an event broker) | **Queue** (e.g., AWS SQS — Amazon's Simple Queue Service, a message broker) |
 | Who receives | Both/All subscribed services receive the same event | The only service the message is addressed to |
 
@@ -174,7 +182,7 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 
 <box type="warning" seamless>
 
-**Pitfall — mislabeling intent corrupts the design.** Broadcast a command and you get races ("whichever service receives it first becomes the reservation authority" — the wrong answer to Quiz 4 Q1); masquerade a command as a past-tense event and consumers react to something that never happened. And per slide 14's warning, the *constructs* can be used either way — "a message going to a topic and an event going to a queue" is possible, which is exactly why you must reason from intent, not from the channel name.
+**Pitfall — mislabeling intent corrupts the design.** Broadcast a command and you get races ("let whichever receives it first become the reservation authority" — the wrong answer to Quiz 4 Q1); masquerade a command as a past-tense event and consumers react to something that never happened. And per slide 14's warning, the *constructs* can be used either way — "message going to a topic & event going to a queue" is possible, which is exactly why you must reason from intent, not from the channel name.
 </box>
 
 <box type="info" seamless>
@@ -208,7 +216,7 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 <include src="../../se-book-adapted/common/defs-week-10.md#def-queue" trim />
 </box>
 
-**Multiple receivers mean pub/sub: one sender's communication is available to many subscribers.** A message can also be published to a topic — a broadcasting station: anyone interested can subscribe, and send–receive operations are controlled by configurations. Publishers are aka producers, senders, or observables; subscribers are aka consumers, receivers, or observers (slides 20–21) — the last pair borrows the Observer design pattern's names (a subject notifies its observers), so "observable" is just the thing being watched — the event source — and the "observer" is what gets notified.
+**Multiple receivers mean pub/sub: one sender's communication is available to many subscribers.** A message can also be published to a topic — a broadcasting station: anyone interested can subscribe, and send–receive operations are controlled by configuration — who subscribes to a topic is set up as configuration on the broker rather than named in the sender's code (the deck's phrase, slide 21). Publishers are aka producers, senders, or observables; subscribers are aka consumers, receivers, or observers (slides 20–21) — the last pair borrows the Observer design pattern's names (a subject notifies its observers), so "observable" is just the thing being watched — the event source — and the "observer" is what gets notified.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-10.md#def-topic" trim />
@@ -219,7 +227,14 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 **You can — and will — have both.** Sync and async communication coexist in one architecture/application, and so do queues and topics: commands flow point-to-point while facts fan out (slide 20; L10 slide 16's e-commerce table).
 </box>
 
-**Kafka realizes pub/sub as a distributed log.** Kafka is a distributed message streaming platform using publish–subscribe, developed at LinkedIn and donated to the Apache Foundation. Producers publish to a *topic* (identified by name); the topic is broken into *partitions* (P1, P2, P3); each broker (Kafka server) delivers messages to the right consumer; brokers coordinate as a cluster, and you can add brokers without downtime — horizontal scaling. A unit of data within Kafka is called an event, events are categorized into topics, and **all events produced with a given key are written to the same partition** (slides 22–23).
+**Kafka realizes pub/sub as a distributed log.** Kafka is a distributed message streaming platform using publish–subscribe, developed at LinkedIn and donated to the Apache Foundation (slide 22).
+
+* Producers publish to a *topic*, identified by name.
+* The topic is broken into *partitions* (P1, P2, P3).
+* Each broker (Kafka server) delivers messages to the right consumer.
+* Brokers coordinate as a cluster, and you can add brokers without downtime — horizontal scaling.
+
+A unit of data within Kafka is called an event, events are categorized into topics, and **all events produced with a given key are written to the same partition** (slide 23) — the *key* is a field the producer stamps on each event (e.g. `orderId`); Kafka uses it to pick a partition consistently, which is why every event about the same order lands on one partition (Quiz 4 Q9).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-10.md#def-kafka" trim />
@@ -245,10 +260,25 @@ CampusEats publishes `OrderReady` then `OrderCollected` per order to a Kafka top
 <include src="../../se-book-adapted/common/defs-week-10.md#def-protocol" trim />
 </box>
 
-* **The AMQP model:** messages are published to *exchanges* (think post offices or mailboxes); exchanges distribute message copies to *queues*; the broker then delivers messages to consumers subscribed to the queues, or consumers fetch/pull messages on demand (slide 26).
-* **Routing:** the exchange routes each message based on its *bindings*; multiple brokers can talk to each other to get a message to its recipient (slide 27).
+* **The AMQP model (slide 26):**
+  * Messages are published to *exchanges* (think post offices or mailboxes).
+  * Exchanges distribute message copies to *queues*.
+  * The broker then delivers messages to consumers subscribed to the queues, or consumers fetch/pull messages on demand.
+* **Routing:** the exchange routes each message based on its *bindings* — a binding is the rule that links a queue to an exchange, and the *routing key* is the message attribute the exchange checks against each binding (usually the queue's name) (slides 27–28). Multiple brokers can talk to each other to get a message to its recipient.
 
-**RabbitMQ is the reference implementation of that model.** Message flow: (1) a producer publishes a message to an exchange; (2) the exchange receives it and is responsible for routing; (3) the exchange routes messages into queues depending on message attributes — e.g., the routing key; (4) messages stay in the queue until handled by a consumer; (5) the consumer handles the message. Exchange types: **direct** (route to queues whose binding key exactly matches the routing key), **fanout** (route to all queues bound to it), **topic** (wildcard match between routing key and binding pattern, e.g. `us.#` matches `us.stocks` and `us.sports`), **header** (route on message headers) (slides 28–29).
+**RabbitMQ is the reference implementation of that model.** The message flow:
+
+1. A producer publishes a message to an exchange.
+2. The exchange receives it and is responsible for routing.
+3. The exchange routes messages into queues depending on message attributes — e.g., the routing key.
+4. Messages stay in the queue until handled by a consumer.
+5. The consumer handles the message.
+
+Exchange types: **direct** (route to queues whose binding key exactly matches the routing key), **fanout** (route to all queues bound to it), **topic** (wildcard match between routing key and binding pattern, e.g. `us.#` matches `us.stocks` and `us.sports`), **header** (route on message headers) (slides 28–29).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-rabbitmq" trim />
+</box>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-10.md#def-exchange" trim />
@@ -317,10 +347,12 @@ How to read it: on top, every hop stores the message until the next node is read
 | **Persistent async** | Sender keeps executing without blocking; the message may take an arbitrary time to arrive; the sender may or may not be running by delivery time; disks or memory queues persist it; **delivery is eventually guaranteed** |
 | **Persistent sync** | Sender blocks until an **ack of receipt** (not delivery/response); the message persists in the receiver's queue (or any router) for an arbitrary time |
 | **Transient async** | Sender continues (non-blocking); the **receiver must be running** or the message is discarded; same if any router on the way is down |
-| **Transient sync** | Sender blocks — in three strengths: **receipt-based** (until an ack; says nothing about processing having started), **delivery-based** (the sender blocks until the receiver *takes delivery* of the message — the slide's label "essentially an asynchronous RPC" is the distributed-systems one (Coulouris et al., *Distributed Systems*): the actual processing continues asynchronously after the hand-over, so unlike response-based blocking, your wait ends at delivery, not when the work's reply comes back), **response-based** (until the response — traditional RPC) |
+| **Transient sync** | Sender blocks — in a **spectrum of three strengths**, weakest to strongest in what it confirms: **receipt-based** (blocks until an ack is received; says nothing about processing having started), **delivery-based** (blocks until the receiver *takes delivery*; processing then continues asynchronously, so — unlike response-based blocking — the wait ends at **delivery**, not when the reply comes back), **response-based** (blocks until the full reply — traditional RPC: *remote procedure call*, calling a remote service as if it were a local function; W6's gRPC is its modern realization) |
+
+%%Citation — the delivery-based label "essentially an asynchronous RPC" follows Coulouris et al., *Distributed Systems*: in that reading "delivery" (handing the message to the receiver) and "processing" (the reply) are distinct milestones, which is exactly the gap this cell exploits.%%
 
 {% call example("L10 slide 34 — one example per corner") %}
-Email systems are persistent and asynchronous. Messaging/chat apps are persistent and synchronous (the message is stored, but you block on the exchange). UDP communication is transient and asynchronous — no store, no wait. Traditional RPC is transient and synchronous — the reply *is* the delivery.
+Email systems are persistent and asynchronous. Messaging/chat apps are persistent and synchronous (the message is stored, but you block on the exchange). UDP (User Datagram Protocol) communication is transient and asynchronous — no store, no wait. Traditional RPC (remote procedure call) is transient and synchronous — the reply *is* the delivery.
 {% endcall %}
 
 {% call example("Quiz 4 Q10 — persistence is not a deadline") %}
@@ -359,6 +391,8 @@ A transport operator requires every submitted incident to be analyzed within fiv
 
 ## Key terms
 
+<span id="W10-key-terms"></span>
+
 | Term | Definition | Unit |
 |---|---|---|
 | Synchronous communication | Request–reply; sender waits; tightly coupled | [W10.1](#W10-c1) |
@@ -366,8 +400,8 @@ A transport operator requires every submitted incident to be analyzed within fiv
 | Async request–reply | 202 Accepted + status endpoint + polling + redirect for long-running work | [W10.1](#W10-c1) |
 | Message | A command/query *request* sent point-to-point to one receiver | [W10.2](#W10-c2) |
 | Event | A past-tense fact, broadcast to all subscribers | [W10.2](#W10-c2) |
-| Topic | One-to-many channel; per-partition ordering only | [W10.2](#W10-c2) |
-| Queue | Single-receiver FIFO channel; messages not copied | [W10.2](#W10-c2) |
+| Topic | One-to-many channel; per-partition ordering only | [W10.3](#W10-c3) |
+| Queue | Single-receiver FIFO channel; messages not copied | [W10.3](#W10-c3) |
 | Publish–subscribe | Broadcasting-station topology with many subscribers | [W10.3](#W10-c3) |
 | AMQP | Open async messaging protocol: publishers → exchanges → queues → consumers | [W10.3](#W10-c3) |
 | Kafka | Distributed pub/sub streaming platform: topics → partitions over a broker cluster | [W10.3](#W10-c3) |
@@ -399,9 +433,12 @@ A transport operator requires every submitted incident to be analyzed within fiv
 * **Synchronous communication makes the caller wait and own the failure; asynchronous lets it continue** — and long-running work keeps a clean request–reply facade via 202 Accepted, a status endpoint, and correlation identifiers.
 * **Intent is the classifier:** a broadcast past-tense fact (event, topic, publisher-owned) vs a directed request to act or fetch (message — command or query — queue, receiver-owned); the tenant-deletion scenario shows the same requirement wired deliberately either way.
 * **Receiver count picks the topology:** single-receiver unicast queues vs many-subscriber pub/sub topics, realized by Kafka (partitioned logs, key-based placement, horizontal scaling) and AMQP/RabbitMQ (exchanges, bindings, routing keys) — with ordering guaranteed only per partition.
-* **Persistence is orthogonal and survivable:** store-and-forward keeps messages across outages and guarantees eventual delivery; transient buffers discard on failure; the 2×2 with (a)synchronicity — from email to RPC — each carries its own precise guarantee.
+* **Persistence is orthogonal and survivable:**
+  * Store-and-forward keeps messages across outages and guarantees eventual delivery.
+  * Transient buffers discard on failure.
+  * The 2×2 with (a)synchronicity — from email to RPC — each carries its own precise guarantee.
 
-Key terms: see the [Key terms table](#key-terms) above, each linked to its unit.
+Key terms: see the [Key terms table](#W10-key-terms) above, each linked to its unit.
 
 %%Next: Week 11 — Messaging. The broker constructs of this week (topics, queues, exchanges, partitions) become the system's backbone; W11's messaging chapter builds directly on W10.2–W10.4.%%
 

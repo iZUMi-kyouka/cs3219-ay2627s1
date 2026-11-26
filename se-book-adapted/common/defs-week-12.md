@@ -63,6 +63,8 @@
 
 **Service-level objective (SLO)** — a measurable target for a service level that a team commits to, typically written on percentile response times held over a window — e.g., 95% of successful browse errand requests complete in under 200 ms in a 7-day window.
 
+An SLO is the *internal* target a team commits to; a **service-level agreement (SLA)** is the *contractual* promise made to a customer. The lecture's requirements are SLOs — "SLA" is not the deck's word for them.
+
 (Sources: L12 slide 7.)
 
 </span>

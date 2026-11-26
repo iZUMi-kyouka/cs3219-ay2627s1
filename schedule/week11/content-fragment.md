@@ -43,7 +43,17 @@
 
 <box type="tip" seamless>
 
-**Deck structure at a glance:** slides 4–15 motivation and the EIP landscape; 16–18 message construction; 19–32 channels; 33–53 routing; 54–58 transformation; 59–63 endpoints; 64 summary. Slides marked *Optional/Not examinable* (JMS message types, SQS lifecycle, RabbitMQ exchanges, SNS filtering) are vendor detail — skim for intuition, don't memorise.
+**Deck structure at a glance:**
+
+- Slides 4–15: motivation and the EIP landscape
+- 16–18: message construction
+- 19–32: channels
+- 33–53: routing
+- 54–58: transformation
+- 59–63: endpoints
+- 64: summary
+
+Slides marked *Optional/Not examinable* (JMS message types, SQS lifecycle, RabbitMQ exchanges, SNS filtering) are vendor detail — skim for intuition, don't memorise.
 </box>
 
 </span>
@@ -102,7 +112,12 @@ sequenceDiagram
 
 **Scenario 1.** The Order microservice acts as the controller for the end-to-end process flow, invoking the other services **synchronously in sequence**: Read customer info → read product details → read inventory → create order → create payment → create shipment → update inventory → create notification.
 
-**Scenario 2.** Whenever the Customer microservice changes state (a customer record is created or updated), it publishes an event. The Order microservice subscribes because it needs the customer's *name*; Payment because it needs the *credit-card details*; Shipment because it needs the *mailing address*; Notification because it needs the *email address* — and all of them need the new information before the next order occurs.
+**Scenario 2.** Whenever the Customer microservice changes state (a customer record is created or updated), it publishes an event. Four services subscribe, each needing a different part of the new information — and all of them need it before the next order occurs:
+
+- **Order** — the customer's *name*
+- **Payment** — the *credit-card details*
+- **Shipment** — the *mailing address*
+- **Notification** — the *email address*
 
 **Then:** write down observations about the scalability of Scenario 1. Would asynchronous messaging improve scalability compared to synchronous communication? How?
 

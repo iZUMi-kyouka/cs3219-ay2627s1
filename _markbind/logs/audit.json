@@ -9,6 +9,11 @@
             "date": 1795694810722,
             "name": "_markbind/logs/markbind-2026-11-26.log",
             "hash": "22672ef912190a8d4cfe03dadd670f2262d1a316bb0c05febd8800292b78a6b2"
+        },
+        {
+            "date": 1795709969535,
+            "name": "_markbind/logs/markbind-2026-11-27.log",
+            "hash": "8638d5b9c0b10fa3941482e713060875060bf67871459695144322af70d8a344"
         }
     ],
     "hashType": "sha256"

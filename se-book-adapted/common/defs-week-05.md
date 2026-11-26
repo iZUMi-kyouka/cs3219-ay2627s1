@@ -19,6 +19,38 @@
 
 </span>
 
+<span id="def-resilience">
+
+**Resilience** is the ability of a system to keep serving its users while parts of it fail: faults are contained so they do not take the system down, and the system recovers without manual intervention. Cloud-native designs buy resilience through fault isolation between services, redundant instances, and self-healing platforms (W5.5).
+
+%%Source: named as a target quality on L5 slide 8 and as "resilient" in the CNCF definition on L5 slide 9 (guest lecture by Dell); phrasing follows the CNCF Cloud Native Glossary entries "Reliability" and "Self-healing" (CC BY 4.0).%%
+
+</span>
+
+<span id="def-manageability">
+
+**Manageability** is the ease with which a system can be operated and changed: deploying, scaling, updating, and recovering it are automated and repeatable rather than manual and error-prone. The CNCF definition states the aim directly — robust automation lets engineers "make high-impact changes frequently and predictably with minimal toil".
+
+%%Source: named as a target quality on L5 slide 8; "minimal toil" phrasing from the CNCF definition quoted on L5 slide 9 (guest lecture by Dell).%%
+
+</span>
+
+<span id="def-observability">
+
+**Observability** is a system property defining the degree to which the system can generate actionable insights — how well you can understand the system's internal state from its external outputs (logs, metrics, traces) and take corrective action on it.
+
+%%Source: named as a target quality on L5 slide 8 (guest lecture by Dell); phrasing follows the CNCF Cloud Native Glossary entry "Observability" (CC BY 4.0).%%
+
+</span>
+
+<span id="def-cncf">
+
+The **Cloud Native Computing Foundation (CNCF)** is the open-source foundation that builds sustainable cloud-native ecosystems: it hosts and stewards the flagship cloud-native projects — Kubernetes, Prometheus, Envoy, and others — and maintains the widely-quoted definition of *cloud native*.
+
+%%Source: L5 slide 39 names Kubernetes as the CNCF flagship project; L5 slide 6 quotes the CNCF definition (guest lecture by Dell); [github.com/cncf/toc — DEFINITION.md](https://github.com/cncf/toc/blob/main/DEFINITION.md).%%
+
+</span>
+
 <span id="def-container">
 
 **A container** is a standardized unit for developing, deploying, and distributing software: it packages an application together with everything it needs to run — language runtime, libraries, executables, and configuration — and abstracts the application from the environment it runs in.
@@ -61,7 +93,7 @@ A **monolith** (monolithic application) is one unit of deployment running as a s
 
 <span id="def-service-mesh">
 
-A **service mesh** is a dedicated infrastructure layer for managing service-to-service communication — traffic management and telemetry between services — kept out of application code; the lecture names it among the cloud-native enablers.
+A **service mesh** is a dedicated infrastructure layer for managing service-to-service communication — traffic management and telemetry (the metrics, logs, and traces services emit) between services — kept out of application code; the lecture names it among the cloud-native enablers.
 
 %%Source: L5 slides 9–10 (guest lecture by Dell); characterized in the W5.2 self-check.%%
 
@@ -133,7 +165,7 @@ A **Kubernetes deployment** declares the desired number of pod replicas and enfo
 
 <span id="def-reconcile-loop">
 
-A **reconcile loop** is a control loop — a non-terminating loop that regulates the state of the system by driving desired state = actual state. Kubernetes controllers (e.g., the Deployment Controller and Job Controller, run by the kube-controller-manager) each own one kind of resource.
+A **reconcile loop** is a control loop — a non-terminating loop that regulates the state of the system by driving desired state = actual state. Kubernetes controllers (e.g., the Deployment Controller and Job Controller, run by the kube-controller-manager — the Kubernetes component that runs the built-in controllers) each own one kind of resource.
 
 %%Source: L5 slide 59 (guest lecture by Dell).%%
 

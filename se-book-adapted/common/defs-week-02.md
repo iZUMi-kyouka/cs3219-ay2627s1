@@ -55,7 +55,7 @@
 
 <span id="def-pattern-detection">
 
-**Pattern detection** (AI mode) is the mode that exploits rule-like structure in tasks: AI sifts through a gigantic codebase to detect vulnerabilities — e.g., identifying query patterns, or the repeating library-usage pattern behind a vulnerability.
+**Pattern detection** (AI mode) is the mode that exploits rule-like structure in tasks: AI sifts through a gigantic codebase to detect vulnerabilities — e.g., identifying query patterns (recurring, rule-like code structures), or the repeating library-usage pattern behind a vulnerability.
 
 <sub>-- L2 slide 3; Quiz 1 Q1</sub>
 
@@ -130,5 +130,13 @@
 **A2A (Agent-to-Agent protocol)** standardizes communication between independent AI agents.
 
 <sub>-- L2 slide 12</sub>
+
+</span>
+
+<span id="def-llm">
+
+An **LLM (large language model)** is an AI model trained on vast amounts of text and code to predict and generate language — the technology behind tools such as ChatGPT, GitHub Copilot, and Claude.
+
+<sub>-- usage throughout L2 slides 2–12; term dimmed: Wikipedia, "Large language model"</sub>
 
 </span>

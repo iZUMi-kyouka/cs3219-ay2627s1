@@ -1,18 +1,20 @@
 {% from "schedule/macros-fragment.md" import term, example with context %}
-<h2 id="title">Week 9 — Event-Driven Architecture</h2>
+<h2>Week 9 — Event-Driven Architecture</h2>
 
-<span id="prereqs">
-Builds on **Week 7–8** (the microservice style; DDD and event storming; event sourcing and CQRS) and the communication styles previewed in [W8.4](#W8-c4). Tutorial 6 exercises both the Week 8 DDD toolkit and this week's event thinking.
+<span>
+
+Builds on **Weeks 7–8** — the microservice style, DDD and event storming, and event sourcing and CQRS — and on the communication styles previewed in [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4). Tutorial 6 exercises both the Week 8 DDD toolkit and this week's event thinking.
 </span>
 
-<span id="outcomes">
+<span>
+
 * **Can** explain what an event is, its four views, and how initiating events differ from derived events and from commands and queries.
 * **Can** reason about fire-and-forget communication — what it decouples, what it costs, and when the trade-off is worth it.
 * **Can** describe the components of event-driven architecture and contrast EDA with microservice architecture.
 * **Can** design event-driven microservices using event-stream semantics — ownership, ordering, partitioning, replay — and weigh their trade-offs.
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -47,7 +49,7 @@ flowchart TB
 
 %%Notation: the central box is the single event concept; each branch is one *view* — a role the event plays in design, not a different kind of object.%%
 
-How to read it: the first three branches recycle Week 8's material — event storming discovered your service candidates ([W8.1](#W8-c1)), and event sourcing and CQRS restructured your storage ([W8.3](#W8-c3)). The last branch is this week's new question: *how much data should one event carry?* The two content-side answers get their own definitions below.
+How to read it: the first three branches recycle Week 8's material — event storming discovered your service candidates ([W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c1)), and event sourcing and CQRS restructured your storage ([W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3)). The last branch is this week's new question: *how much data should one event carry?* The two content-side answers get their own definitions below.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-notification" trim />
@@ -71,7 +73,7 @@ How to read it: the first three branches recycle Week 8's material — event sto
 
 | | Event notification | Event-carried state transfer |
 |---|---|---|
-| Payload | Small: an ID and the fact that something happened (Fowler: "just some id information and a link back to the sender") | The data consumers need, so they "don't need to contact the source system" (Fowler) |
+| Payload | Small: an ID and the fact that something happened (Fowler: "often just some id information and a link back to the sender that can be queried for more information") | The data consumers need, so they "don't need to contact the source system" (Fowler) |
 | Consumers | Must call the producer back for details | Work from the event itself |
 | Cost | Every consumer adds a callback (and a dependency on the source being up) | Bigger events, more copies of data in flight |
 | Course example | The thin `EquipmentCheckedOut` of Quiz 4 Q3 — checkout ID only; when the laboratory API is down, consumers *receive* the event but *cannot process it* | The fat `DeliveryConfirmed` of slide 11, if it carried requestor, courier, credit amount, names, and zone — all four consumers served without a callback |
@@ -144,7 +146,7 @@ A student submits an equipment request: the Request Intake service records it an
 |---|---|---|---|
 | What it is | Intent, imperative | Fact, past tense | Asks for current state |
 | Example | `ChargeCard` | `CardCharged` | `GetBalance` |
-| Addressing | Sent to a specific receiver | Broadcast by its owner; others can only react to it | Needs a reply |
+| Addressing | Sent to a specific receiver | Broadcast by its owner — the service that produced the fact and owns that event stream (W9.4); others can only react to it | Needs a reply |
 | State change | Changes state, returns no data | Records a state change that already happened | Changes nothing |
 | Reply expected? | No data comes back — the sender wants *action*, not a value | None — others can only react to it | Yes — the reply is the whole point |
 
@@ -154,17 +156,17 @@ A university equipment platform sends a message named `EquipmentReserved` to the
 
 #### Inside an event: keys and payloads
 
-**An event is a key–value pair: the key identifies and routes, the value carries the details.** The key supports identification, routing, and aggregation on the unique ID; the value holds the complete details of the event (slide 10).
+**An event is a key–value pair: the key identifies and routes, the value carries the details.** The key supports identification, routing, and aggregation on the unique ID %%aggregation: grouping or counting all events that carry the same ID, e.g. "how many times was this book opened?"%%; the value holds the complete details of the event (slide 10).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-key" trim />
 </box>
 
-**Events come in three structural types.** (Source: L9 slide 10, after Bellemare.)
+**Events come in three structural types.** (Source: L9 slide 10.)
 
-* **Unkeyed** — a singular statement of fact with no key. E.g., "user opened a book" on a digital book platform (key `NA`; value: ISBN, timestamp).
-* **Entity** — describes the properties and state of an entity, keyed on that entity's unique ID; it provides a continual history of the entity's state and can materialize it. E.g., key `ISBN=372719`, value: author and other properties.
-* **Keyed** — carries a key but does not represent an entity; it partitions the stream to guarantee data locality within a partition. E.g., key `ISBN=372719`, value: `UserID=AE2341G` (a borrowing activity event).
+* **Unkeyed** — a singular statement of fact with no key. E.g., "user opened a book" on a digital book platform (key `NA`; value: ISBN — the book's International Standard Book Number — plus a timestamp).
+* **Entity** — describes the properties and state of an entity, keyed on that entity's unique ID; it provides a continual history of the entity's state and can materialize it — materialize: reconstruct the entity's current state by replaying its events, giving you a working "current" copy without ever storing one. E.g., key `ISBN=372719`, value: author and other properties.
+* **Keyed** — carries a key but does not represent an entity; it partitions the stream to guarantee data locality within a partition %%data locality: every event with the same key lands in the same partition, so a consumer working on that key reads all its events together, in order%%. E.g., key `ISBN=372719`, value: `UserID=AE2341G` (a borrowing activity event).
 
 **How much data an event should carry is a design decision with four consumers in mind.** The deck's FoC scenario: a courier delivers an errand, the requestor confirms it, and the Order Service publishes `DeliveryConfirmed`, keyed by `errandId` — then four services consume it, each needing different fields (slide 11):
 
@@ -179,7 +181,7 @@ A university equipment platform sends a message named `EquipmentReserved` to the
 
 <box type="warning" seamless>
 
-**Pitfall — a too-thin event turns async communication back into sync.** Quiz 4 Q3: a laboratory publishes `EquipmentCheckedOut` containing only the checkout ID; every consumer must immediately call the laboratory API for details and wait for the data. During a laboratory API outage, consumers *receive* the events but *cannot process them* — the durable broker does not help, because the missing dependency is the callback, not the transport. (Source: Quiz 4, Question 3.)
+**Pitfall — a too-thin event turns async communication back into sync.** Quiz 4 Q3: a laboratory publishes `EquipmentCheckedOut` containing only the checkout ID; every consumer must immediately call the laboratory API for details and wait for the data. During a laboratory API outage, consumers *receive* the events but *cannot process them* — the durable broker (persistent storage, per the gloss in W9.2) does not help, because the missing dependency is the callback, not the transport. (Source: Quiz 4, Question 3.)
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -205,27 +207,27 @@ A university equipment platform sends a message named `EquipmentReserved` to the
 <include src="../../se-book-adapted/common/defs-week-09.md#def-fire-and-forget" trim />
 </box>
 
-**Two communication styles bracket every inter-component exchange.** In *synchronous* communication, a component that sends information must wait for a response from the receiver before doing anything else. In *fire-and-forget* communication, the event is sent — the fire part — and the service moves on to other things — the forget part (slide 13).
+**Two communication styles cover every inter-component exchange.** In *synchronous* communication, a component that sends information must wait for a response from the receiver before doing anything else. In *fire-and-forget* communication, the event is sent — the fire part — and the service moves on to other things — the forget part (slide 13).
 
 **The payoff is responsiveness and availability.** It takes less time to "get a response" because you are not waiting for one — the sender's own work continues immediately (slide 14). And availability improves because the sender does not care whether the other components are up: consumers that are temporarily down simply process later (slide 15).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-temporal-decoupling" trim />
+</box>
+
 {% call example("Quiz 4 Q4 — uploads during a transcoding outage") %}
-A media platform durably records uploaded files and publishes `UploadAccepted` to an available broker that retains events for seven days. The Transcoding service goes down for 20 minutes; upload acceptance does not require transcoding to finish. Because communication is fire-and-forget and the broker retains events, the platform **continues accepting uploads**, and Transcoding processes the retained events after recovery — temporal decoupling doing its job. (Source: Quiz 4, Question 4.)
+A media platform durably records uploaded files %%durable: written to persistent storage that survives a crash or restart, unlike data held only in memory%% and publishes `UploadAccepted` to an available broker that retains events for seven days. The Transcoding service goes down for 20 minutes; upload acceptance does not require transcoding to finish. Because communication is fire-and-forget and the broker retains events, the platform **continues accepting uploads**, and Transcoding processes the retained events after recovery — temporal decoupling doing its job. (Source: Quiz 4, Question 4.)
 {% endcall %}
 
 **The price is error handling.** In a synchronous call, the caller learns of failure immediately and can react; with fire-and-forget, error handling becomes more complex and fragmented than in sync communication — failures surface later, in different places, per consumer (slide 16).
 
 **Know exactly what events decouple — and what they do not.** (Source: L9 slide 17.)
 
-* **Removed: temporal coupling.** Producer and consumer don't need to be up at the same time.
+* **Removed: temporal coupling.** Producer and consumer don't need to be up at the same time. (This is the distributed-systems sense — *not* Week 4's temporal-coupling code smell, where unrelated actions are bundled because they run at the same time.)
 * **Removed: coupling on identity/location.** The producer doesn't know who listens or where they are — less reliance on service discovery.
 * **Added: coupling on the event format.** Every consumer depends on the event's field names and meaning — change the event schema and you must consider every subscriber.
 
-<box type="definition" seamless>
-<include src="../../se-book-adapted/common/defs-week-09.md#def-temporal-decoupling" trim />
-</box>
-
-The diagram contrasts the two styles on the FoC errand flow from slide 11.
+The diagram contrasts the two styles on the FoC errand flow — the async half is slide 11's `DeliveryConfirmed` publish; the sync half is the reserve-credits exchange of W8.2's errand workflow (Tutorial 7 Q1).
 
 <mermaid>
 sequenceDiagram
@@ -280,11 +282,14 @@ How to read it: above the first note — the Order service cannot create the err
 * **An action triggers producer components to deliver event data to something listening for it.** Event data is made available as soon as the action happens (slide 20).
 * **A consumer subscribes to events of interest and takes an appropriate action on receiving one.** (Slide 20.)
 * **EDA relies on asynchronous communication for sending and receiving events.** (Slide 20.)
-* **Remember the deck's three-part characterization of events:** events are data that describe some action or fact; notifications of some change in state or data; and recordings of what happened (slide 20).
+* **Remember the deck's three-part characterization of events (slide 20):**
+  * Events are data that describe some action or fact.
+  * Events are notifications of some change in state or data.
+  * Events are recordings of what happened.
 
 **Three component roles make up an EDA.** (Source: L9 slide 21.)
 
-* **Event producers** (event generators) publish data onto streams or {{ term("queues", "broker channels that buffer messages for a single receiver, first-in-first-out — defined in W10.3") }}.
+* **Event producers** (event generators) publish data onto streams %%an *event stream* is the producer-owned, append-only event feed defined in W9.4%% or {{ term("queues", "broker channels that buffer messages for a single receiver, first-in-first-out — defined in W10.3") }}.
 * **The event broker** implements the transport between them.
 * **Event consumers** (event listeners) listen to and consume the event data.
 * **Producers and consumers are decoupled from each other:** producers do not know which consumers are listening; consumers are decoupled from each other too — location and identity transparency.
@@ -293,7 +298,19 @@ How to read it: above the first note — the Order service cannot create the err
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-broker" trim />
 </box>
 
+<panel type="seamless" minimized header="%%What is loose coupling?%%">
+
+<include src="../../se-book-adapted/common/defs-week-07.md#def-loose-coupling" trim />
+
+</panel>
+
 **The broker's job is to receive, publish on {{ term("topics", "broker channels enabling one-to-many communication: every subscriber of the topic receives the message — defined in W10.3") }}, and enable subscriptions.** It receives source data, publishes it on source-specific topics, and enables listeners to subscribe to topics of interest — and note what the deck points at: the *database-per-service pattern* reappears here, since each producer owns the data it publishes (slide 22).
+
+<panel type="seamless" minimized header="%%What is the database-per-service pattern?%%">
+
+<include src="../../se-book-adapted/common/defs-week-08.md#def-database-per-service" trim />
+
+</panel>
 
 **Pub/sub is the standard realization of EDA structure.** Event producers are publishers, event consumers are subscribers — e.g., {{ term("Kafka", "a distributed event-streaming platform: an immutable, partitioned, replayable log behind topics, treated fully in W10.3") }} pub/sub (slide 24).
 
@@ -379,11 +396,14 @@ The same three axes, side by side:
 
 #### The event broker as a store
 
-**In event-driven microservices, event data is both the storage and the communication.** The broker receives events, holds them in a queue or partitions, and provides them for consumption — e.g., `UpdateProduct(pID, {"name": "SuperWidget"})` landing in an event log that Catalog, Inventory, and OrderArchive consumers read (slide 34).
+**In event-driven microservices, event data is both the storage and the communication.** The broker receives events, holds them in a queue or partitions, and provides them for consumption — e.g., `UpdateProduct(pID, {"name": "SuperWidget"})` landing in an event log that Catalog, Inventory, and OrderArchive consumers read (slide 34). %%The slide's mental model: events are published to different partitioned streams according to their underlying logical meaning — much as a database keeps many tables, each holding one type of data — so UpdateProduct events land in the product stream, not in one undifferentiated log.%%
 
 **Broker semantics — the properties you may rely on.** (Source: L9 slides 35–38.)
 
-* **Immutable, append-only log.** Events get an auto-incrementing index-ID; writes are append-only. All event data is immutable once published — there is no mechanism to modify it; you alter previous data only by publishing a new event.
+* **Immutable, append-only log.**
+  * Events get an auto-incrementing index-ID; writes are append-only
+  * All event data is immutable once published — there is no mechanism to modify it
+  * You alter previous data only by publishing a new event
 * **Ordering.** Data in an event stream *partition* is strictly ordered and served in exactly the published order.
 * **Indexing (offsets).** A consumer seeking events seeks to the index-ID of the last message read (its offset), scans sequentially, and periodically records its new offset in the partition.
 * **Partitioning.** Streams can be partitioned into substreams, the number varying with producer and consumer needs.
@@ -414,7 +434,13 @@ The same three axes, side by side:
 <include src="../../se-book-adapted/common/defs-week-09.md#def-replayability" trim />
 </box>
 
-**Scaling falls out of the log model.** Producers write over many partitions on many machines; load-balanced consumers share the partitions; rate limits apply to producers, consumers, and groups — Kafka ties the logs together, routing reliably, replicating for fault tolerance (slides 39–40). Reading and writing proceed in parallel across partitions, and scaling is straightforward: add machines and rebalance (slide 40).
+**Scaling falls out of the log model.**
+
+* Producers write over many partitions on many machines.
+* Load-balanced consumers share the partitions.
+* Rate limits (throughput caps per producer, consumer, and group) apply to producers, consumers, and groups — Kafka ties the logs together, routing reliably, replicating for fault tolerance %%replication: Kafka keeps extra copies of each partition on other machines, so one machine failing loses no events%% (slides 39–40).
+
+Reading and writing proceed in parallel across partitions, and scaling is straightforward: add machines and rebalance — redistributing the partitions across the enlarged set of machines (slide 40).
 
 The diagram shows one topic's partitions and the consumer groups reading them — the machinery behind the ordering and replay claims above.
 
@@ -471,6 +497,8 @@ How to read it: the User service is the only writer to this topic (single-owner 
 
 ## Key terms
 
+<span id="W9-key-terms"></span>
+
 | Term | Definition | Unit |
 |---|---|---|
 | Event | A recording of something that happened; data + async communication means | [W9.1](#W9-c1) |
@@ -508,13 +536,13 @@ How to read it: the User service is the only writer to this topic (single-owner 
 | Event keys and payloads | L9 slides 10–11 | — | Quiz 4 Q3, Q9 |
 | Fire-and-forget | L9 slides 13–18 | — | Quiz 4 Q4, Q10; W10 (sync vs async) |
 | EDA, broker, pub/sub | L9 slides 20–27 | — | W8.2 (database-per-service on slide 22); se-book event-driven page |
-| Event-driven microservices, event store | L9 slides 29–43 | Tutorial 6 Q2 (bounded contexts → services) | Quiz 4 Q8, Q9; W10 (topic vs queue) |
+| Event-driven microservices, event broker as a store | L9 slides 29–43 | Tutorial 6 Q2 (bounded contexts → services) | Quiz 4 Q8, Q9; W10 (topic vs queue) |
 
 ## Further reading
 
 * Martin Fowler, [What do you mean by Event-Driven?](https://martinfowler.com/articles/201701-event-driven.html) — the source of the four views (L9 slide 5).
 * Microsoft Learn, [Implementing event-based communication between microservices](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/integration-event-based-microservice-communications) — source of the broker slide (L9 slide 22).
-* Adam Bellemare, *Designing Event-Driven Systems* — source of the unkeyed/entity/keyed event types (L9 slide 10).
+* Unkeyed / entity / keyed event classification (L9 slide 10). The deck gives no external attribution for the taxonomy.
 * The se-book's [event-driven architecture page](https://se-edu.github.io/se-book/architecture/architecturalStyles/eventDriven/) — coupling vs traceability framing.
 
 ## Summary
@@ -526,7 +554,7 @@ How to read it: the User service is the only writer to this topic (single-owner 
 * **Event-driven architecture is producers, a broker, and consumers** wired by pub/sub, trading bounded contexts (nice-to-have) for asynchronous speed, in contrast to microservices' request processing with foundational ownership.
 * **Event-driven microservices are the principled hybrid** — one owner per stream, immutable ordered partitioned logs with offsets and replay — buying performance, scalability, evolvability, and fault tolerance at the price of complexity and test effort.
 
-Key terms: see the [Key terms table](#key-terms) above, each linked to its unit.
+Key terms: see the [Key terms table](#W9-key-terms) above, each linked to its unit.
 
 %%Next: Week 10 — Asynchronous communication. Events become one half of a bigger question — events vs messages by intent, one receiver vs many, and whether the communication persists when nobody is listening.%%
 

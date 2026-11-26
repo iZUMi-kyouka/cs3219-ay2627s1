@@ -20,13 +20,15 @@
 <span id="def-message">
 
 **Message** — a construct carrying a *request to be executed* by another service: a command (perform some action) or a query (get some data), sent point-to-point to exactly one receiver. Intent — not wire format — is what distinguishes a message from an event.
+
+**Scope.** This is the narrow sense used for W10.2's event-vs-message contrast: a message carries a *request*. Week 11's *message construction* uses the word for the envelope itself and classifies its payload as a command, a document, or an event (W11.2) — so a document message or an event message is a "message" in that broader sense even though it carries no request. Read "message" as "request" only where it is contrasted with "event".
 %%(Source: L10 slides 12–13.)%%
 
 </span>
 
 <span id="def-topic">
 
-**Topic** — a broker channel that enables one-to-many communication, reaching multiple subscribers simultaneously. Within a single partition, processing order is maintained through a unique offset per event; with multiple partitions, receive order may differ from send order.
+**Topic** — a broker channel that enables one-to-many communication, reaching multiple subscribers simultaneously. Within a single partition, processing order is maintained through a unique offset per event — an offset is a per-partition sequence number assigned to each event as it is appended, so a partition is read strictly in offset order; with multiple partitions, receive order may differ from send order.
 %%(Source: L10 slide 14.)%%
 
 </span>
@@ -77,6 +79,13 @@
 
 **Exchange** (AMQP/RabbitMQ) — the routing step of the AMQP model: it receives published messages and routes copies into the queues bound to it, matching message attributes (e.g., the routing key) against each queue's binding. Exchange types: **direct** (exact key match), **fanout** (all bound queues), **topic** (wildcard match, e.g. `us.#` matches `us.stocks`), **header** (route on message headers).
 %%(Source: L10 slides 26, 28–29.)%%
+
+</span>
+
+<span id="def-rabbitmq">
+
+**RabbitMQ** — a message broker and the reference implementation of the AMQP model: producers publish messages to exchanges, which route copies into queues according to bindings, and consumers receive or fetch messages from those queues. Exchange types: direct, fanout, topic, header.
+%%(Source: L10 slides 28–29.)%%
 
 </span>
 

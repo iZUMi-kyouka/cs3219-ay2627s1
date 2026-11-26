@@ -17,7 +17,13 @@
 
 ### Lecture
 
-**The lecture opens by finishing last week's DDD story: the problem space is named first, the solution space second.** A *domain* is the problem space a business occupies (for FoC, peer-to-peer campus errands); *subdomains* are its responsibility-focused components (errand fulfillment, closed credit economy, campus vendors, identity); *bounded contexts* are the solution-space boundaries you design for them — with a ubiquitous language per context, so *Student* can mean "account holder" in Identity and "requestor or courier" in Order. Slides 2–3 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c1).
+**The lecture opens by finishing last week's DDD story: the problem space is named first, the solution space second.**
+
+- A *domain* is the problem space a business occupies (for FoC, peer-to-peer campus errands)
+- *Subdomains* are its responsibility-focused components: errand fulfillment, the closed credit economy, campus vendors, and identity
+- *Bounded contexts* are the solution-space boundaries you design for them — with a ubiquitous language per context, so *Student* can mean "account holder" in Identity and "requestor or courier" in Order
+
+Slides 2–3 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c1).
 
 **Event storming is the lightweight practice that turns that vocabulary into microservice candidates.** Identify domain events (`ErrandPosted`, `CreditReserved`, `ErrandCompleted`), the commands that cause them (`PostErrand`, `SettleCredits`), the aggregates commands act on (`Errand`, `Wallet`), and the policies that react ("when `ErrandCompleted` then `SettleCredits`"). Slides 4 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c1).
 
@@ -29,7 +35,14 @@
 
 **CQRS separates the write path from the read path, each with its own model.** Commands change state and return nothing; queries return data and change nothing. One write model can feed many materialized views (e.g., via Kafka + KSQL), each scaled and stored independently — and, as the next lecture clarifies, CQRS doesn't *always* need events or event sourcing; they are just mostly used together. Slides 22–28 → [W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3).
 
-**The closing set wires services together.** Three interprocess styles (request/sync response, notification, request/async response — TripManagement/PassengerManagement/Dispatcher examples); the API gateway as the single, client-tailored entry point; orchestration (central brain) vs choreography (each part works out its own details); and service discovery — client-side or server-side — against a service registry with self- or third-party registration. Slides 30–37 → [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4).
+**The closing set wires services together.**
+
+* Three interprocess styles — request/sync response, notification, request/async response (the TripManagement / PassengerManagement / Dispatcher examples).
+* The API gateway as the single, client-tailored entry point.
+* Orchestration (central brain) vs choreography (each part works out its own details).
+* Service discovery — client-side or server-side — against a service registry with self- or third-party registration.
+
+Slides 30–37 → [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4).
 
 %%The deck ends by listing what it deliberately left out: backend-for-frontend, circuit breaker, retry, timeout, service mesh, observability (slide 39) — know the names, not the details.%%
 
@@ -52,7 +65,7 @@
 
 **Q2 — Sudoku as MVC.** (Rules as per sudokuonline.io; pre-loaded games plus player-built games that can be saved and reloaded.)
 **a.** What constitutes the *Model*?
-<panel type="seamless" minimized header="%%Answer%%">The Model manages the data, database interactions, and business rules: the core Sudoku grid (blocks/nonets, cells, rows, columns), grid logic (rules, validation, completion checking, optional hint generation), user-created puzzles, saved games — plus other data such as player data and statistics.</panel>
+<panel type="seamless" minimized header="%%Answer%%">The Model manages the data, database interactions, and business rules: the core Sudoku grid (blocks/nonets — "nonet" is another name for a 3×3 block, cells, rows, columns), grid logic (rules, validation, completion checking, optional hint generation), user-created puzzles, saved games — plus other data such as player data and statistics.</panel>
 **b.** What actions does the *Controller* provide?
 <panel type="seamless" minimized header="%%Answer%%">The Controller is the middleman: it receives user input (note-taking, selecting a cell), updates the Model, and chooses the view — input handling plus game state management (creating, pausing, saving, loading, playing, resetting, finishing a game).</panel>
 **c.** What *views* can the application provide?
@@ -61,6 +74,8 @@
 **Q3 — REST for a library management system.** Resources: Books; Book Status (borrowed/not); Book Author; Users; Books Borrowed.
 
 **a.** What resource *types* (object types) do these fall under?
+
+%%Resource types (the taxonomy the tutorial's solution uses): a **document** is one resource's full state at a single URI; a **collection** is a server-managed directory of documents (its items are sometimes called **singletons** — one item addressed inside the collection); a **store** is a repository where *clients* create and manage their own resources under chosen ids.%%
 <panel type="seamless" minimized header="%%Answer%%">Books — a **collection** (a single book by id is a **document**/singleton). Book Status — a **document** (an attribute of each book). Book Author — a **document** (likewise an attribute). Users — a **collection** (a single user is a document). Books Borrowed — depends on management: a **collection** if the server manages borrowing records, or a **store** if clients manage their own records (less ideal).</panel>
 
 **b.** Model URIs for these resources.

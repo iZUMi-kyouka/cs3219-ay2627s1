@@ -2,7 +2,10 @@
 
 **Organising question:** once requirements say *what* and *how well*, how does architecture decide the system's overall structure — and how do you start specifying it for your own project?
 
-Two decks. The architecture deck covers: the architecture definition (Bass/Clements/Kazman) and its building blocks (components, connectors, configuration); control vs data flow; call-and-return vs messages and events; decomposition, horizontal vs vertical slicing; modularity, coupling and cohesion; and the categorization of architectural styles (layered, modular monolith, event-driven, microservices). The product-backlog deck presents fully-worked example requirements for the errand/pickup platform, organized by service — the running example for Weeks 3–4 and Tutorial 2.
+Two decks:
+
+- **The architecture deck** covers: the architecture definition (Bass/Clements/Kazman) and its building blocks (components, connectors, configuration); control vs data flow; call-and-return vs messages and events; decomposition, horizontal vs vertical slicing; modularity, coupling and cohesion; and the categorization of architectural styles (layered, modular monolith, event-driven, microservices).
+- **The product-backlog deck** presents fully-worked example requirements for the errand/pickup platform, organized by service — the running example for Weeks 3–4 and Tutorial 2.
 
 </span>
 
@@ -28,7 +31,11 @@ Two decks. The architecture deck covers: the architecture definition (Bass/Cleme
 
 **{{ term("software architecture", "the structure(s) of a system: components, their externally visible properties, and their relationships — the overall organization, a high-level design") }} is defined by Bass, Clements & Kazman: structure(s) = components + externally visible properties + relationships.** The deck's shorthand: externally visible properties ≡ functionalities + NFR — the overall organization, a high-level design (slide 4) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
 
-**The building blocks are component, connector, and configuration.** Components model application-specific responsibilities; connectors model interactions for transfer of control and/or data; configuration is the topology (slide 6) → [W4.2]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c2).
+**The building blocks are component, connector, and configuration.** (slide 6) → [W4.2]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c2):
+
+- **Components** model application-specific responsibilities.
+- **Connectors** model interactions for transfer of control and/or data.
+- **Configuration** is the topology.
 
 **Architectural design decisions are a question list.** Decomposition, templates, styles, the component organization that best delivers the NFR, and the deployment shape (slide 7) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
 
@@ -38,11 +45,11 @@ Two decks. The architecture deck covers: the architecture definition (Bass/Cleme
 
 **One arrow, two meanings: control flow and data flow.** Control flow reasons about computation order — how the focus of control moves; data flow reasons about data availability, transformation, and latency — and as data moves, control is activated (slide 10) → [W4.3]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c3).
 
-**Call-and-return moves control out and back;** hierarchical (master control) or non-hierarchical (objects via an ADT manager) — with the pointed question: can you trace an NFR to code? (slide 11) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
+**Call-and-return moves control out and back;** hierarchical (master control) or non-hierarchical (objects via an {{ term("ADT", "abstract data type: a data type defined by the operations it supports, not by its internal representation") }} manager) — with the pointed question: can you trace an NFR to code? (slide 11) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
 
 **Messages go to a specific address; events are emitted for anyone listening.** Messages: unique addresses, recipients await and react. Events: emitted on state change, immutable, ordered, sent to publishing infrastructure (slide 12) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
 
-**The Grab-like taxi-booking example maps operations to events/messages — quality attribute satisfied: reliability** (slide 13) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
+**The Grab-like taxi-booking exercise maps operations to events/messages — quality attribute satisfied: reliability** (slide 13; the slide provides the instruction and the tag — the mapping is the exercise) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
 
 **Decompose with guidelines: divide and conquer, high abstraction, more cohesion, less coupling, reuse, flexibility** (slide 14) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
@@ -58,7 +65,12 @@ Two decks. The architecture deck covers: the architecture definition (Bass/Cleme
 
 <panel type="seamless" minimized header=":glyphicon-facetime-video: **Deck 2 — Alternative Examples for Product Backlog** %%*(all slides — the errand platform)*%%">
 
-**This deck is the course's fully-worked example requirements for the errand/pickup platform, organized by service.** User service: trusted users perform important actions (verify before editing a pickup place, withdrawing an errand, or confirming delivery; the edge proxy decodes JWTs on every private call), and account safety (disable a profile after 3 failed password or OTP attempts; re-enable via university-email verification link; collect only useful data). Supplier service: display every usable vendor and handover point when a requester starts an errand, with label and type; secure supplier administration (proper permissions, no confidential details on failed requests, extra protection on staff-only URLs). Credit service: wallet rewards (bonus credits after email verification, never double-loaded; reward changes while an errand waits; charge the difference; transfer on delivery confirmation; refund on removal, abandonment, or a missed pickup) and exactly-once wallet events (replay tags in Kafka headers, Redis-checked before wallet operations). Order service: replacement couriers (one outstanding errand per student; races rejected; a 10-minute freeze on the replacement screen with a stand-by queue) plus dependability and capacity NFRs (nothing inconsistent on restarts, late messages, or retries; the whole campus supported — three Docker containers per microservice behind Nginx with Kubernetes auto-scaling).
+**This deck is the course's fully-worked example requirements for the errand/pickup platform, organized by service.**
+
+- **User service:** trusted users perform important actions (verify before editing a pickup place, withdrawing an errand, or confirming delivery; the edge proxy decodes JWTs on every private call), and account safety (disable a profile after 3 failed password or OTP attempts; re-enable via university-email verification link; collect only useful data).
+- **Supplier service:** display every usable vendor and handover point when a requester starts an errand, with label and type; secure supplier administration (proper permissions, no confidential details on failed requests, extra protection on staff-only URLs).
+- **Credit service:** wallet rewards (bonus credits after email verification, never double-loaded; reward changes while an errand waits; charge the difference; transfer on delivery confirmation; refund on removal, abandonment, or a missed pickup) and exactly-once wallet events (replay tags in Kafka headers, Redis-checked before wallet operations).
+- **Order service:** replacement couriers (one outstanding errand per student; races rejected; a 10-minute freeze on the replacement screen with a stand-by queue) plus dependability and capacity NFRs (nothing inconsistent on restarts, late messages, or retries; the whole campus supported — three Docker containers per microservice behind {{ term("Nginx", "an open-source web server also used as a reverse proxy and load balancer") }} with Kubernetes auto-scaling).
 
 %%This deck grounds Week 3's running example and Tutorial 2's milestone work; every quoted requirement in the [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c3) and [Week 4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1) chapters cites it by service.%%
 
@@ -91,9 +103,10 @@ Tutorial 2 works your project Milestone D1 on the errand platform: draft functio
 <box type="tip" seamless>
 
 **What a strong answer looks like** (from the tutorial's appendix and the L3 examples): rows like `F1: Support user account creation` → `F1.1: New users can create an account using their username, email and password` → `F1.1.1: The system should ensure that the account being created has a unique username and email to prevent duplicates` (High, sprint 1); supplier rows like `F2.1: The system should display the suppliers with name and category visible when the user is logged in` — with the product-centric wording preferred over the usage-centric "Users can view supplier name and category when logged in"; NFRs like `N1.1: Support an initial capacity of up to 30000 registered users` and `N2.1.1: Response time for all page loads should take no more than 2 seconds` — measurable, so verifiable. The errand-platform deck shows the target end-state for two refinements down (e.g., wallet events with replay tags for exactly-once effects).
+
 </box>
 
-**Question 1, Task 1.2 — Plan it.** Develop a Gantt chart (or equivalent) for the project's aspects (must-haves, nice-to-haves). It need not be refined, but it must have concrete dates/weeks of the semester — not "Sprint 1, Sprint 2". During the tutorial: discuss the plan and the risks to achieving it; collect mitigation ideas.
+**Question 1, Task 1.2 — Plan it.** Develop a Gantt chart — a timeline bar chart with one row per activity and bars spanning its planned start and end dates — (or an equivalent) for the project's aspects (must-haves, nice-to-haves). It need not be refined, but it must have concrete dates/weeks of the semester — not "Sprint 1, Sprint 2". During the tutorial: discuss the plan and the risks to achieving it; collect mitigation ideas.
 
 **Question 2 [Optional] — ClassPulse, a fresh backlog.** A web platform to help instructors visualize class participation and engagement in real time (attendance, quiz submissions, chat and assignment interactions; trend identification; shareable visualizations).
 
@@ -103,6 +116,7 @@ Tutorial 2 works your project Milestone D1 on the errand platform: draft functio
 <box type="tip" seamless>
 
 **Connecting Question 2 to the lectures:** Task 2.1 rehearses W3.3 (backlog, usage- vs product-centric wording, priorities); Task 2.2 rehearses W3.7's AI-in-requirements-engineering uses (persona specification, contextual questions) with W3.7's caveat attached: don't simply trust the black box — outputs are non-deterministic and unexplainable.
+
 </box>
 
 </span>

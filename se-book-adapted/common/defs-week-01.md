@@ -37,7 +37,7 @@ The **software crisis** is the 1960s mismatch between what software projects del
 
 <span id="def-software-crisis-2">
 
-**Software Crisis 2.0** (1970–now) is the second software crisis, driven by abundance rather than scarcity: push factors (advances in hardware, reductions in hardware costs, increases in processing power, device proliferation, an effectively infinite amount of data available) and pull factors (digital natives consuming technology) create lots of data and lots of computation. Named responses include parallel processing, cloud computing, data analytics, security, IoT, edge computing, DevOps, CI/CD, and microservices.
+**Software Crisis 2.0** (1970–now) is the second software crisis, driven by abundance rather than scarcity: push factors (advances in hardware, reductions in hardware costs, increases in processing power, device proliferation, an effectively infinite amount of data available) and pull factors (digital natives — people who grew up with digital technology — consuming it) create lots of data and lots of computation. Named responses include parallel processing, cloud computing, data analytics, security, IoT (Internet of Things: everyday devices connected to the internet), edge computing (processing data on or near the device that produces it), DevOps, CI/CD, and microservices.
 
 <sub>-- L1 slide 14, after Fitzgerald, Software Crisis 2.0 (IEEE Computer, 2013)</sub>
 
@@ -147,6 +147,14 @@ A **virtual machine (VM)** is a full software computer — its own guest OS — 
 
 </span>
 
+<span id="def-hypervisor">
+
+A **hypervisor** is the software layer that creates, runs, and isolates virtual machines on one physical host — each VM gets a full guest OS, and the hypervisor multiplexes the underlying hardware among them.
+
+<sub>-- L1 slide 32 (the layer between guest OSes and the host OS in the stack diagram)</sub>
+
+</span>
+
 <span id="def-serverless">
 
 **Serverless** is a cloud-native development model in which there are still servers — developers and enterprises just don't manage them: developers package the code in containers, the platform deploys the application in those containers and scales it automatically with demand, and economics are metered on demand (no cost when idle), e.g., AWS Lambda.
@@ -205,7 +213,7 @@ A **deployment pipeline** is an automated implementation of the application's bu
 
 <span id="def-canary-deployment">
 
-**Canary deployment** reduces the risk of deployment by incrementally deploying the new version, starting with a small subset of users (a.k.a. incremental rollout) — a variant of blue-green deployment that can double as A/B testing.
+**Canary deployment** reduces the risk of deployment by incrementally deploying the new version, starting with a small subset of users (a.k.a. incremental rollout) — a variant of blue-green deployment that can double as A/B testing (showing different versions to different user groups and comparing the results).
 
 <sub>-- L1 slide 45</sub>
 

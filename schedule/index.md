@@ -25,12 +25,13 @@ Chapters follow the same order as the [Schedule](week1/index.html) — the [Text
 
 </div>
 
+{% if n == 6 %}<div class="indented-level2"><md>%%{{ recess.label }} — {{ recess.topic }} (no class)%%</md></div>
 <hr />
+{% else %}<hr />
 
+{% endif %}
 {% endfor %}
 
-<div class="indented-level2"><md>%%{{ recess.label }} — {{ recess.topic }} (no class)%%</md></div>
-<hr />
 <div class="indented-level2"><md>%%{{ exam.label }} — {{ exam.topic }}%%</md></div>
 
 </div>

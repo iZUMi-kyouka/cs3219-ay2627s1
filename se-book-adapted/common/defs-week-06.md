@@ -101,7 +101,7 @@ A **pipe** is the connector of the pipe-and-filter style: it transmits the outpu
 
 <span id="def-web-mvc">
 
-**Web MVC** applies MVC to web applications: the server holds the model; the controller handles the user's HTTP request, selects the model, and prepares the view; the view renders the HTTP response (e.g., HTML templates with server-side scripts); the model is business logic + persistence (directly or via an ORM) and must manage concurrent modifications.
+**Web MVC** applies MVC to web applications: the server holds the model; the controller handles the user's HTTP request, selects the model, and prepares the view; the view renders the HTTP response (e.g., HTML templates with server-side scripts); the model is business logic + persistence (directly or via an ORM — an object-relational mapper that maps between code objects and database rows) and must manage concurrent modifications.
 
 %%Source: L6-Architecture slide 20.%%
 

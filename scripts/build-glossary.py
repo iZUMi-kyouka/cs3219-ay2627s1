@@ -75,9 +75,11 @@ def parse_spans(path):
         if not m:
             m = re.search(r"%%\s*Source:\s*(.*?)%%", body, re.S)
         if not m:
+            m = re.search(r"%%\(\s*Source:\s*(.*?)[.)]?%%", body, re.S)
+        if not m:
             m = re.search(r"\(Sources?:\s*(.*?)\)\s*$", body, re.S)
         if m:
-            src = re.sub(r"\s+", " ", m.group(1)).strip(" .%()")
+            src = re.sub(r"\s+", " ", m.group(1)).strip(" .%")
             body = body[: m.start()]
         body = re.sub(r"\s+", " ", body).strip()
         # term = first bold phrase in the body (strip leading articles);

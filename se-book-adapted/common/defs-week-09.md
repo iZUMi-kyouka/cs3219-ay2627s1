@@ -68,7 +68,7 @@
 
 <span id="def-event-broker">
 
-**Event broker** (aka event bus) — an intermediary that receives events from producers, holds them (in queues or partitions), and provides them to consumers that subscribe to topics of interest. It facilitates loose coupling: producers and consumers need not know each other's identity or location.
+**Event broker** (aka event bus) — an intermediary that receives events from producers, holds them (in queues, or in partitions — the ordered substreams defined under def-partition below), and provides them to consumers that subscribe to topics of interest. It facilitates loose coupling: producers and consumers need not know each other's identity or location.
 %%(Source: L9 slides 21–23.)%%
 
 </span>
@@ -96,7 +96,7 @@
 
 <span id="def-event-sourcing">
 
-**Event sourcing** — a storage approach in which events are the source of truth: state is never stored directly, but reconstructed by replaying the stored events in order.
+**Event sourcing** — a storage approach in which events are the source of truth: the current state is not stored as a mutable value but derived by replaying the stored events in order — from the beginning, or from a snapshot to save time (W8.3).
 %%(Source: L9 slide 5; L8 slides 17–19.)%%
 
 </span>
@@ -110,8 +110,9 @@
 
 <span id="def-temporal-decoupling">
 
-**Temporal coupling** — the dependency between components that must be up at the same time for communication to work. Fire-and-forget communication removes it: producer and consumer do not need to be available simultaneously — the removal is often called temporal decoupling.
-%%(Source: L9 slide 17; Quiz 4 Q4.)%%
+**Temporal decoupling** is the removal of *temporal coupling* — the dependency between components that must be up at the same time for communication to work. Fire-and-forget communication removes it: producer and consumer do not need to be available simultaneously.
+
+%%(Source: L9 slide 17; Quiz 4 Q4. Not the Week 4 *temporal coupling* code smell — actions bundled only because they happen to occur at the same time (L4 slide 18). The shared name is unfortunate; when the subject is communication, this unit's sense applies.)%%
 
 </span>
 
@@ -124,7 +125,7 @@
 
 <span id="def-event-key">
 
-**Event key** — the key half of a key–value event: it identifies and routes the event, supports aggregation on the unique ID, and decides partition placement (all events produced with a given key are written to the same partition). By key, events come in three types: **unkeyed** (no key — a singular statement of fact), **entity** (keyed on the entity's unique ID — a continual history of that entity's state), and **keyed** (a key that does not represent an entity, used to guarantee data locality within a partition).
+**Event key** — the key half of a key–value event: it identifies and routes the event, supports aggregation on the unique ID (e.g., counting or grouping all events that share an ID), and decides partition placement (all events produced with a given key are written to the same partition). By key, events come in three types: **unkeyed** (no key — a singular statement of fact), **entity** (keyed on the entity's unique ID — a continual history of that entity's state), and **keyed** (a key that does not represent an entity, used to guarantee data locality within a partition — data locality: all events sharing the key land in one partition, so a consumer processing that key's events finds them together, in order).
 %%(Source: L9 slide 10; L10 slide 23; Quiz 4 Q9.)%%
 
 </span>
@@ -152,21 +153,21 @@
 
 <span id="def-consumer-group">
 
-**Consumer group** — a set of load-balanced consumers that share the partitions of a stream between them, so the group's consumption capacity scales with its members; rate limits are applied to producers, consumers, and groups.
+**Consumer group** — a set of load-balanced consumers that share the partitions of a stream between them, so the group's consumption capacity scales with its members; rate limits — the broker's caps on how many events each producer or consumer may write or read per time window — are applied to producers, consumers, and groups.
 %%(Source: L9 slides 39–40.)%%
 
 </span>
 
 <span id="def-infinite-retention">
 
-**Infinite retention** — the broker property that an event stream retains its events for an infinite period of time, if so configured; it is foundational for maintaining state in an event stream.
+**Infinite retention** — the broker property that an event stream retains its events for an infinite period of time, if so configured; it is foundational for maintaining state in an event stream — because events are never discarded, the stream can act as the system of record: current state can always be rebuilt from the retained events.
 %%(Source: L9 slide 38; Quiz 4 Q4 (a seven-day retention window).)%%
 
 </span>
 
 <span id="def-replayability">
 
-**Replayability** — the broker property that any consumer can read whatever data it requires from the beginning of the stream; it provides the basis for the single source of truth and for communicating state between microservices.
+**Replayability** — the broker property that any consumer can read whatever data it requires from the beginning of the stream; it provides the basis for the single source of truth (the event log, not any service's private copy, is the authoritative record) and for communicating state between microservices.
 %%(Source: L9 slide 38.)%%
 
 </span>

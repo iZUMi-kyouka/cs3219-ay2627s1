@@ -42,7 +42,16 @@
 
 <box type="tip" seamless>
 
-**Deck structure at a glance:** slides 3 recap from L3; 4–9 what scalability is and why early planning matters; 10–15 scale up/scale out and the stateless design; 16–20 caching and database scaling; 21–23 multi-tier, responsiveness, swim lanes; 24 the scale cube. The exam-focused slide list for this deck is short — slides 3–24 (L13 study guide).
+**Deck structure at a glance:**
+
+- Slide 3: recap from L3
+- 4–9: what scalability is and why early planning matters
+- 10–15: scale up/scale out and the stateless design
+- 16–20: caching and database scaling
+- 21–23: multi-tier, responsiveness, swim lanes
+- 24: the scale cube
+
+The exam-focused slide list for this deck is short — slides 3–24 (L13 study guide).
 </box>
 
 </span>
@@ -75,7 +84,11 @@ Work the tasks in order — reveal each answer only after attempting it. Concept
 | B | Synchronous — the client waits for the response | Transient — the request is not stored for future delivery | Single receiver — the authentication service |
 | C | Asynchronous — the publisher does not wait for subscribers | Transient — updates are not stored for later delivery | Multiple receivers — broadcast to many subscribers |
 
-**If a receiver is unavailable:** in A, the entry remains stored and reaches the replica when it reconnects (if too many replicas are down, the leader stays blocked and the write eventually fails); in B, the request fails or times out and the client must retry; in C, unavailable subscribers simply miss the update — it is not delivered retrospectively.
+**If a receiver is unavailable:**
+
+- **A** — the entry remains stored and reaches the replica when it reconnects (if too many replicas are down, the leader stays blocked and the write eventually fails).
+- **B** — the request fails or times out and the client must retry.
+- **C** — unavailable subscribers simply miss the update, so it is not delivered retrospectively.
 
 **Anti-pattern:** A's blocking synchronous multicast — the sender's progress is coupled to multiple receivers, giving higher latency and lower throughput. (In a distributed database this trade-off may be justified by consistency requirements.)
 

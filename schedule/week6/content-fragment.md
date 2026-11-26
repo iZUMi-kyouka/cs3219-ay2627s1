@@ -36,7 +36,11 @@
 
 **The modular monolith re-divides a single deployable by business domain.** Each domain bundles its own UI, logic, and data; {{ term("coupling", "how strongly one part depends on another — tight coupling means changes in one force changes in the other") }} drops when modules expose explicit, narrow APIs and hide their implementations. Buys: domain-aligned teams, maintainability, testability, performance. Costs: reuse across modules, one-deployment scaling, fragile boundaries. (Slides 13–15.) → [W6.4]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c4)
 
-**MVC separates the three concerns of an interactive app: view, controller, model.** Buys: separation of concerns, extensibility (new view/controller pairs), testability. Web MVC maps them onto the server (controller handles the HTTP request and prepares the view; view renders the response; model is business logic + persistence), with page/front controllers for routing. Costs: multiple hops per view update and the fat controller. (Slides 16–22.) → [W6.5]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c5)
+**MVC separates the three concerns of an interactive app: view, controller, model.** (Slides 16–22.) → [W6.5]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c5)
+
+- **Buys:** separation of concerns, extensibility (new view/controller pairs), testability.
+- **Web MVC** maps them onto the server — the controller handles the HTTP request and prepares the view, the view renders the response, and the model is business logic + persistence — with page/front controllers for routing.
+- **Costs:** multiple hops per view update and the fat controller.
 
 **The SPA moves a program into the browser.** A JavaScript app downloaded once runs continuously, fetching data via {{ term("Ajax", "a browser technique where a script sends HTTP requests and handles responses in the background — no page refresh") }} (JSON instead of full HTML pages): fluid experience and less server rendering, but harder development, a JavaScript requirement, XSS exposure, and server-side re-enforcement of every authorization rule. (Slides 23–25.) → [W6.6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c6)
 
@@ -50,7 +54,14 @@
 
 **Six constraints, each with named reasons: client-server, stateless, cacheable, layered system, uniform interface, code-on-demand (optional).** Statelessness — every request fully self-contained, no server-side session — buys scalability, reliability, and monitoring. Cacheability lets clients reuse declared-cacheable responses. Layered systems let intermediaries (load balancers, caches) sit between client and server. (Slides 6–10, 15.) → [W6.8]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c8)
 
-**The {{ term("uniform interface", "one standard way of interacting with a server: HTTP verbs, status codes, representations in the body") }} rests on resources and representations.** Anything can be a resource, identified by a stable URI; clients operate on representations (data + metadata); content negotiation (Content-Type/Accept) reconciles one interface with many media types; self-describing messages and hypermedia links let representations expose state transitions (the paid order advertising `cancel` and `refund` links). (Slides 11–14.) → [W6.9]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c9)
+**The {{ term("uniform interface", "one standard way of interacting with a server: HTTP verbs, status codes, representations in the body") }} rests on resources and representations.**
+
+- Anything can be a resource, identified by a stable URI
+- Clients operate on representations (data + metadata)
+- Content negotiation (Content-Type/Accept) reconciles one interface with many media types
+- Self-describing messages and hypermedia links let representations expose state transitions (the paid order advertising `cancel` and `refund` links)
+
+(Slides 11–14.) → [W6.9]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c9)
 
 **REST's costs mirror its strengths.** Weak contract enforcement (no built-in typing), repetitive data from statelessness, and efficiency lost to standardized URIs; the closing table maps workload shapes — high-frequency calls, event-driven workflows, streaming, fan-out — to better alternatives (gRPC, event-driven architecture, WebSockets, pub-sub, queues). (Slides 16, 18.) → [W6.10]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c10)
 
@@ -120,15 +131,21 @@ Before the 1960s, global cargo moved as barrels, crates, and sacks — each need
 
 <panel type="seamless" minimized header="%%Model answer%%">
 
-**(c)** Many tech stacks ↔ many kinds of goods; different OSes/hardware environments ↔ different transport modes; both settings punish non-standard packaging — an app that works on one machine may fail on another due to missing or conflicting dependencies. **(d)** A **container image** is the read-only blueprint (file-system layout, commands, dependencies, configs) used to create containers and ensure consistent behavior across systems; a **container** is a running instance of that image, isolated from host and other processes, communicating with the host OS kernel via the engine; a **container engine** provides the runtime environment, the interface between the OS and the containers. **(e)** **Docker** is a container engine/platform for building, running, and managing containers (its daemon gives clients a client-server way to manage Docker objects). (Source: Tutorial 4 model solution.)
+**(c)** Many tech stacks ↔ many kinds of goods; different OSes/hardware environments ↔ different transport modes; both settings punish non-standard packaging — an app that works on one machine may fail on another due to missing or conflicting dependencies. **(d)**
+
+- A **container image** is the read-only blueprint (file-system layout, commands, dependencies, configs) used to create containers and ensure consistent behavior across systems
+- A **container** is a running instance of that image, isolated from host and other processes, communicating with the host OS kernel via the engine
+- A **container engine** provides the runtime environment, the interface between the OS and the containers
+
+**(e)** **Docker** is a container engine/platform for building, running, and managing containers (its daemon — a background service that actually builds and runs containers on the host — gives clients a client-server way to manage Docker objects). (Source: Tutorial 4 model solution.)
 </panel>
 
 **Task 2(f).** Describe, step by step, how an image, a container, and a container engine deploy a web application reliably across different machines.
 
 <panel type="seamless" minimized header="%%Model answer%%">
 
-1. Create a container image packaging the application, its runtime, and all required dependencies (e.g., from a Dockerfile).
-2. Transfer the image to the target machine (remote server or cloud instance), e.g., through a container image registry.
+1. Create a container image packaging the application, its runtime, and all required dependencies (e.g., from a Dockerfile — the text recipe listing the image's base system, files, and start command).
+2. Transfer the image to the target machine (remote server or cloud instance), e.g., through a container image registry (a service that stores images so machines can pull them on demand, like Docker Hub).
 3. Use a container engine (such as Docker) on the target machine to run the image.
 4. Start a container — a running instance of the image in an isolated, predictable environment.
 5. Manage and scale containers with the engine's tools (rapid startup, shutdown, replication as demand changes).

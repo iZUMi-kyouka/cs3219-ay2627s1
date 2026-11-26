@@ -1,13 +1,13 @@
 {% from "schedule/macros-fragment.md" import term, example with context %}
-<h2 id="title">Week 2 — Modern Software Engineering</h2>
+<h2>Week 2 — Modern Software Engineering</h2>
 
-<span id="prereqs">
+<span>
 
 This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-software-development-processes.html#W1-c1): software processes, CI/CD, and DevOps — AI-assisted automation plugs straight into that pipeline. No other background is needed.
 
 </span>
 
-<span id="outcomes">
+<span>
 
 * Can name the five ways AI improves software engineers' efficiency and place concrete tools on that spectrum
 * Can describe where AI contributes across the SDLC, from code generation to requirements engineering
@@ -16,7 +16,7 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -39,7 +39,7 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 <include src="../../se-book-adapted/common/defs-week-02.md#def-automation" trim />
 </box>
 
-**Pattern detection exploits structure that rules can express.** The task adheres to some rules, so AI sifts through a gigantic codebase to detect vulnerabilities — e.g., identifying query patterns (Source: L2 slide 3).
+**Pattern detection exploits structure that rules can express.** The task adheres to some rules, so AI sifts through a gigantic codebase to detect vulnerabilities — e.g., identifying query patterns: recurring, rule-like code structures; the unsafe `strcpy` buffer copy the deck dissects on slide 4 is one such pattern (Source: L2 slide 3).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-pattern-detection" trim />
@@ -57,7 +57,7 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 <include src="../../se-book-adapted/common/defs-week-02.md#def-delegation-ai" trim />
 </box>
 
-**Orchestration coordinates several specialized agents in several roles.** AI handles task decomposition, planning, and execution; a human or an AI coordinates — e.g., CrewAI, LangGraph (Source: L2 slide 3).
+**Orchestration coordinates several specialized agents in several roles.** AI handles task decomposition, planning, and execution; a human or an AI coordinates — e.g., CrewAI, LangGraph (Source: L2 slide 3). Here an *agent* is an AI system that can plan and take actions toward a goal — running tools, editing files, calling other agents %%dimmed: Wikipedia, "Software agent"; the term recurs through W2.2's multi-agent sessions and W2.4's A2A protocol%%.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-orchestration-ai" trim />
@@ -98,6 +98,7 @@ Quiz 1 Q1 turns the difference into a distractor: estimating which component is 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** (From Quiz 1 Q1.) You are a security engineer reviewing an application of seven components. In one component you discover a vulnerability from the unsafe use of a third-party library; the same library is used by several other components, though the implementations may differ. Which AI/ML application is most appropriate for finding similar vulnerable usage in the other components?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Pattern detection to identify similar library-usage patterns across the components — the task adheres to rules (the repeating usage pattern), which is exactly pattern detection's fit. Predictive analytics — estimating a numeric likelihood (e.g., of a fault) from historical data — estimates likelihoods; it does not match usage patterns (Quiz 1 Q1, model answer; cf. L2 slide 3).
@@ -105,6 +106,7 @@ Pattern detection to identify similar library-usage patterns across the componen
 </panel>
 
 **Q2.** Where does the human review happen in delegation that does not happen in collaboration?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 In collaboration the human reviews each step as it happens (turn-by-turn); in delegation the human reviews only the final output after the AI has planned, executed, and iterated (Source: L2 slide 3).
@@ -117,22 +119,31 @@ In collaboration the human reviews each step as it happens (turn-by-turn); in de
 
 ### W2.2 AI in the SDLC: from code generation to requirements ★★
 
-**AI's contribution now spans every phase of the {{ term("SDLC", "software development life cycle — from conception through development, deployment, and operation to retirement (defined in Week 1)") }}, not just writing code.** The deck maps the real-world usage of LLMs in software engineering by phase — development, requirements engineering, quality assurance, maintenance, and management (Source: L2 slides 6–7).
+**AI's contribution now spans every phase of the {{ term("SDLC", "software development life cycle — from conception through development, deployment, and operation to retirement (defined in Week 1)") }}, not just writing code.** The deck maps the real-world usage of {{ term("LLMs", "large language models — AI models trained on vast text and code corpora to predict and generate text (ChatGPT, Copilot, and Claude are LLMs)") }} in software engineering by phase — development, requirements engineering, quality assurance, maintenance, and management (Source: L2 slides 6–7).
 
-**The integration changed shape quickly.** Circa 2024, each SDLC phase needed a separate agent, tool, or interaction; now a single multi-agent session can cover several phases in one continuous task (Source: L2 slide 6).
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-llm" trim />
+</box>
 
-**In development, the wins are code generation, completion, search, summarization, understanding, and translation.** Productivity gains claimed for assistants include autocompletion and boilerplate generation, generating and explaining code, configs and docs, code translation (e.g., legacy code to Python), detecting and fixing vulnerabilities, generating tests and improving coverage, and agentic coding that automatically fixes bugs (Source: L2 slides 5, 7).
+**The integration changed shape quickly.** Circa 2024, each SDLC phase needed a separate agent, tool, or interaction; now a single multi-agent session — W2.1's orchestration mode — can cover several phases in one continuous task (Source: L2 slide 6).
+
+**In development, the wins are code generation, completion, search, summarization, understanding, and translation.** Productivity gains claimed for assistants include autocompletion and boilerplate generation, generating and explaining code, configs and docs, code translation (e.g., legacy code to Python), detecting and fixing vulnerabilities, generating tests and improving coverage, and agentic coding — AI agents (W2.1) acting autonomously — that automatically fixes bugs (Source: L2 slides 5, 7).
 
 {% call example("L2 slide 4 — pattern detection that patches a real buffer overflow") %}
-GitHub's vulnerability-detection work observes that vulnerabilities are caused by single repeating patterns, and exploits ML plus expert knowledge to find them. The deck's example is a C function that copies input into a 16-byte buffer with `strcpy` — a classic overflow pattern. The mechanism (code snippet → probability of vulnerability → alert) flags it, and Copilot Autofix produces a patch that switches to `strncpy(buffer, input, sizeof(buffer) - 1)` and null-terminates the buffer. The mechanism components are worth remembering: encoded expert knowledge, large volumes of weak evidence, pattern detection, deductive and inductive reasoning, and higher-level features (Source: L2 slide 4).
+GitHub's vulnerability-detection work observes that vulnerabilities are caused by single repeating patterns, and exploits ML (machine learning) plus expert knowledge to find them. The deck's example is a C function that copies input into a 16-byte buffer with `strcpy` — a classic overflow pattern. The mechanism (code snippet → probability of vulnerability → alert) flags it, and Copilot Autofix (GitHub Copilot's automatic vulnerability-fixing feature) produces a patch that switches to `strncpy(buffer, input, sizeof(buffer) - 1)` and null-terminates the buffer.
+
+%%Why the original is unsafe: `strcpy` copies until the input's end marker without checking the 16-byte limit, so a longer input writes past the buffer's end — that is the overflow. The patch caps the copy at `sizeof(buffer) - 1`, and the explicit final-byte assignment (`buffer[15] = '\0'`) keeps the string validly terminated.%%
+
+The mechanism components are worth remembering: encoded expert knowledge, large volumes of weak evidence, pattern detection, deductive and inductive reasoning, and higher-level features (Source: L2 slide 4).
 %%Read the slide's nouns as one recipe (site reading of the GitHub post the slide cites): encoded expert knowledge = rules security experts write by hand; large volumes of weak evidence = huge numbers of low-confidence signals (code that merely looks possibly vulnerable) as training material; deductive and inductive reasoning = concluding from those rules and from the data; higher-level features = code characteristics aggregated above the raw text.%%
 {% endcall %}
 
-**Requirements engineering, QA, maintenance, and management each have their own AI uses.** Requirements: classification, analysis and evaluation, elicitation — e.g., LLMREI automates requirements-elicitation interviews with LLMs (connect this to Week 3's "AI in requirements engineering" material, which shows elicitation, refinement, tagging, and ambiguity-detection uses). Quality assurance: vulnerability detection and test generation. Maintenance: program repair, review, debugging. Management: effort estimation (Source: L2 slide 7; L3 slides 33–34).
+**Requirements engineering, QA, maintenance, and management each have their own AI uses.** Requirements: classification, analysis and evaluation, elicitation — e.g., LLMREI (Korn et al., 2025 — a research system, not a product) automates requirements-elicitation interviews with LLMs (connect this to Week 3's "AI in requirements engineering" material, which shows elicitation, refinement, tagging, and ambiguity-detection uses). Quality assurance: vulnerability detection and test generation. Maintenance: program repair, review, debugging. Management: effort estimation (Source: L2 slide 7; L3 slides 33–34).
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Map each use to its SDLC phase: (a) generating unit tests for a service; (b) classifying incoming feature requests; (c) automated program repair; (d) estimating effort for a release.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Quality assurance (test generation). (b) Requirements engineering (classification). (c) Software maintenance (program repair). (d) Software management (effort estimation) (Source: L2 slide 7).
@@ -145,11 +156,25 @@ GitHub's vulnerability-detection work observes that vulnerabilities are caused b
 
 ### W2.3 What the evidence and the risks say ★★
 
-**The empirical picture is mixed: real time savings on mundane work, real friction everywhere else.** The deck cites three sources — a systematic literature review of LLMs for software engineering (Hou et al. 2024), a study of generative-AI adoption (Russo 2024), and the DORA *State of AI-assisted Software Development* report (~4900 responses) (Source: L2 slides 7–9).
+**The empirical picture is mixed: real time savings on mundane work, real friction everywhere else.** The deck cites three sources — a systematic literature review of LLMs for software engineering (Hou et al. 2024), a study of generative-AI adoption (Russo 2024), and the DORA (DevOps Research and Assessment) *State of AI-assisted Software Development* report (~4900 responses) (Source: L2 slides 7–9).
 
-**Reported benefits concentrate on speed for well-understood work.** Reducing time on mundane tasks (automating simple tasks, boilerplate code); understanding, testing, and debugging code faster (code summaries, identifying problems, generating automated test scripts); and documentation help — automating and ensuring correctness of documentation (Source: L2 slide 8).
+**Reported benefits concentrate on speed for well-understood work.**
 
-**Reported limitations are the mirror image.** Limited applicability (niche tasks and internal codebases); questionable effectiveness (is the response accurate?); additional time required to ensure correctness (fixing minor errors, mandatory code review); a learning curve (easy to use, hard to master the prompts); and creating dependency and complacency (Source: L2 slide 8).
+- Reducing time on mundane tasks (automating simple tasks, boilerplate code)
+- Understanding, testing, and debugging code faster (code summaries, identifying problems, generating automated test scripts)
+- Documentation help — automating and ensuring correctness of documentation
+
+(Source: L2 slide 8)
+
+**Reported limitations are the mirror image.**
+
+- Limited applicability (niche tasks and internal codebases)
+- Questionable effectiveness (is the response accurate?)
+- Additional time required to ensure correctness (fixing minor errors, mandatory code review)
+- A learning curve (easy to use, hard to master the prompts)
+- Creating dependency and complacency
+
+(Source: L2 slide 8)
 
 **The deck names five risk classes — know them by name.** Garbage in, garbage out (output is only as good as your input; regurgitation of bad code, more applicable to niche use cases; correctness is not guaranteed, which reduces trust). Traceability of the source (not all code can be used as is — license terms, correctness — though some tools flag training data, e.g., Amazon CodeWhisperer). Data safety (confidential data may leak — e.g., Samsung bans ChatGPT). Susceptibility to vulnerabilities (bad actors can plant malicious code in the public domain used for training). Increasing technical debt (maintaining others' code is hard; maintaining automatically generated code is harder) (Source: L2 slide 10).
 
@@ -162,7 +187,7 @@ GitHub's vulnerability-detection work observes that vulnerabilities are caused b
 </box>
 
 {% call example("L2 slide 10 — the leak that got a company to ban a chatbot") %}
-The data-safety risk is not hypothetical: the deck cites Samsung banning ChatGPT after confidential data could be leaked through prompts. For this course's project team, the equivalent rule is simple — never paste unreleased code, credentials, or user data into a public AI tool (Source: L2 slide 10).
+The data-safety risk is not hypothetical: the deck cites Samsung banning ChatGPT after confidential data could be leaked through prompts. %%External detail beyond the slide (dimmed: 2023 press coverage, e.g., Reuters): Samsung engineers had pasted confidential source code and meeting notes into ChatGPT, and the company then banned generative-AI tools on company devices — exactly the leak path the slide warns about.%% For this course's project team, the equivalent rule is simple — never paste unreleased code, credentials, or user data into a public AI tool (Source: L2 slide 10).
 {% endcall %}
 
 **Vibe coding compresses the distance from idea to implementation — and that compression has a price.** Its benefits: compressed distance from idea to prototype, requirement to interface, prompt to implementation, and feedback to revised feature; hence rapid prototyping and {{ term("MVP", "minimum viable product — the smallest build that delivers enough value to test the idea with real users") }} development, lower barriers for non-specialists and domain experts, and faster exploration of alternative designs. Its costs: inconsistent architecture, reduced security, performance, and maintainability, and an increased review, verification, and rework burden (Source: L2 slide 11).
@@ -179,6 +204,7 @@ The data-safety risk is not hypothetical: the deck cites Samsung banning ChatGPT
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** (From Quiz 1 Q2.) Claude and other AI tools handle compilation, testing, debugging, reviewing, and merging code. What is the most serious long-term risk?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Developers lose the ability to detect design, architectural, and maintainability problems — the other options (less routine practice, longer tests, more precise prompts) are costs, not the systemic risk (Quiz 1 Q2, model answer).
@@ -186,6 +212,7 @@ Developers lose the ability to detect design, architectural, and maintainability
 </panel>
 
 **Q2.** Your teammate vibe-codes a working errand-platform prototype in two days and wants to ship it. Name one benefit this speed bought and two costs the team now owes.
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 Benefit: rapid prototyping / a testable MVP that pulls feedback forward (idea → prototype distance compressed). Costs: any two of inconsistent architecture, weakened security/performance/maintainability, and a larger review, verification, and rework burden (Source: L2 slide 11).
@@ -198,7 +225,15 @@ Benefit: rapid prototyping / a testable MVP that pulls feedback forward (idea �
 
 ### W2.4 From assistants to autonomous development: MCP and A2A ★★★
 
-**End-to-end autonomous development needs more than a good model — it needs plumbing.** For LLMs to carry out software development end to end, the deck lists five requirements: access to tools and data; the ability to perform actions (e.g., retrieve an issue description); collaboration with and delegation of tasks to other agents; tracking of long-running tasks; and exchange of results in a predictable format (Source: L2 slide 12).
+**End-to-end autonomous development needs more than a good model — it needs plumbing.** For LLMs to carry out software development end to end, the deck lists five requirements:
+
+- Access to tools and data
+- The ability to perform actions (e.g., retrieve an issue description)
+- Collaboration with and delegation of tasks to other agents
+- Tracking of long-running tasks
+- Exchange of results in a predictable format
+
+(Source: L2 slide 12)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-autonomous-development" trim />
@@ -223,6 +258,7 @@ The deck's example chain: VS Code + Copilot connects through an MCP connector to
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** An agent must (a) read files from your repository, (b) hand a task to another vendor's agent. Which protocol covers (a) and which covers (b)?
+
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) MCP — standardized discovery and use of external tools (a GitHub MCP server exposing repo files and Git operations). (b) A2A — standardized communication between independent AI agents (Source: L2 slide 12).
@@ -252,7 +288,7 @@ The deck's example chain: VS Code + Copilot connects through an MCP connector to
 
 ## Further reading
 
-All of the following are cited on the slides: Hou et al., *Large language models for software engineering: a systematic literature review* (TOSEM 2024); Russo, *Navigating the complexity of generative AI adoption in software engineering* (TOSEM 2024); the DORA *State of AI-assisted Software Development* report (2025); the GitHub engineering blog post on leveraging ML to find security vulnerabilities; the MCP and A2A protocol specifications.
+All of the following are cited on the slides: Hou et al., *Large language models for software engineering: a systematic literature review* (ACM Transactions on Software Engineering and Methodology — TOSEM — 2024); Russo, *Navigating the complexity of generative AI adoption in software engineering* (TOSEM 2024); the DORA *State of AI-assisted Software Development* report (2025); the GitHub engineering blog post on leveraging ML to find security vulnerabilities; the MCP and A2A protocol specifications.
 
 ## Summary
 

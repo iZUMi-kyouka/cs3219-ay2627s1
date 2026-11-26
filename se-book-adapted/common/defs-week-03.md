@@ -35,6 +35,14 @@ A **quality attribute** is a property of the system — such as performance, sca
 
 </span>
 
+<span id="def-availability">
+
+**Availability** is the proportion of time a system is operational and able to serve requests when required — a measured quality attribute, usually stated over a window (e.g., the share of a month in which the service answers requests). It is a different attribute from **reliability** (W3.5): reliability is about how long the system keeps working correctly, availability about the fraction of time it is usable — a system can be available but unreliable (it fails often but restarts quickly) or reliable but unavailable (it rarely fails but is down for a long maintenance window). Blue-green deployment buys availability by removing the downtime window (W1.5); a single point of failure destroys it (W12.4).
+
+%%Source: L3 slide 10 lists availability in the quality-attribute taxonomy without defining it; standard definition after ISO/IEC 25010:2011 (availability as the degree to which a system is operational and accessible when required for use) and IEEE Std 610.12.%%
+
+</span>
+
 <span id="def-requirement-tradeoff">
 
 A **requirement trade-off** is a design situation in which improving one quality attribute degrades another — e.g., adding redundant checks and backups improves reliability but makes the system slower and costlier — forcing prioritization under resource constraints.
@@ -165,9 +173,9 @@ An **internal quality attribute** is not directly observed when the software is 
 
 <span id="def-integrity">
 
-**Integrity** protects data against unauthorized modification.
+**Integrity** protects data against unauthorized modification — the security sense used in W3.5. The same word names a *design quality* in Week 7: when several services each own a copy of data, integrity is the property that the copies stay consistent (no duplicate or contradictory records) — the sense behind the microservices trade-off "Integrity — each service owns its data … potential data duplication causes inconsistencies" (W7.3; L7 slide 14).
 
-<sub>-- L3 slide 14</sub>
+<sub>-- L3 slide 14; W7 sense: L7 slide 14</sub>
 
 </span>
 
@@ -253,7 +261,7 @@ An **internal quality attribute** is not directly observed when the software is 
 
 <span id="def-pairwise-prioritization">
 
-**Pair-wise prioritization** compares requirements (or quality attributes) two at a time to force an order — a prioritization framework for identifying the nice-to-haves, with feasibility taking priority.
+**Pair-wise prioritization** compares requirements (or quality attributes) two at a time to force an order: for each pair, ask "if we could fund only one of these two, which one?" — the more important item wins the head-to-head, and tallying the wins across all pairs yields the overall ranking, with the consistent losers exposing the nice-to-haves. Feasibility takes priority: an infeasible requirement is dropped before it is ranked.
 
 <sub>-- L3 slides 23, 25</sub>
 

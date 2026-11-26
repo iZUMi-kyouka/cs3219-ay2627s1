@@ -68,7 +68,7 @@
 
 <span id="def-event-sourcing">
 
-**Event sourcing** — a data storage pattern where state changes are stored as immutable events in an append-only log, and the current state is derived by applying the historical events, in sequence, to an initial state or snapshot.
+**Event sourcing** — a data storage pattern where state changes are stored as immutable events in an append-only log, and the current state is derived by applying the historical events, in sequence, to an initial state or snapshot (a snapshot is a saved intermediate state, letting replay resume from it instead of starting from the very first event).
 %%(Source: L8 slides 17–19.)%%
 
 </span>

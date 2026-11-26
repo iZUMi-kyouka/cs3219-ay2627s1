@@ -1,13 +1,13 @@
 {% from "schedule/macros-fragment.md" import term, icon_outcome with context %}
-<h2 id="title">Week 13 — Course Recap</h2>
+<h2>Week 13 — Course Recap</h2>
 
-<span id="prereqs">
+<span>
 
 This chapter recaps the whole course, so every chapter is a prerequisite. If a through-line below feels shaky, follow its links back to the defining chapter before moving on.
 
 </span>
 
-<span id="outcomes">
+<span>
 
 {{ icon_outcome }} **Can state the course's one-line thesis — architecture serves requirements — and name its four through-lines** (W13.1)
 
@@ -19,7 +19,7 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 
 </span>
 
-<div id="body">
+<div>
 
 <box type="important" seamless>
 
@@ -40,7 +40,21 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 
 **Quality attributes buy their improvements with trade-offs.** Improving interoperability by opening data exchange and API access can weaken security; improving reliability with redundant checks, backups and recovery routines costs efficiency (Quiz 1 Q7). That is why measurable non-functional requirements — not vague adjectives — are what make architecture decidable (Week 3).
 
-**The deck's practical tips are the thesis in imperative form.** Use "sane" boundaries without overdoing it; use the right level of coupling; keep things that belong together together, and apart if they belong apart; don't surprise the people who consume your design or code; document the decisions and the evolution (L13 slide 13).
+<panel type="seamless" minimized header="%%Recall: non-functional requirement (W3)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-03.md#def-non-functional-requirement" trim />
+</box>
+
+</panel>
+
+**The deck's practical tips are the thesis in imperative form** (L13 slide 13):
+
+- Use "sane" boundaries without overdoing it.
+- Use the right level of coupling.
+- Keep things that belong together together, and apart if they belong apart.
+- Don't surprise the people who consume your design or code.
+- Document the decisions and the evolution.
 
 <box type="tip" seamless>
 
@@ -62,9 +76,93 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 **The course's first through-line is how code gets partitioned and deployed: technical partitioning, domain partitioning, then distribution.** The recap deck sorts the styles you have studied by exactly this axis (L13 slide 2) — and the site already owns that map, so it is not redrawn here: the canonical 2×2 of deployment (single vs distributed) × partitioning (technical vs domain) is drawn once in [W4.7 — Architectural styles]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c7) and toured style by style from [W6.1 — Classifying architectural styles]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c1).
 
-**Modularity was the enabling concept, coupling and cohesion the quality criteria.** Week 4's definitions carry through every later week: microservices are the extreme of high cohesion and low coupling; the modular monolith is domain-partitioned but deployed as one unit — the Smart Kitchen app of Quiz 2 splits recipes and inventory into separate modules because they are separate business domains, yet deploys them as one; REST (Week 6) pushes statelessness and a uniform interface so that web systems scale and evolve. → [Week 4 — Architecture (I)]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts), [Week 6 — Architecture (II) & REST]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#core-concepts).
+**Modularity was the enabling concept, coupling and cohesion the quality criteria.** Week 4's definitions carry through every later week:
 
-**Microservices are identified with domain-driven design and event storming.** Subdomains become bounded contexts in the solution space; event storming surfaces events, commands and policies — with policies delimiting consistent contexts (Quiz 3 Q4–Q6). The model-code gap stays real: architecture models help us reason about complexity and scale and are not one-to-one maps of the source code (Quiz 2 Q3). → [Week 7 — Microservices (I)]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [Week 8 — Microservices (II)]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts).
+- **Microservices** are the extreme of high cohesion and low coupling.
+- **The modular monolith** is domain-partitioned but deployed as one unit — the Smart Kitchen app of Quiz 2 splits recipes and inventory into separate modules because they are separate business domains, yet deploys them as one.
+- **REST (Week 6)** pushes statelessness and a uniform interface so that web systems scale and evolve.
+
+<panel type="seamless" minimized header="%%Recall: modular monolith (W4)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-04.md#def-modular-monolith" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: coupling (W4)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-04.md#def-coupling" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: cohesion (W4)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-04.md#def-cohesion" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: microservice (W7)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-microservice" trim />
+</box>
+
+</panel>
+
+→ [Week 4 — Architecture (I)]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts), [Week 6 — Architecture (II) & REST]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#core-concepts).
+
+**Microservices are identified with domain-driven design and event storming.**
+
+- **Subdomains** are implemented by **bounded contexts** in the solution space — ideally one context per subdomain, but a context may split or merge subdomains (W8.1).
+- **Event storming** surfaces events, commands and policies — with policies delimiting consistent contexts (Quiz 3 Q4–Q6).
+- **The model-code gap stays real:** architecture models help us reason about complexity and scale and are not one-to-one maps of the source code (Quiz 2 Q3).
+
+<panel type="seamless" minimized header="%%Recall: domain-driven design (W7)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-ddd" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: subdomain (W7)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-subdomain" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: bounded context (W8)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-bounded-context" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: policy (W8)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-policy" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: event storming (W8)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-event-storming" trim />
+</box>
+
+</panel>
+
+→ [Week 7 — Microservices (I)]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [Week 8 — Microservices (II)]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts).
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -79,15 +177,39 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 ### W13.3 Through-line 2 — communication: sync → async → events → messages ★
 
-**The second through-line is what happens between the pieces once you cut them apart.** Week 10's three-axis taxonomy (synchrony, persistence, cardinality — the tutorial's word for W10.3's single vs multiple receivers) and Week 9's events set up Week 11's engineering patterns; the recap deck compresses this into one slide: message vs event — *intent matters*; pub-sub; messaging; asynchronicity in the request-reply pattern; architect based on business needs (L13 slides 4–7).
+**The second through-line is what happens between the pieces once you cut them apart.** Week 10's three-axis taxonomy (synchrony, persistence, cardinality — the tutorial's word for W10.3's single vs multiple receivers) and Week 9's events set up Week 11's engineering patterns. The recap deck compresses this into one slide (L13 slides 4–7):
+
+- Message vs event — *intent matters*
+- Pub-sub
+- Messaging
+- Asynchronicity in the request-reply pattern
+- Architect based on business needs
+
+<panel type="seamless" minimized header="%%Recall: asynchronous communication (W10)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-asynchronous-communication" trim />
+</box>
+
+</panel>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-driven-architecture" trim />
 </box>
 
-**Synchronous communication couples the caller to the callee's availability; asynchronous communication and events break that coupling.** In the Grab-like app of Quiz 2, Booking's synchronous call to Matching fails with it, while publishing a BookingRequested event lets the middleware hold the event until Matching recovers — reliability by persistence, not by retrying a dead call.
+**Synchronous communication couples the caller to the callee's availability; asynchronous communication and events break that coupling.** In the Grab-like app of Quiz 2, Booking's synchronous call to Matching fails with it, while publishing a BookingRequested event lets the {{ term("middleware", "the messaging infrastructure sitting between sender and receivers — in this course, W11's message broker") }} hold the event until Matching recovers — reliability by persistence, not by retrying a dead call.
 
-**Events and messages differ in intent, and both need names that say which they are.** An event records that something happened (EquipmentReserved *after* a reservation succeeds); a command instructs (ReserveEquipment); a document carries data to process (Week 11's message construction). Quiz 4 Q1 turns exactly this distinction into a redesign question.
+- An event records that something happened (EquipmentReserved *after* a reservation succeeds)
+- A command instructs (ReserveEquipment)
+- A document carries data to process — Week 11's message construction (command / document / event)
+
+<panel type="seamless" minimized header="%%Recall: message construction (W11)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-construction" trim />
+</box>
+
+</panel>
 
 <box type="info" seamless>
 
@@ -103,7 +225,39 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 
 </box>
 
+<panel type="seamless" minimized header="%%Recall: pseudo-asynchronous (W11)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-pseudo-asynchronous" trim />
+</box>
+
+</panel>
+
 **Fire-and-forget is the default posture of event-driven microservices — but request-reply survives, asynchronously.** When Research asks Archive to find a dataset that may take hours, the asynchronous query carries a request identifier so the reply can be matched — Week 11's return address and correlation identifier doing Week 10's asynchronous work (Quiz 4 Q7). → [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [Week 10 — Asynchronous Communication]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [Week 11 — Messaging]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts).
+
+<panel type="seamless" minimized header="%%Recall: fire-and-forget (W9)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-fire-and-forget" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: return address (W11)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-return-address" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: correlation identifier (W11)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-correlation-identifier" trim />
+</box>
+
+</panel>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -124,7 +278,27 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 <include src="../../se-book-adapted/common/defs-week-12.md#def-scalability" trim />
 </box>
 
-**The cube's three axes recapitulate the whole course:** X — run multiple copies behind a load balancer (needs the stateless design of Weeks 6 and 12); Y — functional decomposition, the monolith → modular monolith → microservices move of Weeks 4 and 7; Z — run the same code on a subset of the data, the partitioning of Week 12's data tier. → [Week 12 — Scalability]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts).
+<panel type="seamless" minimized header="%%Recall: scale cube (W12)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-scale-cube" trim />
+</box>
+
+</panel>
+
+**The cube's three axes recapitulate the whole course** → [Week 12 — Scalability]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts):
+
+- **X — replicate:** run multiple copies behind a load balancer (needs the stateless design of Weeks 6 and 12).
+- **Y — decompose:** functional decomposition, the monolith → modular monolith → microservices move of Weeks 4 and 7.
+- **Z — partition data:** run the same code on a subset of the data, the partitioning of Week 12's data tier.
+
+<panel type="seamless" minimized header="%%Recall: stateless service (W12)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-stateless-service" trim />
+</box>
+
+</panel>
 
 **Scalability decisions are architectural decisions made early** — scaling post-hoc costs downtime, hardware and rewrites (Week 12) — and they respect the atomicity and ownership boundaries established by the domain partition (Quiz 3 Q2: no scaling requirement, no demonstrated atomicity story, no split).
 
@@ -173,7 +347,28 @@ flowchart TB
 
 %%Notation: each framed stage is one architecture era of the same platform; boxes are components/services, the double circle is the message broker, solid arrows are synchronous calls, and dashed arrows are asynchronous messages/events. The thick arrows show the moves between stages: the first two are scale-cube moves (W12.8 — Y-axis decomposition, then distribution with X-axis replication of the hot service), while the last is a communication-architecture change (Weeks 9–11), not a cube axis.%%
 
-How to read it: stage 1 is the n-tier monolith on one server — technically partitioned layers (W4's layered style, the L12 slide 10 starting point), fine until summer load arrives (W12.1); the Quiz 3 room-booking platform enters the story at stage 2, already domain-partitioned. Stage 2 partitions by domain but keeps one deployment — the modular monolith, where search already has its own index (Quiz 3 Q1). Stage 3 extracts the 80%-hot module and scales *its* instances behind a load balancer with a session store — Quiz 3's correct answer, built from W12.4–W12.5. Stage 4 completes the arc: reservation publishes events that notification and analytics consume independently, commands still go where action is needed — Weeks 9–11's communication patterns, the same patterns as Quiz 4's EquipmentReserved redesign.
+How to read it:
+
+- **Stage 1** is the n-tier monolith on one server — technically partitioned layers (W4's layered style, the L12 slide 10 starting point), fine until summer load arrives (W12.1).
+- **Stage 2** partitions by domain but keeps one deployment — the modular monolith, where search already has its own index (Quiz 3 Q1); the Quiz 3 room-booking platform enters the story here, already domain-partitioned.
+- **Stage 3** extracts the 80%-hot module and scales *its* instances behind a load balancer with a session store — Quiz 3's correct answer, built from W12.4–W12.5.
+- **Stage 4** completes the arc: reservation publishes events that notification and analytics consume independently, commands still go where action is needed — Weeks 9–11's communication patterns, the same patterns as Quiz 4's EquipmentReserved redesign.
+
+<panel type="seamless" minimized header="%%Recall: load balancing (W12)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-load-balancing" trim />
+</box>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Recall: session store (W12)%%">
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-session-store" trim />
+</box>
+
+</panel>
 
 **Retelling the course this way is the exam skill.** Given any scenario — a monolith under load, a modular monolith with a hot module, services that must not block each other — you can name the stage you are in, the axis that moves you forward, and the communication style each stage implies.
 
@@ -194,16 +389,61 @@ The domain partitioning that tells you *which* services to extract (stage 2, W4/
 
 <box type="tip" seamless>
 
-**How to use a quiz:** sit it closed-book, 30 minutes, before checking anything. Mark which chapter each question came from; revise that chapter's core-concepts section for the ones you missed; only then re-attempt. The links below point at the papers — the *what each examines* notes tell you where to revise.
+**How to use a quiz:** sit it closed-book, 30 minutes, before checking anything. Then:
+
+- Mark which chapter each question came from.
+- Revise that chapter's core-concepts section for the ones you missed.
+- Only then re-attempt.
+
+The notes below say what each paper examines and where to revise; the papers themselves are kept offline.
 </box>
 
-**%%Quiz 1 (PDF kept offline)%% — Weeks 1–5 (mainly 2, 3, 5).** AI in software engineering: pattern detection to find similar vulnerable library usage across components, the risks of AI-assisted development, push/pull factors for AI adoption; deployment mechanisms (a virtual machine for a cross-platform testbed); requirements and quality attributes: measurable NFRs, usage-centric requirements, quality-attribute trade-offs (interoperability vs security; reliability vs efficiency); agile backlog reprioritization from working increments; serverless suitability. Revise: [W2]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#core-concepts), [W3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#core-concepts), [W5]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#core-concepts), [W1]({{baseUrl}}/se-book-adapted/chapters/week-01-software-development-processes.html#core-concepts).
+**%%Quiz 1 (PDF kept offline)%% — Weeks 1–5 (mainly 2, 3, 5).** What it examines:
 
-**%%Quiz 2 (PDF kept offline)%% — Weeks 4–7 and 9–10.** The Grab-like app: synchronous call-and-return vs publishing a BookingRequested event while Matching is down (reliability via middleware persistence). Also: closed vs open layers (bypassing the business layer couples presentation to the data layer), the model–code gap, the modular monolith (Smart Kitchen: separate business domains; module APIs, not shared tables), recognizing MVC and pipe-and-filter diagrams, fixing a pipe-and-filter bottleneck by adding filters to the overloaded queue, REST (statelessness, cacheable responses, load balancer + shared caching, URI standardization trade-offs). Revise: [W4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts), [W6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#core-concepts), [W7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts).
+- **AI in software engineering:** pattern detection to find similar vulnerable library usage across components, the risks of AI-assisted development, and push/pull factors for AI adoption.
+- **Deployment mechanisms:** a virtual machine for a cross-platform testbed.
+- **Requirements & quality attributes:** measurable NFRs, usage-centric requirements, and quality-attribute trade-offs (interoperability vs security, reliability vs efficiency).
+- **Process:** agile backlog reprioritization from working increments.
+- **Cloud-native:** serverless suitability.
 
-**%%Quiz 3 (PDF kept offline)%% — Weeks 7–10 and 12.** The room-booking platform: extract search (80% of resources) as an independent microservice and increase its instances based on demand (the scale cube, Y then X); retain the design until an atomicity-breaking split is justified; combining over-fragmented pricing services; DDD (subdomains in the problem space vs bounded contexts in the solution; policies delimit consistent contexts in event storming; a jointly governed shared model for common rules); sagas (a reasonably compensated state; ordering reserve → charge → register → notify); CQRS-breaking API signatures; the sync/async/one-way classification. Revise: [W7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [W8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts), [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [W12]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts).
+Revise: [W2]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#core-concepts), [W3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#core-concepts), [W5]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#core-concepts), [W1]({{baseUrl}}/se-book-adapted/chapters/week-01-software-development-processes.html#core-concepts).
 
-**%%Quiz 4 (PDF kept offline)%% — Weeks 9–11.** The equipment platform: EquipmentReserved is a completed-action event, so the request must be a ReserveEquipment command with the event published only after success; initiating vs derived events; thin events that force consumers to call back create hidden dependencies; temporal decoupling (keep accepting uploads; the broker retains events through outages); choreographed compensation (Payment reacts to ConversionFailed under its own rules); aggregating two facts by booking ID before acting; asynchronous request-reply with a request identifier; per-partition ordering vs cross-partition order; persistence alone does not meet a processing deadline — availability and capacity are still needed. Revise: [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [W11]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts).
+**%%Quiz 2 (PDF kept offline)%% — Weeks 4–7 and 9–10.** What it examines:
+
+- **The Grab-like app:** synchronous call-and-return vs publishing a BookingRequested event while Matching is down (reliability via middleware persistence).
+- **Layering:** closed vs open layers — bypassing the business layer couples presentation to the data layer.
+- **Architecture reasoning:** the model–code gap, and recognizing MVC and pipe-and-filter diagrams.
+- **The modular monolith:** Smart Kitchen — separate business domains, with module APIs rather than shared tables.
+- **Pipes-and-filters:** fixing a bottleneck by adding filters to the overloaded queue.
+- **REST:** statelessness, cacheable responses, load balancer + shared caching, URI standardization trade-offs.
+
+Revise: [W4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts), [W6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#core-concepts), [W7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts).
+
+**%%Quiz 3 (PDF kept offline)%% — Weeks 7–10 and 12.** What it examines:
+
+- **The room-booking platform:** extract search (80% of resources) as an independent microservice and increase its instances based on demand (the scale cube, Y then X).
+- **When *not* to split:** retain the design until an atomicity-breaking split is justified.
+- **Service granularity:** combining over-fragmented pricing services.
+- **DDD:** subdomains in the problem space vs bounded contexts in the solution, policies delimit consistent contexts in event storming, and a jointly governed shared model for common rules.
+- **Sagas:** a reasonably compensated state, with the ordering reserve → charge → register → notify.
+- **CQRS:** spotting API signatures that break CQRS.
+- **Communication styles:** the sync/async/one-way classification.
+
+Revise: [W7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [W8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts), [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [W12]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts).
+
+**%%Quiz 4 (PDF kept offline)%% — Weeks 9–11.** What it examines:
+
+- **Command vs event (the headline redesign):** EquipmentReserved is a completed-action event, so the request must be a ReserveEquipment command, with the event published only after success.
+- **Event roles:** initiating vs derived events.
+- **Thin events:** events that force consumers to call back create hidden dependencies.
+- **Temporal decoupling:** keep accepting uploads — the broker retains events through outages.
+- **Choreographed compensation:** Payment reacts to ConversionFailed under its own rules.
+- **Correlation and aggregation:** aggregating two facts by booking ID before acting.
+- **Asynchronous request-reply:** the reply is matched by a request identifier.
+- **Ordering:** per-partition ordering vs cross-partition order.
+- **Capacity:** persistence alone does not meet a processing deadline — availability and capacity are still needed.
+
+Revise: [W8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts) (saga compensation and choreography), [W9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [W10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [W11]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts).
 
 <box type="tip" seamless>
 
@@ -225,7 +465,7 @@ The domain partitioning that tells you *which* services to extract (stage 2, W4/
 | L11 Messaging | 5, 6–8, 11–12, 15, 17, 20, 22–27, 29, 31–32, 34–40, 46–58, 60–64 |
 | L12 Scalability | 3–24 |
 
-All decks are linked from their week pages under [Schedule]({{baseUrl}}/schedule/index.html).
+Each deck is listed under its week page in the [Schedule]({{baseUrl}}/schedule/index.html) (the PDFs are kept offline).
 </box>
 
 <box type="info" seamless>
@@ -234,7 +474,7 @@ All decks are linked from their week pages under [Schedule]({{baseUrl}}/schedule
 
 * **Four quizzes cover the four blocks**: W1–5 (foundations, requirements, cloud), W4–7+9–10 (styles, REST, the sync/event choice), W7–10+12 (microservices, DDD, sagas, scalability), W9–11 (EDA, async, messaging).
 * **Revise by through-line, not by week**: requirements → architecture → communication → scaling, using the core-concepts sections linked above.
-* **Practise drawing**: the exam includes diagrams — the evolution diagram of W13.5 and the EIP chains of W11.4 are the two most reusable shapes.
+* **Practise drawing**: the exam includes diagrams — the evolution diagram of W13.5 and the EIP (enterprise integration patterns, W11) chains of W11.4 are the two most reusable shapes.
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -265,7 +505,7 @@ This is a recap chapter — the terms below are defined once, in their own weeks
 |---|---|---|
 | Quality attribute | A measurable, trade-off-bearing property like scalability, security, reliability | [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#core-concepts) |
 | Modular monolith | Domain-partitioned modules inside one deployment | [Week 4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts) |
-| Microservice | Independently deployable service modelled around a business domain | [Week 7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts) |
+| Microservice | Independently deployable service modeled around a business domain | [Week 7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts) |
 | Bounded context | Explicit model boundary within which business terms have consistent meaning | [Week 8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts) |
 | Event-driven architecture | Work triggered by events rather than direct calls | [Week 9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts) |
 | Asynchronous communication | Sender proceeds without waiting for the receiver | [Week 10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts) |
