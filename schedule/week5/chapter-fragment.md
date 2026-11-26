@@ -67,7 +67,7 @@ flowchart TB
     APP["Applications & development<br/>(your services)"] --> OBS["Observability & analysis"]
     OBS --> ORCH["Orchestration & management<br/>(e.g. Kubernetes)"]
     ORCH --> RUN["Runtime<br/>(containers)"]
-    RUN --> PROV["Provisioning<br/>(IaC)"]
+    RUN --> PROV["Provisioning<br/>(infrastructure as code)"]
     PROV --> INFRA["Infrastructure<br/>(compute, network, storage)"]
 </mermaid>
 
@@ -111,6 +111,10 @@ Not tied to a specific host or network; the end user is unaffected by hardware/s
 
 **The approach is realized through a specific set of enablers.** Containers, service meshes, microservices, immutable infrastructure, and declarative APIs are the lecture's "how to be cloud native" checklist; W5.3–W5.6 cover the ones this course develops in depth. (Source: L5 slides 9–10, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-service-mesh" trim />
+</box>
+
 **The five qualities answer the pressures W5.1 traced.** Scalability answers the design consideration "accessible as workload increases"; resilience answers "the end user should not be affected by a failure"; manageability and observability answer the pace challenge — "how can we respond to market changes and business needs?" (slide 14); loose coupling is what makes the others achievable at all. (Source: L5 slides 8, 14, 16, Dell guest lecture.)
 
 {% call example("L5 slide 6 — the CNCF definition, read closely") %}
@@ -147,9 +151,13 @@ Service meshes primarily support manageability and observability (traffic manage
 
 **A monolithic app is one unit of deployment running as a single service.** All functionality — login, registration, catalog, reviews, cart, payment — lives in one process backed by one database, so all functionalities and processes are tightly {{ term("coupled", "coupling measures how strongly one part depends on another; tight coupling means changes in one part force changes in the other") }}. (Source: L5 slides 18–20, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-monolith" trim />
+</box>
+
 **The lecture lists seven limitations of a monolithic app.** One unit of deployment; all functionalities and processes tightly coupled; running as a single service; adding new features becomes more complex over time; lock-in to a particular technology stack; low fault tolerance; scaling limitations. (Source: L5 slide 20, Dell guest lecture.)
 
-**A {{ term("microservice", "an independently deployable service modeled around a business domain") }} is the unit that fixes deployability, coupling, and scaling.** The lecture defines microservices as independently deployable services modeled around a business domain — small and lightweight, communicating with one another via APIs over standard network protocols (HTTP, AMQP), and technology-agnostic. (Source: L5 slide 21, Dell guest lecture.) %%The microservice style is developed in depth in the Week 7 chapter.%%
+**A {{ term("microservice", "an independently deployable service modeled around a business domain") }} is the unit that fixes deployability, coupling, and scaling.** The lecture defines microservices as independently deployable services modeled around a business domain — small and lightweight, communicating with one another via APIs over standard network protocols (HTTP, and AMQP — the Advanced Message Queuing Protocol that message brokers speak; Weeks 9–11 cover it), and technology-agnostic. (Source: L5 slide 21, Dell guest lecture.) %%The microservice style is developed in depth in the Week 7 chapter.%%
 
 **Why microservices: the lecture's list of buys is a point-by-point inversion of the monolith's limits.** Faster startup time and better testability (small units); independent deployability (no all-or-nothing releases); independent scalability (scale one service, not the whole app); improved fault isolation (one service failing does not take down the rest); technology-agnostic (no stack lock-in). (Source: L5 slide 22, Dell guest lecture.)
 
@@ -218,6 +226,10 @@ Loose coupling and high cohesion — each service keeps strongly related functio
 
 **{{ term("Docker", "an open-source containerization platform that packages applications into portable container images") }} made this packaging an industry standard.** Docker launched in 2013 and created the industry standard for containers, delivering seamless portability — build once, run anywhere — in a lightweight, cloud-agnostic way. (Source: L5 slide 32, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-docker" trim />
+</box>
+
 {% call example("L5 slides 30 and 51 — 'My Spring Boot App' as a container") %}
 A team writes a Spring Boot payment service. The container image holds the Spring Boot app, its app libraries and dependencies (the JARs it needs), and the Java language runtime. Because the image carries its own runtime, the same image runs identically on a developer's laptop and on a cloud host — "build once, run anywhere". This is the same payment service the lecture later runs as a Payment Pod in W5.5.
 {% endcall %}
@@ -225,6 +237,14 @@ A team writes a Spring Boot payment service. The container image holds the Sprin
 **The lecture's five container benefits are abstractions doing work.** Separation of responsibility (developers define what runs; the platform defines where it runs); workload portability; application isolation; greater resource efficiency; and improved developer productivity. (Source: L5 slide 33, Dell guest lecture.)
 
 **Tutorial 4 develops the same idea with the shipping-container analogy.** Just as the intermodal container let 1960s shipping move almost any cargo between ship, train, and truck without unpacking — because transport infrastructure only needed to know how to handle the container, not what was inside — a software container lets any application move between laptop, datacenter, and cloud because the host only needs to know how to run containers. The tutorial also separates **container image** (the blueprint: what goes in the container), **container** (a running instance of that image), and **container engine** (the runtime that builds and manages containers — Docker is one), then walks through deploying a web app with them. See the [Week 6 tutorial]({{baseUrl}}/schedule/week6/tutorial.html) and its model solution. (Source: Tutorial 4 Q2 and model solution.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-container-image" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-container-engine" trim />
+</box>
 
 <box type="warning" seamless>
 **Pitfall:** a container is not a virtual machine. A VM virtualizes hardware and carries a whole guest OS; a container packages an application against its runtime and shares the host OS kernel. The lecture's hosting ladder — monolith on an OS, in a VM, in a container — gets lighter and starts faster at each step. (Source: L5 slide 28, Dell guest lecture.)
@@ -260,13 +280,33 @@ Isolation plus a standard interface: the container seals its contents off from t
 
 **{{ term("Kubernetes", "a container orchestration platform: an environment for running distributed apps on containers at scale") }} is the orchestration platform the lecture centers on.** Kubernetes was originally developed by Google, open-sourced in 2014, is the flagship project of the Cloud Native Computing Foundation, and defines a common set of resources and an API for manipulating them. (Source: L5 slide 39, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-kubernetes" trim />
+</box>
+
 **Kubernetes does not manage containers directly; it manages {{ term("pods", "the smallest deployable unit in Kubernetes; a container resides inside a pod, which has a unique IP address in the cluster") }}.** The lecture's app becomes a Payment Pod, a Product Pod, an Inventory Pod, and a Shopping Cart Pod. (Source: L5 slides 50–54, Dell guest lecture.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-pod" trim />
+</box>
 
 **A {{ term("deployment", "a Kubernetes resource that declares the desired number of pod replicas and enforces it") }} declares how many replicas of a pod you want — and the cluster enforces it.** When the single Payment Pod dies, the Payment Deployment (replicas = 1) notices the gap and starts a replacement: self-healing. (Source: L5 slides 56–58, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-kubernetes-deployment" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-self-healing" trim />
+</box>
+
 **Self-healing is a reconcile loop, not a one-off fix.** Kubernetes runs control loops — non-terminating loops that regulate the state of the system — driving **desired state = actual state**; controllers such as the Deployment Controller and Job Controller each own one kind of resource. (Source: L5 slide 59, Dell guest lecture.)
 
-**Scaling is changing the declared replica count.** Under high traffic, the Payment Deployment goes from replicas = 1 to replicas = 3, and three Payment Pods run: horizontal scaling, declared rather than manual. (Source: L5 slides 60–64, Dell guest lecture.)
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-reconcile-loop" trim />
+</box>
+
+**Scaling is changing the declared replica count.** Under high traffic, the Payment Deployment goes from replicas = 1 to replicas = 3, and three Payment Pods run: {{ term("horizontal scaling", "scaling by adding more instances (replicas) of the service, rather than a bigger machine — Week 12 develops scaling in full") }}, declared rather than manual. (Source: L5 slides 60–64, Dell guest lecture.)
 
 {% call example("L5 slides 54–64 — the payment service through one afternoon") %}
 The lecture's app has four pods: Payment, Product, Inventory, Shopping Cart. During the lunch-hour rush, payment requests queue up. The team raises the Payment Deployment's `replicas` from 1 to 3; the reconcile loop schedules two more Payment Pods, and traffic spreads across three replicas. Shortly after, one Payment Pod crashes; the loop notices actual state (2 pods) ≠ desired state (3 pods) and starts a replacement within seconds — users notice nothing. This one scenario exercises horizontal scaling, self-healing, and the reconcile loop at once.
@@ -307,7 +347,7 @@ flowchart TB
 **Q1.** A Payment Pod crashes and a replacement is running thirty seconds later. Which concept explains the replacement — and which component performed it?
 <panel type="seamless" minimized header="%%Answer%%">
 
-Self-healing, performed by the reconcile loop: the Payment Deployment's controller observed actual state (1 pod) ≠ desired state (replicas = 1) and scheduled a replacement pod.
+Self-healing, performed by the reconcile loop: the Payment Deployment's controller observed actual state (0 pods) ≠ desired state (replicas = 1) and scheduled a replacement pod.
 </panel>
 
 **Q2.** Why does the lecture say Kubernetes "abstracts away the infrastructure"? Name the two layers it places between your app and the machines.
@@ -332,7 +372,15 @@ Because you no longer bind apps to hosts: layer one is Kubernetes (deployments, 
 
 **Mutable infrastructure is the traditional habit the lecture warns against.** Computers and software systems have traditionally been treated as mutable infrastructure: incremental updates such as system and software patches are applied across a period of time, which leads to inconsistencies and dependencies on the underlying infrastructure. (Source: L5 slide 42, Dell guest lecture.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-mutable-infrastructure" trim />
+</box>
+
 **{{ term("pets vs cattle", "the operations metaphor: unique, nursed servers (pets) vs identical, numbered instances that are replaced when sick (cattle)") }} names the two operation styles.** Pets are unique (Max, Milo, Lucky…), cared for, and nursed back to health when sick. Cattle are similar (Cow-1, Cow-2, Cow-3…), assigned ID numbers, and replaced with another when one gets sick. Immutable infrastructure is the cattle model: do not patch a sick server — replace it. (Source: L5 slide 43, Dell guest lecture.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-pets-vs-cattle" trim />
+</box>
 
 **The shift from pets to cattle is the shift from repairing unique machines to replacing interchangeable ones.**
 
@@ -365,6 +413,10 @@ Under the pets model, the team's production app server "Hermes" has been patched
 **The lecture's IaC benefits read like a quality-attribute list for infrastructure.** Rapid deployment of complex environments; reduced configuration drift; consistent, predictable, repeatable, reusable, maintainable environments; source control as a single source of truth for your infrastructure; and a critical component of DevOps and CI/CD. (Source: L5 slide 46, Dell guest lecture.)
 
 **IaC files are usually declarative, and that matters architecturally.** The lecture contrasts the declarative approach — declare the end state you want, as Kubernetes manifests (the declarative files that describe your pods and deployments) do — with the imperative approach — script the individual steps to reach it. Declarative fits the reconcile loop of W5.5: the loop can only drive desired state = actual state if desired state is written down as data. (Source: L5 slides 45–47, Dell guest lecture.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-05.md#def-declarative-approach" trim />
+</box>
 
 <box type="warning" seamless>
 **Pitfall:** keeping "one special" server outside the code. A hand-patched machine that is not described in configuration files is a pet in a cattle herd: it cannot be reproduced, it drifts from the declared state, and the reconcile loop has nothing to reconcile it against.
@@ -431,14 +483,25 @@ Because CI/CD automates building, testing, and releasing software; IaC extends t
 |---|---|---|
 | Cloud computing | On-demand, pooled, metered delivery of computing resources over the network | [W5.1](#W5-c1) |
 | Cloud native | An approach to building and running applications that exploits the cloud computing delivery model | [W5.2](#W5-c2) |
+| Service mesh | A dedicated infrastructure layer for service-to-service traffic management and telemetry, kept out of application code | [W5.2](#W5-c2) |
+| Monolith | One unit of deployment running as a single service — all functionality in one process over one database | [W5.3](#W5-c3) |
 | Microservice | An independently deployable service modeled around a business domain (full treatment in Week 7) | [W5.3](#W5-c3) |
 | Container | A standardized unit packaging an app with all its dependencies, abstracting it from the environment | [W5.4](#W5-c4) |
+| Container image | The read-only blueprint (filesystem, commands, dependencies, config) from which containers are created | [W5.4](#W5-c4) |
+| Container engine | The runtime that builds, runs, and manages containers — the interface between host OS and containers | [W5.4](#W5-c4) |
+| Docker | The open-source containerization platform (2013) that created the industry standard — build once, run anywhere | [W5.4](#W5-c4) |
 | Container orchestration | Automated management of containers at scale: discovery, rollouts, auto-scaling, self-healing | [W5.5](#W5-c5) |
+| Kubernetes | The container orchestration platform for running distributed apps on containers at scale (CNCF flagship) | [W5.5](#W5-c5) |
 | Pod (Kubernetes) | The smallest deployable unit in Kubernetes; a container resides inside a pod with a unique cluster IP | [W5.5](#W5-c5) |
 | Deployment (Kubernetes) | A declaration of the desired number of pod replicas, enforced by a reconcile loop | [W5.5](#W5-c5) |
+| Self-healing | A failed pod is automatically replaced: actual state is reconciled back to the declared desired state | [W5.5](#W5-c5) |
+| Reconcile loop | A non-terminating control loop driving desired state = actual state; Kubernetes controllers own one resource kind each | [W5.5](#W5-c5) |
+| Horizontal scaling | Scaling by adding replicas of the service (full treatment in Week 12) | [W5.5](#W5-c5) |
 | Immutable infrastructure | Servers as replaceable, not repairable: replace from a fixed image instead of patching | [W5.6](#W5-c6) |
-| Infrastructure as code | Managing infrastructure through version-controlled, reproducible configuration files | [W5.6](#W5-c6) |
+| Mutable infrastructure | The traditional patch-in-place habit — incremental updates cause inconsistencies and hidden dependencies | [W5.6](#W5-c6) |
 | Pets vs cattle | Operation metaphor: unique, nursed servers (pets) vs identical, replaced instances (cattle) | [W5.6](#W5-c6) |
+| Infrastructure as code | Managing infrastructure through version-controlled, reproducible configuration files | [W5.6](#W5-c6) |
+| Declarative approach | Declare the end state and let the platform reconcile toward it — vs scripting the steps (imperative) | [W5.6](#W5-c6) |
 
 %%Next: [Week 6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html) turns from where software runs to how it is organized, classifying the classical architectural styles and introducing REST — the uniform interface that the services you just containerized will speak.%%
 </div>

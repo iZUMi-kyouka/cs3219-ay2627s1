@@ -107,6 +107,10 @@ Large codebase; slow deployment; multiple teams involved; scaling issues (no ind
 
 **Cohesion is the test: the features in a microservice should be highly related.** Each microservice has a responsibility allocated — the lecture draws Order, Payment, and Checkout as separate cohesive services. (Source: L7 slide 9.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-business-capability" trim />
+</box>
+
 **Services are owned by small teams that own the whole lifecycle.** Service decisions are independently made and handled by small teams; the lecture cites Amazon's two-pizza teams — small enough that two pizzas feed them; cross-functional, organized around capabilities, and owning the whole lifecycle of their services. (Source: L7 slide 10.)
 
 **Independence has a technical face: services share no code or implementation.** Services do not need to share any of their code with other services, and there is minimal dependence on each other — loose coupling by construction. (Source: L7 slides 7 and 10.)
@@ -169,15 +173,28 @@ flowchart TB
         S1["Search svc<br/>team A"] --- SDB[("Search DB")]
         S2["Reservation svc<br/>team B"] --- RDB[("Reservation DB")]
         S3["Notification svc<br/>team C"] --- NDB[("Notification DB")]
-        S1 <-.-> S2 <-.-> S3
+        S1 -.- S2 -.- S3
     end
+    MM ~~~ MS
 </mermaid>
 
-%%Notation: the top panel's plain lines are in-process calls and data access inside one deployment unit (boundaries are compile-time only); the bottom panel's services are separately deployed, each with its own store and owning team; a dashed double arrow between services is an API/message conversation.%%
+%%Notation: the top panel's plain lines are in-process calls and data access inside one deployment unit (boundaries are compile-time only); the bottom panel's services are separately deployed, each with its own store and owning team; a dashed line between services is a two-way API/message conversation (asynchronous messaging; the exchange runs both ways, so no arrowheads).%%
 
-How to read it: walk it with Quiz 3's platform: the team *already* has the modular-monolith top panel — search, reservation, notification as modules over one transactional database. Moving down changes three practical things: deploys go from one unit to three (search can be scaled alone — Quiz 3 Q1's answer); data goes from one ACID transaction — atomic, consistent, isolated, durable; all-or-nothing across modules — to per-service stores whose cross-service atomicity must be *designed* (Quiz 3 Q2 says: don't split while cross-module atomicity cannot be relaxed and no design has yet demonstrated how to preserve it); and ownership splits per capability (Quiz 3 Q3's coordination pain). The diagram shows structure, not superiority — the bottom panel is only better when those three costs buy something you need. (Structure after L5 slides 23–25, Dell guest lecture, and L9 slide 26; the data angle is W5.3's diagram.)
+How to read it: walk it with Quiz 3's platform: the team *already* has the modular-monolith top panel — search, reservation, notification as modules over one {{ term("ACID", "the transaction properties — atomic, consistent, isolated, durable: a transaction's changes apply all-or-nothing across everything it touches") }} transaction. Moving down changes three practical things: deploys go from one unit to three (search can be scaled alone — Quiz 3 Q1's answer); data goes from one transaction that is atomic, consistent, isolated, durable — all-or-nothing across modules — to per-service stores whose cross-service atomicity must be *designed* (Quiz 3 Q2 says: don't split while cross-module atomicity cannot be relaxed and no design has yet demonstrated how to preserve it); and ownership splits per capability (Quiz 3 Q3's coordination pain). The diagram shows structure, not superiority — the bottom panel is only better when those three costs buy something you need. (Structure after L5 slides 23–25, Dell guest lecture, and L9 slide 26; the data angle is W5.3's diagram.)
 
 **Independently deployable does not mean centrally hosted: each service carries its own deployment, resource, scaling, and monitoring requirements.** The lecture names three deployment patterns — service instance per host (each instance isolated on its own host), service instance per container (each instance in its own container image — the Week 5 mechanism), and service instance per VM (each service packaged as a VM image, e.g., an Amazon EC2 AMI — Amazon Machine Image). (Source: L7 slides 11–12.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-service-instance-per-host" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-service-instance-per-container" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-service-instance-per-vm" trim />
+</box>
 
 {% call example("L7 slide 15 — the errand platform (FoC): does splitting help or hurt?") %}
 Assume the errand platform was designed as a modular monolith, and the team considers microservices because of four observed drivers: (1) errands see **20× traffic during lunch**, while the supplier catalogue is quite static; (2) the **credit mechanism undergoes changes** (e.g., implementing paid credits) while other mechanisms stay unchanged; (3) after errand completion, **credits should be transferred exactly once** — and splitting moves from a single DB to multiple DBs; (4) deployment moves from one VM to multiple containers. Weighing them: (1) argues for splitting (independent scaling of the errand service); (2) argues for splitting (independent deployability of credit); (3) argues against (exactly-once is easy in one database, hard across several — the integrity cost); (4) is neutral-to-costly (more moving parts to orchestrate). The verdict depends on which costs your requirements cannot afford — which is the point of the exercise.
@@ -211,9 +228,9 @@ Exactly-once credit transfer: with a single DB, the transfer is one local transa
 
 **How it works:**
 
-**Synchronous patterns: the caller waits.** RESTful APIs over HTTPS, gRPC services, GraphQL interfaces — the lecture's list for request-style integration between services. (Source: L7 slide 13.)
+**{{ term("Synchronous", "communication where the caller waits for the callee's answer before moving on — defined in full in Week 10") }} patterns: the caller waits.** RESTful APIs over HTTPS, gRPC services (glossed in W6.10's alternatives table), GraphQL interfaces (an API style where the client asks for exactly the fields it needs in one query) — the lecture's list for request-style integration between services. (Source: L7 slide 13.)
 
-**Asynchronous patterns: the caller moves on.** Event-based communication — e.g., publish-subscribe events — and message queues (the lecture names Kafka and Amazon SNS in the bounded-context integration slide). (Source: L7 slides 13 and 31.)
+**{{ term("Asynchronous", "communication where the sender moves on without waiting — events and message queues; defined in full in Week 10") }} patterns: the caller moves on.** Event-based communication — e.g., publish-subscribe events — and message queues (the lecture names Kafka and Amazon SNS — Amazon's managed publish–subscribe notification service — in the bounded-context integration slide). (Source: L7 slides 13 and 31.)
 
 {% call example("L7 slide 13 — one invoice, two interaction styles") %}
 A Payment service handles an invoice held by the Finance service. **(a) Synchronous:** the Payment service sends `InvoicePaid` as a request via the API, initiating a state transition in the invoice — Finance must be up and answer. **(b) Asynchronous:** the invoice changes state when it *receives an event*; Payment publishes to a queue and Finance consumes it when it can — neither waits for the other.
@@ -223,7 +240,7 @@ A Payment service handles an invoice held by the Finance service. **(a) Synchron
 In a Grab-like ride-hailing app, **Design A**: Booking makes a synchronous call-and-return to Matching. **Design B**: Booking publishes a `BookingRequested` event to the middleware. When the Matching component crashes for two minutes at peak, **Design B offers reliability by storing the event in the middleware until Matching becomes available** — Booking is never blocked, nothing is lost. In Design A, Booking's call fails or hangs while Matching is down: the synchronous dependency chain is the availability cost W7.3 named. (Source: Quiz 2, Q1.)
 {% endcall %}
 
-The diagram sets the two interaction styles side by side for the same business event.
+The diagram stacks the two interaction styles, (a) above (b), for the same business event.
 
 <mermaid>
 flowchart TB
@@ -233,7 +250,7 @@ flowchart TB
   subgraph async["(b) Asynchronous — event via queue"]
     pay2["Payment service"] -.->|"publishes InvoicePaid"| q[["Queue"]]
     q -.->|"consumes when able"| fin2["Finance service"]
-  end
+  end  sync ~~~ async
 </mermaid>
 
 %%Notation: boxes are services, the double-struck box is a message queue (a data store for in-flight messages), solid arrows are synchronous calls where the caller waits, and dashed arrows are asynchronous messages the sender does not wait on.%% To read it: in (a), the Payment service cannot proceed until Finance answers — a Finance outage becomes a Payment outage (Design A of the Grab-like app). In (b), Payment publishes `InvoicePaid` and returns immediately; the queue holds the message until Finance is back (Design B) — looser coupling bought with eventual processing and more moving parts.
@@ -270,7 +287,7 @@ The middleware stores the `BookingRequested` event until Matching becomes availa
 
 **How it works:**
 
-**The domain is the problem space; the domain model is your abstraction of it.** The domain identifies the main business problem you intend to solve — the critical, fundamental concept behind the business, a specific area of functionality or business capability; requirements come from the domain. A {{ term("domain model", "an abstraction of the problem domain containing only the information necessary to solve the problem in this application's context") }} represents a view of that problem domain — an abstraction, not the reality. (Source: L7 slide 17.)
+**The {{ term("domain", "the problem space the business occupies — its rules, processes, ideas, and terminology; it exists regardless of the software (defined in full in Week 8)") }} is the problem space; the domain model is your abstraction of it.** The domain identifies the main business problem you intend to solve — the critical, fundamental concept behind the business, a specific area of functionality or business capability; requirements come from the domain. A {{ term("domain model", "an abstraction of the problem domain containing only the information necessary to solve the problem in this application's context") }} represents a view of that problem domain — an abstraction, not the reality. (Source: L7 slide 17.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-07.md#def-domain-model" trim />
@@ -293,7 +310,7 @@ For the online retailer, the lecture maps six sub-domains: product, order, invoi
 The diagram decomposes one business domain into classified sub-domains.
 
 <mermaid>
-flowchart TB
+flowchart LR
   dom(["Domain: online retailer (problem space)"])
   dom --> prod["Product — core: build in-house"]
   dom --> order["Order — supporting: build or outsource"]
@@ -349,9 +366,33 @@ Buy — it is a generic sub-domain: not specific to the business, implemented us
 
 **Contexts must collaborate, and the lecture names the patterns.** Capture the collaborations between bounded contexts (online retail store: Authentication, Fulfillment, Product catalog, Checkout, Payment, Accounting). Two contexts developed independently but jointly owning a small shared part of the model is a **shared kernel** (a common-coupling alert — W4.6); a provider–consumer split is **upstream–downstream** (Order context publishes an Order API; the Recommendation context fetches order information). (Source: L7 slides 24–25.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-shared-kernel" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-upstream-downstream" trim />
+</box>
+
 **Downstream strategies: conform, or ask the upstream to accommodate.** In a **conformist** relationship the downstream adopts the upstream's published model as-is, with no influence over the format; in a **supplier–customer** relationship the upstream designs the API with the downstream's needs in mind. (Source: L7 slide 26.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-conformist" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-supplier-customer" trim />
+</box>
+
 **How contexts interact should model how the real domain interacts — how we do it matters.** When Order Processing hands fulfillment data to the Warehouse: sharing the *entire* order structure is {{ term("stamp coupling", "one component passes an entire data structure to another that needs only part of it") }}; sharing just the needed order fields (and only then the customer information) is {{ term("data coupling", "components share only the specific data items actually needed") }}; and decoupling fully, Order Processing can produce an `OrderPlaced` **event** that the Warehouse consumes — reacting when the event is seen. (Source: L7 slides 27–30.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-stamp-coupling" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-04.md#def-data-coupling" trim />
+</box>
 
 {% call example("L7 slides 27–30 — four ways to tell the warehouse about an order") %}
 A customer places an order; the warehouse needs to pick, package, and send items. Option (a): pass the **entire order structure** — stamp coupling; the warehouse now depends on order internals it never uses. Option (b): share **just the order information** the warehouse needs — data coupling. Option (c): add the customer information too — still data coupling, but more than the picking task requires. Option (d): Order Processing **produces an `OrderPlaced` event** and the Warehouse consumes it — the loosest option, and the one that matches how the real domain works: the warehouse does not ask for orders; it reacts to new ones.
@@ -396,7 +437,7 @@ Option (d) — Order Processing publishes an `OrderPlaced` event that the Wareho
 **A well-designed aggregate comes from the business and is cohesive.** It is derived from a business requirement and has high functional cohesion — e.g., Ticket in the Ticket service, where one Ticket aggregates its Messages and Attachments. (Source: L7 slide 33.)
 
 {% call example("L7 slide 33 — the Ticket service's Ticket aggregate") %}
-In the Ticket service, the aggregate is **Ticket** (the root): one Ticket holds `1..*` Messages and their Attachments. External code may read the ticket and its messages, but to add a message it must call the Ticket's public interface — never insert into the message list directly. If "close ticket and archive attachments" is one operation, the transactional boundary guarantees it all happens or nothing does — tickets are never left half-closed.
+In the Ticket service, the aggregate is **Ticket** (the root): one Ticket holds `1..*` (UML for "one or more") Messages and their Attachments. External code may read the ticket and its messages, but to add a message it must call the Ticket's public interface — never insert into the message list directly. If "close ticket and archive attachments" is one operation, the transactional boundary guarantees it all happens or nothing does — tickets are never left half-closed.
 {% endcall %}
 
 **Aggregates and bounded contexts are both "collections of things" — but the things are fundamentally different.** Aggregates define business entity models — the central business objects within a bounded context; bounded contexts correspond to business sub-domains. (Source: L7 slide 34.)
@@ -431,13 +472,25 @@ The business operations and invariants belong to the ticket as a whole (closing 
 
 **Three DDD constructs feed service identification.** Use sub-domains: each subdomain corresponds to a different part of the business — define services corresponding to subdomains (the online store's product catalog, inventory management, order management, delivery management). Use bounded contexts: microservices are bounded contexts — with the caution that **not all bounded contexts are necessarily microservices**, and some have wide functionalities. Use aggregates: a well-designed aggregate exhibits many characteristics of a well-designed microservice — derived from business requirements, high functional cohesion, typically loosely coupled. (Source: L7 slide 35.)
 
-**Then apply the single-responsibility principle (SRP) and decompose deliberately.** Each service should have only a small set of responsibilities. Decompose by **verb or use case** — a Shipping service responsible for shipping complete orders; or by **noun/resource** — an Account service responsible for all operations on user accounts. Also consider team size, technologies, and scalability/availability/security requirements; it is possible to further decompose a service, or to combine two into one. (Source: L7 slide 36.)
+**Then apply the {{ term("single-responsibility principle", "each service should have only a small set of responsibilities") }} (SRP) and decompose deliberately.** Each service should have only a small set of responsibilities. Decompose by **verb or use case** — a Shipping service responsible for shipping complete orders; or by **noun/resource** — an Account service responsible for all operations on user accounts. Also consider team size, technologies, and scalability/availability/security requirements; it is possible to further decompose a service, or to combine two into one. (Source: L7 slide 36.)
 
-**Event storming finds the same boundaries from the dynamics side.** A lightweight, industry-common process: **domain events** are events that occur in the domain and matter — they record state changes; **commands** cause the events and are issued by a user or an external system; a command works **on an aggregate** to make an event happen; a **policy** links events back to commands — *when* the payment card is submitted, *then* confirm the order. (Source: L7 slides 38–41.)
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-single-responsibility-principle" trim />
+</box>
+
+**{{ term("Event storming", "a lightweight workshop that traces commands → aggregates → events → policies to find service boundaries — full treatment in Week 8") }} finds the same boundaries from the dynamics side.** A lightweight, industry-common process: **domain events** are events that occur in the domain and matter — they record state changes; **commands** cause the events and are issued by a user or an external system; a command works **on an aggregate** to make an event happen; a **policy** links events back to commands — *when* the payment card is submitted, *then* confirm the order. (Source: L7 slides 38–41.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-domain-event" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-policy" trim />
+</box>
 
 **Drawing the boundaries is the payoff.** Draw boundaries that delimit each consistent context — the relations and communication between contexts follow, and **these boundaries give you microservice boundaries**. A bounded context solves one problem and can contain more than one aggregate. (Source: L7 slide 42.)
 
-**And the cautions the lecture stamps on the whole method.** Start with business events, not CRUD — focus on domain events from real business needs, not technical data operations. Not always true: one aggregate = one microservice; not always true: one bounded context = one microservice — aggregates and bounded contexts *inform* service boundaries but don't map 1:1 always. Group by business capability and cohesion; and microservice boundaries evolve over time. (Source: L7 slide 43.)
+**And the cautions the lecture stamps on the whole method.** Start with business events, not CRUD (create, read, update, delete — the basic data-table operations) — focus on domain events from real business needs, not technical data operations. Not always true: one aggregate = one microservice; not always true: one bounded context = one microservice — aggregates and bounded contexts *inform* service boundaries but don't map 1:1 always. Group by business capability and cohesion; and microservice boundaries evolve over time. (Source: L7 slide 43.)
 
 {% call example("L7 slides 38–42 — storming the errand platform's credit flow") %}
 Work the wall left to right. Domain event: `CreditsTransferred` (records a state change in the credit ledger). What caused it? A command, `Transfer credits`, issued after an errand is completed. What did the command act on? The **Credit aggregate** (root: the credit account). What policy follows? *When* `ErrandCompleted` *then* `Transfer credits` — one event triggering another command. When the same wall shows credit events clustering separately from errand-matching events and catalogue events, draw boundaries around each consistent cluster: those bounded contexts — errand matching, credit, catalogue — are the microservice boundary candidates, exactly the seams the W7.3 trade-off discussion weighed.
@@ -447,10 +500,10 @@ The diagram reads one stripe of an event-storming wall left to right.
 
 <mermaid>
 flowchart LR
-  u(["User / external system"]) -->|"issues"| cmd["Command: Transfer credits"]
-  cmd -->|"acts on"| agg["Aggregate: Credit account"]
-  agg -->|"records"| ev["Event: CreditsTransferred"]
-  ev -.->|"policy: when CreditsTransferred<br>then Confirm order"| cmd2["Command: Confirm order"]
+  u(["User /<br>external system"]) -->|"issues"| cmd["Command:<br>Transfer credits"]
+  cmd -->|"acts on"| agg["Aggregate:<br>Credit account"]
+  agg -->|"records"| ev["Event:<br>CreditsTransferred"]
+  ev -.->|"policy: when<br>CreditsTransferred<br>then Confirm order"| cmd2["Command:<br>Confirm order"]
 </mermaid>
 
 %%Notation: the rounded box is the actor, rectangles are command/aggregate/event artifacts, solid arrows show causation, and the dashed arrow is a policy linking one event to the next command.%% To read it: a user or external system issues `Transfer credits`; the command acts on the Credit aggregate (the consistency unit from W7.7) and produces `CreditsTransferred`; the policy "when CreditsTransferred then Confirm order" fires the next command — chains of exactly this shape, drawn on one wall, are what event storming produces; where the chains cluster consistently, you draw a boundary, and that boundary is a microservice candidate.
@@ -530,15 +583,28 @@ Because command/event must come from a business need: CRUD items are technical d
 |---|---|---|
 | Microservice | An independently deployable service modeled around a business domain, owned by a small team | [W7.1](#W7-c1) |
 | Microservice architecture | The style structuring an application as a collection of such services forming one solution | [W7.1](#W7-c1) |
-| API gateway | The single entry point routing client requests to the services behind it | [W7.1](#W7-c1) |
+| API gateway | The single entry point routing client requests to the services behind it (defined in Week 8) | [W7.1](#W7-c1) |
+| Business capability | Something the business does that delivers value — the unit microservice boundaries align with | [W7.2](#W7-c2) |
+| Two-pizza team | A small cross-functional team, small enough that two pizzas feed it, owning its services' whole lifecycle | [W7.2](#W7-c2) |
 | Loose coupling | Depending on others only through small published interfaces — no shared internals | [W7.2](#W7-c2) |
+| Service instance per host | Run each service instance in isolation on its own host | [W7.3](#W7-c3) |
+| Service instance per container | Run each service instance in its own container, packaged as a container image | [W7.3](#W7-c3) |
+| Service instance per VM | Package each service as a VM image (e.g., an Amazon EC2 AMI) and launch instances from it | [W7.3](#W7-c3) |
 | Domain-driven design (DDD) | Domain-centric design approach keeping the model isolated from technical complexity | [W7.5](#W7-c5) |
 | Domain model | An abstraction of the problem domain with only the information the application needs | [W7.5](#W7-c5) |
 | Sub-domain | A cohesive logical separation of the domain — core, supporting, or generic | [W7.5](#W7-c5) |
 | Bounded context | The explicit boundary within which a domain model exists (solution space) | [W7.6](#W7-c6) |
 | Ubiquitous language | Shared business-terms language, scoped to one bounded context | [W7.6](#W7-c6) |
+| Shared kernel | Two independently developed contexts jointly own a small shared subset of the model | [W7.6](#W7-c6) |
+| Upstream–downstream | Provider–consumer collaboration: the upstream publishes an API, the downstream fetches it | [W7.6](#W7-c6) |
+| Conformist | The downstream adopts the upstream's published model as-is, no influence over the format | [W7.6](#W7-c6) |
+| Supplier–customer | The upstream designs the API with the downstream's needs in mind | [W7.6](#W7-c6) |
+| Stamp coupling | Passing an entire data structure where the receiver needs only part of it | [W7.6](#W7-c6) |
 | Aggregate | A cluster of objects changed as one unit — root plus consistency and transactional boundaries | [W7.7](#W7-c7) |
-| Event storming | Lightweight workshop tracing commands → aggregates → events → policies to find boundaries | [W7.8](#W7-c8) |
+| Single-responsibility principle | Each service has only a small set of responsibilities; decompose by verb or by noun | [W7.8](#W7-c8) |
+| Domain event | An event occurring in the domain that matters — a record of a state change, from a business need | [W7.8](#W7-c8) |
+| Policy | The "when event then command" rule linking one event to the next command | [W7.8](#W7-c8) |
+| Event storming | Lightweight workshop tracing commands → aggregates → events → policies to find boundaries (defined in Week 8) | [W7.8](#W7-c8) |
 
 %%Next: [Week 8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html) continues microservices (II), building on the seams you can now find — how services are realized, owned, and operated once the boundaries from W7.8 are drawn.%%
 </div>

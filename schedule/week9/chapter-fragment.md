@@ -47,7 +47,7 @@ flowchart TB
 
 %%Notation: the central box is the single event concept; each branch is one *view* — a role the event plays in design, not a different kind of object.%%
 
-How to read it: the left two branches recycle Week 8's material — event storming discovered your service candidates ([W8.1](#W8-c1)) and event sourcing/CQRS restructured your storage ([W8.3](#W8-c3)). The right branch is this week's new question: *how much data should one event carry?* The two content-side answers get their own definitions below.
+How to read it: the first three branches recycle Week 8's material — event storming discovered your service candidates ([W8.1](#W8-c1)), and event sourcing and CQRS restructured your storage ([W8.3](#W8-c3)). The last branch is this week's new question: *how much data should one event carry?* The two content-side answers get their own definitions below.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-notification" trim />
@@ -109,7 +109,7 @@ Quiz 4 Q2's trap is exactly here: `EligibilityConfirmed` is produced by a *diffe
 The diagram below draws the cascade slide 7 annotates: one initiating event from an end user kicks everything off, and every event after it is derived — triggered by the event before it. The chain, not the single event, is the structural heart of EDA.
 
 <mermaid>
-flowchart LR
+flowchart TB
     U(["Customer places<br/>an order (end user)"]) -->|"places order"| E1("Order Submitted<br/>initiating event")
     E1 -.-> OPS["Order Placement<br/>Service"]
     OPS -.->|"derived"| E2("Order Placed")
@@ -155,6 +155,10 @@ A university equipment platform sends a message named `EquipmentReserved` to the
 #### Inside an event: keys and payloads
 
 **An event is a key–value pair: the key identifies and routes, the value carries the details.** The key supports identification, routing, and aggregation on the unique ID; the value holds the complete details of the event (slide 10).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-event-key" trim />
+</box>
 
 **Events come in three structural types.** (Source: L9 slide 10, after Bellemare.)
 
@@ -217,6 +221,10 @@ A media platform durably records uploaded files and publishes `UploadAccepted` t
 * **Removed: coupling on identity/location.** The producer doesn't know who listens or where they are — less reliance on service discovery.
 * **Added: coupling on the event format.** Every consumer depends on the event's field names and meaning — change the event schema and you must consider every subscriber.
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-temporal-decoupling" trim />
+</box>
+
 The diagram contrasts the two styles on the FoC errand flow from slide 11.
 
 <mermaid>
@@ -232,7 +240,7 @@ sequenceDiagram
     O-->>U: Errand created
     Note over U,N: Fire-and-forget — sender moves on
     O--)N: DeliveryConfirmed (event)
-    N--)O: (no reply — none expected)
+    Note over O,N: no reply is sent — none is expected (the "forget" part)
 </mermaid>
 
 %%Notation: in sequence diagrams a solid arrow (`->>`) is a synchronous call and its dashed counterpart (`-->>`) the awaited reply; `--)` is an asynchronous event sent without expecting a reply; the two notes spanning all four participants mark where each style begins.%%
@@ -272,11 +280,11 @@ How to read it: above the first note — the Order service cannot create the err
 * **An action triggers producer components to deliver event data to something listening for it.** Event data is made available as soon as the action happens (slide 20).
 * **A consumer subscribes to events of interest and takes an appropriate action on receiving one.** (Slide 20.)
 * **EDA relies on asynchronous communication for sending and receiving events.** (Slide 20.)
-* **Remember the three-line character of events:** events are data that describe some action or fact; notifications of some change in state or data; recordings of what happened (slide 20).
+* **Remember the deck's three-part characterization of events:** events are data that describe some action or fact; notifications of some change in state or data; and recordings of what happened (slide 20).
 
 **Three component roles make up an EDA.** (Source: L9 slide 21.)
 
-* **Event producers** (event generators) publish data onto streams or queues.
+* **Event producers** (event generators) publish data onto streams or {{ term("queues", "broker channels that buffer messages for a single receiver, first-in-first-out — defined in W10.3") }}.
 * **The event broker** implements the transport between them.
 * **Event consumers** (event listeners) listen to and consume the event data.
 * **Producers and consumers are decoupled from each other:** producers do not know which consumers are listening; consumers are decoupled from each other too — location and identity transparency.
@@ -285,9 +293,9 @@ How to read it: above the first note — the Order service cannot create the err
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-broker" trim />
 </box>
 
-**The broker's job is to receive, publish on topics, and enable subscriptions.** It receives source data, publishes it on source-specific topics, and enables listeners to subscribe to topics of interest — and note what the deck points at: the *database-per-service pattern* reappears here, since each producer owns the data it publishes (slide 22).
+**The broker's job is to receive, publish on {{ term("topics", "broker channels enabling one-to-many communication: every subscriber of the topic receives the message — defined in W10.3") }}, and enable subscriptions.** It receives source data, publishes it on source-specific topics, and enables listeners to subscribe to topics of interest — and note what the deck points at: the *database-per-service pattern* reappears here, since each producer owns the data it publishes (slide 22).
 
-**Pub/sub is the standard realization of EDA structure.** Event producers are publishers, event consumers are subscribers — e.g., Kafka pub/sub (slide 24).
+**Pub/sub is the standard realization of EDA structure.** Event producers are publishers, event consumers are subscribers — e.g., {{ term("Kafka", "a distributed event-streaming platform: an immutable, partitioned, replayable log behind topics, treated fully in W10.3") }} pub/sub (slide 24).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-pub-sub" trim />
@@ -315,6 +323,10 @@ How to read it: the Order service neither knows nor cares that four consumers ex
 * **Communication and performance.** EDA relies on asynchronous communication — fast response to senders; microservices often communicate synchronously (occasionally asynchronously), and synchronous communication creates latency that slows the system (slide 25).
 * **Bounded contexts and data ownership.** Foundational for microservices; nice-to-have for EDA (slide 26).
 * **Event vs request processing.** EDA is built on event processing — responding to something that *has happened*, in turn triggering more events; microservices are built on request processing — responding to something that *needs to happen*, like a command or request (slide 27).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-latency" trim />
+</box>
 
 The same three axes, side by side:
 
@@ -356,7 +368,7 @@ The same three axes, side by side:
 
 **Applying both principle sets produces the hybrid — and shows where they clash.** Combine EDA's asynchronous communication with microservices' cohesive services and data ownership (slides 30–31).
 
-* **One service, several responsibilities — acceptable in EDA, not in microservices.** The deck's example: an Order Submission service that has to accept an order, validate it, apply the payment, and adjust the inventory. EDA tolerates it; microservice architecture rejects it — no single responsibility (slide 30).
+* **One service, several responsibilities — acceptable in EDA, not in microservices.** The deck's example: an Order Submission service that has to accept an order, validate it, apply the payment, and adjust the inventory. EDA tolerates it; microservice architecture rejects it — no {{ term("single responsibility", "a service should have exactly one cohesive responsibility — one reason to change") }} (slide 30).
 * **Split it into microservices that each own their data, wiring them with events, and you get an event-driven microservice system.** Extending the same retail example with per-service data stores yields the event-driven microservice architecture for the online retail store (slide 31).
 
 **Streams are owned by exactly one producer.** Consumer microservices consume and process events from one or more input event streams, applying their business logic (e.g., a Dashboard service consuming user data); producer microservices produce events to streams for others to consume (e.g., a User service owning user-related information) — and **each event stream has only one producing microservice, the owner of each event produced to that stream** (slide 32).
@@ -377,6 +389,30 @@ The same three axes, side by side:
 * **Partitioning.** Streams can be partitioned into substreams, the number varying with producer and consumer needs.
 * **Infinite retention.** Streams retain events indefinitely if so configured — foundational for maintaining state in an event stream.
 * **Replayability.** Any consumer can read whatever data it requires from the beginning — the basis for the single source of truth and for communicating state between services.
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-immutability" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-offset" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-partition" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-consumer-group" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-infinite-retention" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-09.md#def-replayability" trim />
+</box>
 
 **Scaling falls out of the log model.** Producers write over many partitions on many machines; load-balanced consumers share the partitions; rate limits apply to producers, consumers, and groups — Kafka ties the logs together, routing reliably, replicating for fault tolerance (slides 39–40). Reading and writing proceed in parallel across partitions, and scaling is straightforward: add machines and rebalance (slide 40).
 
@@ -402,7 +438,7 @@ How to read it: the User service is the only writer to this topic (single-owner 
 
 <box type="important" seamless>
 
-**Events wear two hats.** A notification hat that triggers services into action — the event-notification view of W9.1 — and a replication hat that copies data from one service to another, which is the event-carried state transfer view doing its job at stream scale — and it is common for one event-driven microservice to be a consumer of some input streams and the producer of others (slide 42). All event brokers provide the same platform: append events to persistent logs, deliver them to consumers, and manage partitions and replication for scalability and availability — Kafka being a distributed persistent log store (slide 43).
+**Events wear two hats.** The notification hat triggers services into action — the event-notification view of W9.1. The replication hat copies data from one service to another — event-carried state transfer (W9.1) applied at stream scale. Slide 42 adds a related fact: it is common for one event-driven microservice to be a consumer of some input streams and the producer of others. All event brokers provide the same platform: append events to persistent logs, deliver them to consumers, and manage partitions and replication for scalability and availability — Kafka being a distributed persistent log store (slide 43).
 </box>
 
 <box type="warning" seamless>
@@ -444,12 +480,21 @@ How to read it: the User service is the only writer to this topic (single-owner 
 | Query | Request for current state; needs a reply, changes nothing | [W9.1](#W9-c1) |
 | Event notification | "Something happened" event carrying little data | [W9.1](#W9-c1) |
 | Event-carried state transfer | Event carrying the data consumers need, avoiding callbacks | [W9.1](#W9-c1) |
+| Event key | Key half of a key–value event: identification, routing, aggregation, partition placement | [W9.1](#W9-c1) |
 | Fire-and-forget | Send and move on; no wait, no availability check | [W9.2](#W9-c2) |
+| Temporal coupling | Producer and consumer must be up at the same time — removed by async communication | [W9.2](#W9-c2) |
 | Event-driven architecture | Decoupled apps communicating asynchronously via events through a broker | [W9.3](#W9-c3) |
 | Event broker | Intermediary that receives, holds, and provides events by subscription | [W9.3](#W9-c3) |
 | Publish–subscribe | Publishers publish to topics; all subscribers receive | [W9.3](#W9-c3) |
+| Latency | Delay between sending a request and receiving its response; sync calls create it | [W9.3](#W9-c3) |
 | Event stream | Partitioned append-only sequence owned by one producing service | [W9.4](#W9-c4) |
 | Event-driven microservice | Small service fulfilling a bounded context, wired by input/output event streams | [W9.4](#W9-c4) |
+| Immutability | Published event data cannot be modified — corrections are new events | [W9.4](#W9-c4) |
+| Offset | Index-ID of the last event read in a partition; consumers scan sequentially from it | [W9.4](#W9-c4) |
+| Partition | Append-only substream of a stream; strictly ordered within; unit of parallelism | [W9.4](#W9-c4) |
+| Consumer group | Load-balanced consumers sharing a stream's partitions between them | [W9.4](#W9-c4) |
+| Infinite retention | Stream keeps events indefinitely if configured; foundation for state in the stream | [W9.4](#W9-c4) |
+| Replayability | Any consumer can read from the beginning; basis for the single source of truth | [W9.4](#W9-c4) |
 | Event sourcing | Events as source of truth; state reconstructed by replay | [W9.1](#W9-c1) |
 | CQRS | Separate models for writes (commands) and reads (queries) | [W9.1](#W9-c1) |
 

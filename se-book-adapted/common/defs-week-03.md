@@ -50,3 +50,227 @@ A **product backlog** is the ordered list of a product's requirements, each with
 <sub>-- L3 slides 7, 26</sub>
 
 </span>
+
+<span id="def-elicitation">
+
+**Requirements elicitation** discovers requirements — e.g., by interview, workshop, document analysis, or prototyping.
+
+<sub>-- L3 slide 4</sub>
+
+</span>
+
+<span id="def-requirements-analysis">
+
+**Requirements analysis** analyzes, decomposes, derives, and understands requirements, negotiates them, and identifies gaps.
+
+<sub>-- L3 slide 4</sub>
+
+</span>
+
+<span id="def-specification">
+
+**Requirements specification** produces written and illustrated requirements for comprehension, review, and use.
+
+<sub>-- L3 slide 4</sub>
+
+</span>
+
+<span id="def-requirements-validation">
+
+**Requirements validation** confirms the correct set of requirements — the set that traces back to business objectives and will enable developers to build a solution; corrections feed back into elicitation.
+
+<sub>-- L3 slides 4, 28</sub>
+
+</span>
+
+<span id="def-event-response-table">
+
+An **event-response table** is an elicitation source that identifies external stimuli and describes the system's responses to each.
+
+<sub>-- L3 slide 5</sub>
+
+</span>
+
+<span id="def-usage-centric-requirement">
+
+A **usage-centric requirement** states a capability from the user's point of view — "As a user, I can upload an image into the system so that I can showcase my photography skills to the world."
+
+<sub>-- L3 slide 6; Quiz 1 Q9</sub>
+
+</span>
+
+<span id="def-product-centric-requirement">
+
+A **product-centric requirement** states what the system will do — "The system will support a range of graphic file formats up to 20 mb in size" — and is refined into testable system statements.
+
+<sub>-- L3 slide 6; Quiz 1 Q9</sub>
+
+</span>
+
+<span id="def-requirement-refinement">
+
+**Requirement refinement** decomposes a requirement into child requirements at least two levels deep — from capability ("allow user to register using email/password") to testable rule ("password should contain upper and lower case letters and numbers, minimum length, avoid dictionary attack").
+
+<sub>-- L3 slides 6, 8</sub>
+
+</span>
+
+<span id="def-software-requirements-specification">
+
+A **software requirements specification (SRS)** is a traditional textual requirements document that only records what is to be done in the project — unlike the product backlog, it is not by itself a planning tool for sequencing the work.
+
+<sub>-- L3 slide 29</sub>
+
+</span>
+
+<span id="def-requirement-traceability">
+
+**Requirement traceability** gives each requirement a type, a unique identifier, a brief high-level description, a priority, and other information (e.g., sprint-id), and traces it to use-case, design-document, code-module, and test-case references.
+
+<sub>-- L3 slide 26</sub>
+
+</span>
+
+<span id="def-external-quality-attribute">
+
+An **external quality attribute** is observed when the software is executing and impacts the user's experience — it develops the user's perception of software quality.
+
+<sub>-- L3 slide 11</sub>
+
+</span>
+
+<span id="def-internal-quality-attribute">
+
+An **internal quality attribute** is not directly observed when the software is executing — it is perceived by the developers and maintainers, and encompasses aspects of design that may impact external attributes.
+
+<sub>-- L3 slide 11</sub>
+
+</span>
+
+<span id="def-security">
+
+**Security** is the system's ability to resist unauthorized use while still providing its services to legitimate users. Core concerns: confidentiality and integrity; it relies on authentication, authorization, and auditing. Record security requirements early in the product cycle, and make them specific and testable.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-confidentiality">
+
+**Confidentiality** protects data against unauthorized disclosure or access.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-integrity">
+
+**Integrity** protects data against unauthorized modification.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-authentication">
+
+**Authentication** establishes who the user is — e.g., the preferred strategy for resolving forgotten passwords, addressing account lockouts, expiring inactive sessions, and re-authenticating critical transactions.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-authorization">
+
+**Authorization** decides what an authenticated user is allowed to do.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-auditing">
+
+**Auditing** records actions so misuse can be detected or investigated — specifying what activity should be logged, at what level of detail, and who should have access to the logs.
+
+<sub>-- L3 slide 14</sub>
+
+</span>
+
+<span id="def-performance">
+
+**Performance** primarily encompasses the responsiveness of the system; low performance means unhappy users, and in real-time systems it can impact safety. Performance requirements affect the choice of architecture (monolithic vs microservices), design, and deployment, plus hardware and network choices.
+
+<sub>-- L3 slides 15–17</sub>
+
+</span>
+
+<span id="def-caching">
+
+**Caching** stores frequently accessed data closer to the user — high-speed, typically transient storage holding a subset of the data (e.g., Amazon ElastiCache, Redis) — one approach to improving performance.
+
+<sub>-- L3 slide 18</sub>
+
+</span>
+
+<span id="def-deployability">
+
+**Deployability** is the ease and speed of getting software to production — software allocated to an environment for execution within a predictable, acceptable amount of time and effort. It is measured by deployment frequency, change failure rate, and MTTR, and is impacted by CI/CD, containerization, DevOps, and architectural decisions such as serverless and microservices.
+
+<sub>-- L3 slide 21</sub>
+
+</span>
+
+<span id="def-usability">
+
+**Usability** measures the effort required to prepare input, operate, and decipher the output of the software — e.g., average time to specify inputs, number of interactions to get information, time to complete a task, user errors or trials needed, and waiting time. It packs in ease of learning (meaningful messages, verbose prompts, tooltips) and ease of use (customizations, autocompletion, autocorrection, scriptable).
+
+<sub>-- L3 slide 22</sub>
+
+</span>
+
+<span id="def-reliability">
+
+**Reliability** is the ability of the system to keep working correctly over time. The deck's trade-off table shows the cost: improving reliability by introducing redundant checks, backups, and recovery routines makes the system slower and more resource-hungry, degrading efficiency.
+
+<sub>-- Quiz 1 Q7; L3 slide 23</sub>
+
+</span>
+
+<span id="def-interoperability">
+
+**Interoperability** is the ability of the system to operate with other systems. The deck's trade-off table shows the cost: improving interoperability by allowing open data exchange and API access can expose the system to more vulnerabilities, weakening security.
+
+<sub>-- Quiz 1 Q7; L3 slide 23</sub>
+
+</span>
+
+<span id="def-efficiency">
+
+**Efficiency** is how well the system uses its resources — doing its work without waste of time, hardware, or money. It is the attribute that pays for reliability's redundant checks, backups, and recovery routines.
+
+<sub>-- Quiz 1 Q7; L3 slide 23</sub>
+
+</span>
+
+<span id="def-pairwise-prioritization">
+
+**Pair-wise prioritization** compares requirements (or quality attributes) two at a time to force an order — a prioritization framework for identifying the nice-to-haves, with feasibility taking priority.
+
+<sub>-- L3 slides 23, 25</sub>
+
+</span>
+
+<span id="def-requirement-verification">
+
+**Requirements verification** checks whether you have written the requirements right: the requirements have the desirable properties — completeness, correctness, feasibility, prioritization, unambiguity. It is done informally (peer desk-check, pass-around, walkthrough) or formally (inspection — a formal process with a checklist).
+
+<sub>-- L3 slide 28</sub>
+
+</span>
+
+<span id="def-requirements-management">
+
+**Requirements management** is the loop of collecting initial requirements from stakeholders; analyzing; defining and recording; prioritizing; agreeing on and approving; tracing to work items; querying stakeholders after implementation on needed changes; utilizing test management to verify and validate; assessing the impact of changes; revising; and documenting changes.
+
+<sub>-- L3 slide 32, after IBM</sub>
+
+</span>

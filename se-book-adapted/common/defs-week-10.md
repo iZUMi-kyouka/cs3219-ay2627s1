@@ -51,3 +51,38 @@
 %%(Source: L10 slide 32.)%%
 
 </span>
+
+<span id="def-async-request-reply">
+
+**Asynchronous request–reply** — a pattern for long-running work kept behind a request–reply facade: the API accepts the request, queues it for a background worker, and answers immediately with **HTTP 202 (Accepted)** plus a link to a *status endpoint*; the client polls the status endpoint (202 while pending), and on completion receives **302 (Found)** redirecting to the resource. An invalid request is rejected immediately (e.g. HTTP 400 Bad Request).
+%%(Source: L10 slides 7–8; Quiz 4 Q7.)%%
+
+</span>
+
+<span id="def-kafka">
+
+**Kafka** — a distributed message streaming platform that uses publish–subscribe, developed at LinkedIn and donated to the Apache Foundation: producers publish events to named topics, topics are broken into partitions spread over a cluster of brokers that deliver messages to consumers, and brokers can be added without downtime — horizontal scaling.
+%%(Source: L10 slides 22–23.)%%
+
+</span>
+
+<span id="def-amqp">
+
+**AMQP** (Advanced Message Queuing Protocol) — an open-standard asynchronous messaging protocol enabling conforming client applications to communicate with conforming messaging middleware brokers: messages are published to exchanges, which route copies to queues, from which consumers receive or fetch them.
+%%(Source: L10 slides 25–27.)%%
+
+</span>
+
+<span id="def-exchange">
+
+**Exchange** (AMQP/RabbitMQ) — the routing step of the AMQP model: it receives published messages and routes copies into the queues bound to it, matching message attributes (e.g., the routing key) against each queue's binding. Exchange types: **direct** (exact key match), **fanout** (all bound queues), **topic** (wildcard match, e.g. `us.#` matches `us.stocks`), **header** (route on message headers).
+%%(Source: L10 slides 26, 28–29.)%%
+
+</span>
+
+<span id="def-protocol">
+
+**Protocol** — a set of rules for communication (e.g., AMQP). A **standard** is a protocol approved by an authority (the slide names IEEE, W3C) and adopted by many parties — protocols can also be non-standard (e.g., JMS). A **specification** is the formally written form of a protocol that vendors follow (Java provides the JMS specification). An **implementation** is a vendor's working mechanism for using the protocol (e.g., ActiveMQ, Kafka).
+%%(Source: L10 slide 10.)%%
+
+</span>

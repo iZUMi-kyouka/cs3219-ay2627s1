@@ -34,7 +34,11 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 
 ### W11.1 Enterprise integration and the message broker ★
 
-**Once an application is split across the network, the hard problem is no longer the components themselves but making them talk to each other.** The lecture's shorthand: every D.A.D (Distributed Application Development) needs M.O.M ({{ term("message-oriented middleware", "Software that provides messaging capabilities so applications can exchange messages without knowing each other's location, platform or implementation.") }}). (Source: L11 slides 4–5.)
+**Once an application is split across the network, the hard problem is no longer the components themselves but making them talk to each other.** The lecture's shorthand: every D.A.D (Distributed Application Development) needs M.O.M. (Source: L11 slides 4–5.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-broker" trim />
+</box>
 
 **Applications that must integrate rarely speak the same language.** They run on different platforms, use different programming languages and data formats, and the network between them is unreliable. They also change at different times, so the integration must cope with change in an application, its protocol, or its data format. (Source: L11 slide 5 — the Modreg ↔ Canvas example.)
 
@@ -42,7 +46,11 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 
 **Enterprise Integration Patterns (EIP) are a technology-independent catalogue of solutions to common integration problems.** EIP gives developers and architects a shared vocabulary for describing integrations, independent of any vendor. The catalogue documents 65 patterns in six categories — message construction, message channels, message routing, message transformation, message endpoints, and system management — and every MOM is expected to support these capabilities. (Source: L11 slides 8, 14–15.)
 
-%%Many messaging products implement EIP under their own feature names — e.g. JMS providers such as Apache ActiveMQ, and Amazon MQ, SQS and SNS. The deck marks this vendor detail optional/not examinable (slides 9–13, 18, 21, 28, 30, 41–45).%%
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-enterprise-integration-patterns" trim />
+</box>
+
+%%Many messaging products implement EIP under their own feature names — e.g. JMS providers such as Apache ActiveMQ, and Amazon MQ, SQS (Simple Queue Service) and SNS (Simple Notification Service). The deck marks this vendor detail optional/not examinable (slides 9–13, 18, 21, 28, 30, 41–45).%%
 
 **A message broker buffers messages and hides the network from both sides.** It passes information between software components while minimising how much they need to know about each other, buffers incoming messages, and shields applications from many operating-system and network complexities. (Source: L11 slides 11, 64.)
 
@@ -52,9 +60,9 @@ The diagram below contrasts direct point-to-point integration with integration t
 flowchart LR
   subgraph direct["Point-to-point (slide 7)"]
     direction LR
-    M["Modreg"] <--> C["Canvas"]
-    M <--> L["Library system"]
-    C <--> L
+    M["Modreg"] --- C["Canvas"]
+    M --- L["Library system"]
+    C --- L
   end
   subgraph mom["Via a message broker (slide 11)"]
     direction LR
@@ -66,7 +74,7 @@ flowchart LR
   end
 </mermaid>
 
-%%Notation: a box is an application, a solid double arrow is a direct point-to-point integration, a dashed arrow is an asynchronous message sent through the messaging system, and the double circle is the broker/MOM.%%
+%%Notation: a box is an application, a solid line is a direct point-to-point integration (the link is mutual, so no arrowheads), a dashed arrow is an asynchronous message sent through the messaging system, and the double circle is the broker/MOM.%%
 
 How to read it: with three applications, point-to-point already needs every pair wired together, and adding a fourth application means touching all of them. In the broker version each application only knows the broker — exactly the loosely coupled setup the deck recommends for integrations like Modreg ↔ Canvas.
 
@@ -99,7 +107,7 @@ EIP are technology-independent solutions with agreed names, so many vendors impl
 
 **The payload you put in a message decides what the receiver may do with it — confuse an instruction with a record, and the receiver does the wrong thing.** That distinction is examined directly: Quiz 4 Q1 asks you to redesign a mislabelled message.
 
-**A message separates metadata from data.** The *header* specifies the type of information being transmitted, its origin, destination, size and other structural information; the *body* carries the actual information; optional *properties* are used mostly for message selection and filtering. %%The deck's three kinds are JMS terms (L11 slides 12, 16): *application-related* properties are set by your code, *provider-related* ones by the messaging vendor, and *standard* ones — such as JMSXDeliveryCount — are defined by the JMS specification itself.%% The deck summarises: message = metadata + data. (Source: L11 slides 16–17.)
+**A message separates metadata from data.** The *header* specifies the type of information being transmitted, its origin, destination, size and other structural information; the *body* carries the actual information; optional *properties* are used mostly for message selection and filtering. %%The deck's three kinds are JMS terms (L11 slides 12, 16): *application-related* properties are set by your code, *provider-related* ones by the messaging vendor, and *standard* ones — such as JMSXDeliveryCount, the JMS-specified count of delivery attempts for a message — are defined by the JMS specification itself.%% The deck summarises: message = metadata + data. (Source: L11 slides 16–17.)
 
 **There are three kinds of payload, and they differ in intent.** A **command** tells the receiver to do something; a **document** gives the receiver data to process at its own discretion; an **event** notifies the receiver that something has happened. This is the same "message vs event — intent matters!" line from Weeks 9–10, now completed with commands and documents. (Source: L11 slide 17; L13 slides 5–7.)
 
@@ -119,6 +127,18 @@ EIP are technology-independent solutions with agreed names, so many vendors impl
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-message-construction" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-command-message" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-document-message" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-event-message" trim />
 </box>
 
 **Choosing the payload kind is an architecture decision, not a naming detail.** An event invites consumers to react; a command obliges one receiver to act; a document merely informs. Picking the wrong kind couples the sender to the receiver's behaviour.
@@ -152,11 +172,21 @@ The filter's criteria are applied to the message content — the EIP definition 
 
 **A message needs a road: collaborating senders and receivers exchange messages only through channels they both know.** A channel is the conduit between them. The deck's slide heading calls channels "message queues" because the queue is the channel shape you meet first (and the one vendor APIs name); in general a channel comes in two shapes — a queue (point-to-point: one consumer per message) and a topic (publish-subscribe: all subscribers) — as the next paragraph makes precise. (Source: L11 slides 19–20, 31–32.)
 
-{{ term("Message channel", "A conduit — a queue or a topic — that connects collaborating senders and receivers and carries messages between them.") }}
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-channel" trim />
+</box>
 
 **A channel transmits messages in one direction, so a two-way exchange needs two channels.** In the request/reply setup, the requestor sends a request message on the request channel and the replier answers on a separate reply channel. (Source: L11 slide 20.)
 
 **Point-to-point and publish-subscribe channels differ in who receives a message.** On a point-to-point channel, exactly one consumer consumes each message. On a publish-subscribe channel, any message published to a topic is immediately received by all subscribers of the topic — used when multiple parties are interested in the same messages. A pub-sub *request-response* variant uses a pub-sub channel for the requests but a point-to-point channel for the responses, so one requester can collect and aggregate replies from many parallel workers. (Source: L11 slides 31–32.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-point-to-point-channel" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-publish-subscribe-channel" trim />
+</box>
 
 <box type="info" seamless>
 
@@ -189,13 +219,41 @@ The delivery difference is drawn side by side in [W10.2 — Events vs messages](
 
 **The request carries a return address; the reply carries a correlation identifier.** The return address tells the replier *where* to send the reply. To match a reply to its request when many requests are outstanding, the request carries a unique request ID and the replier copies it into the reply as the correlation ID; the requestor matches each reply to the request that caused it. (Source: L11 slides 23–25.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-return-address" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-correlation-identifier" trim />
+</box>
+
 {% call example("A request and its reply, message by message (L11 slide 22)") %}
 In the deck's request/reply log, the sent request has `Message ID: ...6.2.1.1`, `Correl. ID: null` and `Reply to: jms/ReplyQueue`. The reply arrives with a *different* message ID (`...5.2.1.1`) but `Correl. ID: ...6.2.1.1` — exactly the request's ID — which is how the requestor knows which outstanding request it answers. The request could even be sent while the replier was not running: the message is persisted on the channel until the replier consumes it.
 {% endcall %}
 
 **Channels also have defined failure behaviour.** An invalid message channel receives messages a receiver cannot interpret; a dead letter channel receives messages the messaging system cannot deliver — instead of retrying failing messages until they expire, move them to a dead-letter queue (DLQ) after a few attempts, then *redrive* them once the cause is fixed — %%redrive is AWS's term (L11 slide 28) for moving the messages from the DLQ back to the source queue, or to another queue, for another processing attempt%%. A data type channel carries one data type per channel, so the receiver knows the type from the channel it arrived on. (Source: L11 slides 27–29.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-invalid-message-channel" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-dead-letter-channel" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-redrive" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-data-type-channel" trim />
+</box>
+
 **When a request causes a reply that is itself another request, the chain can be retraced.** Request-reply chaining keeps the correlation of replies back to the original request — e.g. for auditing. (Source: L11 slide 26.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-request-reply-chaining" trim />
+</box>
 
 <box type="warning" seamless>
 
@@ -211,7 +269,7 @@ A channel transmits in one direction only. Fire-and-forget sends one message and
 
 **Q2.** An SQS consumer crashes *while* processing a message. What happens next, and when should the message land in the DLQ?
 <panel type="seamless" minimized header="%%Answer%%">
-The message becomes visible again after the visibility timeout, its receive count increases, and once the count reaches the configured limit the message moves to the designated dead-letter queue; from there it can be redriven to the source queue after the fault is fixed (L11 slide 28 — optional vendor detail, but the DLQ idea itself is examinable: slide 27).
+The message becomes visible again after the visibility timeout — the period during which a fetched message is hidden from other consumers — its receive count increases, and once the count reaches the configured limit the message moves to the designated dead-letter queue; from there it can be redriven to the source queue after the fault is fixed (L11 slide 28 — optional vendor detail, but the DLQ idea itself is examinable: slide 27).
 </panel>
 
 </panel>
@@ -222,9 +280,21 @@ The message becomes visible again after the visibility timeout, its receive coun
 
 **Without routing logic, every sender must know every recipient; routers move that knowledge out of the sender and into reusable components.** A message router consumes messages from one channel and reinserts them into different channels depending on a set of conditions — either the sender decides where each message goes, or a component like this decides for it, reducing the sender's workload. Simple routers connect one inbound channel to one or more outbound channels; composed routers combine several simple routers into more complex flows. (Source: L11 slides 34–35.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-router" trim />
+</box>
+
 **A content-based router routes on what the message contains.** It examines the message content and sends it to a channel based on the data in it, decoupling sender from receiver — but it must know all possible recipients, so any change in the recipient list means a change in the router. (Source: L11 slide 36.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-content-based-router" trim />
+</box>
+
 **A message filter is a content-based router with a single output channel.** Messages matching its criteria are routed on; the rest are discarded. (Source: L11 slide 37.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-filter" trim />
+</box>
 
 <box type="info" seamless>
 
@@ -256,7 +326,23 @@ An order-processing system runs a November promotion — all widgets are 10 % of
 
 **Some routing decisions do not look at content at all.** A context-based router chooses the destination from the *context* — commonly for load balancing, testing or failover, e.g. re-routing messages to another processing component when one fails. (Source: L11 slide 40.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-context-based-router" trim />
+</box>
+
 **Splitter, aggregator and scatter-gather reshape message streams.** A splitter turns a single message into multiple messages (one per order item); an aggregator — a special filter — collects correlated messages and publishes one aggregated message once a complete set has arrived; scatter-gather broadcasts one message to many participants concurrently and reassembles their replies into one message. (Source: L11 slides 47–48, 52.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-splitter" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-aggregator" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-scatter-gather" trim />
+</box>
 
 <box type="info" seamless>
 
@@ -282,7 +368,7 @@ That is also why the deck's combined example (slide 53) needs *two* aggregators:
 The deck's order-processing example composes exactly this chain, and the diagram below shows how the pieces fit.
 
 <mermaid>
-flowchart LR
+flowchart TB
   o["New order<br>(3 items)"] -.-> ch1[["NEW_ORDER"]]
   ch1 -.-> sp["Splitter"]
   sp -.-> cbr["Content-based<br>router"]
@@ -297,7 +383,7 @@ flowchart LR
 
 %%Notation: boxes are pattern components or systems, parallelograms are channels, dashed arrows are asynchronous messages. The two routers make different decisions: the first routes per item, the second routes the aggregated result.%%
 
-How to read it: one composite order is split into item messages; each item is routed to the inventory system that owns its category; the aggregator correlates the item results back into a single order message; finally a content-based router forwards validated orders to VALIDATED_ORDER and everything else to INVALID_ORDER, where an exception process notifies the customer. In the deck's words: the pub-sub channel is the *fork*, the aggregator is the *join*, and the content-based router is the *condition* (L11 slides 49–51).
+How to read it: one composite order is split into item messages; each item is routed to the inventory system that owns its category; the aggregator correlates the item results back into a single order message; finally a content-based router forwards validated orders to VALIDATED_ORDER and everything else to INVALID_ORDER, where an exception process notifies the customer. In the deck's fuller version of this chain (slide 51), a pub-sub channel plays the *fork*, the aggregator the *join*, and the content-based router the *condition* over the aggregated result; the diagram above draws the fork as the per-item content-based router of slide 49 instead.
 
 {% call example("Tutorial 9 Q3 — multi-item order → inventories → confirmation") %}
 Tutorial 9 Q3 poses the same design task: an e-commerce system receives an order with multiple items and must route each item to the correct inventory system, then recombine the results into a single confirmation. The model solution is the same chain — splitter (one message per item), content-based router (route on item type or location), aggregator (combine "confirmed"/"out of stock" replies into one Order Confirmation), which also yields parallel item processing (Tutorial 9 solutions, Q3; cf. L11 slide 49).
@@ -330,28 +416,40 @@ One aggregator reassembles the replies gathered from the participants of the sca
 
 **A message translator encapsulates the conversion between two formats.** It sits between client and service and converts messages from one format into the other, so neither side changes. (Source: L11 slide 55.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-translator" trim />
+</box>
+
 {% call example("EDI 850 → XML order (L11 slide 56)") %}
 An EDI 850 purchase-order record must reach an order-management system that speaks XML over HTTP and uses its own Order object definition. %%EDI stands for *Electronic Data Interchange*, and 850 is the ANSI X12 purchase-order transaction set — as the slide's own "850-to-PurchaseOrder" label says. (The deck's footnote expands EDI as "Electronic Data Invoice", but the 850 is a purchase order, not an invoice.)%% A message translator (EDI-to-XML, 850-to-PurchaseOrder) — with a channel adapter handling the transport-layer difference — converts the incoming EDI record into the XML document the order system expects, without changing either system.
 {% endcall %}
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-channel-adapter" trim />
+</box>
 
 **Pairwise translators do not scale to many applications.** With many communicating applications you need one translator per pair, every format change touches all translators involved, and each new application needs translators to all existing ones — so instead produce and consume using a common format. (Source: L11 slide 57.)
 
 **The canonical data model is that common format: an extra level of indirection between every system's own format.** Each system translates its data into the canonical syntax when sending, and translates the canonical syntax into its own format when receiving. (Source: L11 slide 58.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-canonical-data-model" trim />
+</box>
+
 <mermaid>
 flowchart LR
   subgraph pairwise["Translator between each pair"]
-    a1["App A"] <--> t1["Xlator"] <--> b1["App B"]
-    b1 <--> t2["Xlator"] <--> c1["App C"]
-    a1 <--> t3["Xlator"] <--> c1
+    a1["App A"] --- t1["Xlator"] --- b1["App B"]
+    b1 --- t2["Xlator"] --- c1["App C"]
+    a1 --- t3["Xlator"] --- c1
   end
   subgraph cdm["Canonical data model"]
-    a2["App A"] <--> cf(("Canonical<br>format")) <--> b2["App B"]
-    c2["App C"] <--> cf
+    a2["App A"] --- cf(("Canonical<br>format")) --- b2["App B"]
+    c2["App C"] --- cf
   end
 </mermaid>
 
-%%Notation: boxes are applications, the double-circle is the shared canonical format, and each double arrow is a translation hop. On the left every pair needs its own translator; on the right each application translates only to and from one canonical format.%%
+%%Notation: boxes are applications, the double-circle is the shared canonical format, and each solid line is a translation hop (mutual, so no arrowheads). On the left every pair needs its own translator; on the right each application translates only to and from one canonical format.%%
 
 How to read it: adding application D costs three new translators on the left but exactly one on the right — one canonical-format adapter. That is the indirection the deck recommends for large integration landscapes.
 
@@ -392,9 +490,25 @@ A content filter strips the unneeded data items before the message is passed on;
 
 **The messaging system does the routing, but *your* application still needs code to connect to it — that code is the endpoint.** A message endpoint is the interface between an application and a messaging system: it encapsulates the messaging APIs (e.g. JMS) and is custom to both the application and the messaging system's client API, so the rest of the application knows little about message formats, channels, or other messaging details. (Source: L11 slide 60.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-message-endpoint" trim />
+</box>
+
 **Endpoints are channel-specific and one-directional.** One endpoint instance either sends or receives — not both — and a single application uses multiple endpoints to interface with multiple channels. In JMS the two endpoint types are MessageProducer (sending) and MessageConsumer (receiving). (Source: L11 slides 60–61.)
 
 **A receiving endpoint either polls or reacts.** A polling consumer proactively reads messages when it is ready to consume them (e.g. RabbitMQ's `basic.get`); an event-driven consumer processes a message reactively on arrival (e.g. `basic.consume`). A related concept is throttling: the application controls the rate at which it consumes messages. (Source: L11 slides 61–63.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-polling-consumer" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-event-driven-consumer" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-throttling" trim />
+</box>
 
 {% call example("Growing queue in front of a slow filter (Quiz 2 Q7)") %}
 An image-processing system built as a pipe-and-filter architecture reveals a CPU-heavy resize filter with a growing job queue in front of it while other components sit idle. The queue is a channel; each resize filter is a consumer endpoint reading from it. Adding *extra resize filters consuming from the same job queue* — competing consumers polling the same channel — scales exactly the overloaded stage instead of the whole system (Quiz 2 Q7; cf. the Messaging Endpoints pattern map, L11 slide 15).
@@ -427,6 +541,10 @@ A polling consumer — it proactively reads when *it* is ready — combined with
 **Request-reply can be implemented synchronously or asynchronously, and only the dependency decides.** In the synchronous form the sender blocks until the reply arrives. Over messaging, the requestor sends the request (with a return address), releases the thread, and matches replies by correlation ID — the interaction is asynchronous at the transport level. But a sender that must still *use* the reply to complete its operation has only *hidden* the wait. (Source: L11 slides 20–25.)
 
 **The deck's shorthand for the hidden wait is pseudo-asynchronous.** The system behaves synchronously in terms of dependency, even though control returned to the caller early.
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-11.md#def-pseudo-asynchronous" trim />
+</box>
 
 {% call example("Tutorial 8 Q1 — Module A↔B vs Module C↔D") %}
 Scenario 1: "Module A calls Module B via an HTTP API using a background process and immediately returns control to its own caller, though it will eventually depend on B's HTTP response to complete the overall operation." At first glance asynchronous — but because A eventually depends on B's response to complete the operation, it is *pseudo-asynchronous*: synchronous in terms of dependency. Scenario 2: "Module C publishes a message to a queue consumed by Module D and immediately returns; the result is observed later via a separate notification." Here C does not depend on an immediate response from D — producer and consumer operate independently — so this is truly asynchronous (Tutorial 8 sheet and solutions, Q1).
@@ -501,21 +619,41 @@ Pseudo-asynchronous: control returned early, but the caller still depends on the
 
 | Term | Definition | Unit |
 |---|---|---|
+| Enterprise Integration Patterns (EIP) | Vendor-independent catalogue of 65 integration patterns in six categories | [W11.1](#W11-c1) |
+| Message broker (MOM) | Middleware that passes and buffers messages between components that need not know each other | [W11.1](#W11-c1) |
 | Message construction | Choosing what a message contains and what the receiver should do: command, document or event payload | [W11.2](#W11-c2) |
-| Message channel | A conduit (queue or topic) connecting collaborating senders and receivers | [W11.3](#W11-c3) |
+| Command message | Payload telling the receiver to perform an action | [W11.2](#W11-c2) |
+| Document message | Payload giving the receiver data to process at its discretion | [W11.2](#W11-c2) |
+| Event message | Payload notifying the receiver that something has happened | [W11.2](#W11-c2) |
+| Message channel | A conduit (queue or topic) connecting collaborating senders and receivers; one-directional | [W11.3](#W11-c3) |
+| Point-to-point channel | Channel on which exactly one consumer consumes each message | [W11.3](#W11-c3) |
 | Publish-subscribe channel | A channel where every message published to a topic is received by all its subscribers | [W11.3](#W11-c3) |
 | Return address | Part of a request telling the replier where to send the reply | [W11.3](#W11-c3) |
 | Correlation identifier | A token copied from request to reply so the requestor can match them | [W11.3](#W11-c3) |
-| Dead letter channel | A channel holding messages that could not be delivered or processed, for later redrive | [W11.3](#W11-c3) |
+| Request-reply chaining | Keeping correlation IDs across a chain of request-reply exchanges, to retrace the path | [W11.3](#W11-c3) |
+| Invalid message channel | Channel receiving messages a receiver cannot interpret | [W11.3](#W11-c3) |
+| Dead letter channel (DLQ) | A channel holding messages that could not be delivered or processed, for later redrive | [W11.3](#W11-c3) |
+| Redrive | Moving messages from the DLQ back to a queue for another attempt, once the cause is fixed | [W11.3](#W11-c3) |
+| Data type channel | One channel per data type, so the receiver knows the type from the channel | [W11.3](#W11-c3) |
+| Message router | Component that consumes messages from one channel and reinserts them into others by conditions | [W11.4](#W11-c4) |
 | Content-based router | A router that sends each message to a channel chosen from the message's content | [W11.4](#W11-c4) |
 | Message filter | A content-based router with one output channel that discards non-matching messages | [W11.4](#W11-c4) |
-| Splitter / aggregator | Patterns that turn one message into many, and many correlated messages into one | [W11.4](#W11-c4) |
+| Context-based router | Router deciding the destination from context (load balancing, failover), not content | [W11.4](#W11-c4) |
+| Splitter | Turns one message into multiple per-part messages | [W11.4](#W11-c4) |
+| Aggregator | Collects correlated messages and publishes one aggregated message | [W11.4](#W11-c4) |
+| Scatter-gather | Broadcasts one request to many participants concurrently and reassembles their replies | [W11.4](#W11-c4) |
 | Pipes and filters | Single-purpose processing steps (filters) chained by channels (pipes) | [W11.4](#W11-c4) |
 | Message translator | A component encapsulating the conversion of messages between two formats | [W11.5](#W11-c5) |
+| Channel adapter | Converts between transport layers so a component works in a different context | [W11.5](#W11-c5) |
 | Canonical data model | A common intermediate format every system translates to and from | [W11.5](#W11-c5) |
+| Content filter | Transformation that removes data items the receiver does not need | [W11.5](#W11-c5) |
+| Content enricher | Transformation that adds data items the message needs but does not carry | [W11.5](#W11-c5) |
 | Message endpoint | The interface between an application and a messaging system, encapsulating its API | [W11.6](#W11-c6) |
-| Polling / event-driven consumer | Consumer that reads when ready vs one that reacts on arrival | [W11.6](#W11-c6) |
+| Polling consumer | Consumer that proactively reads messages when it is ready | [W11.6](#W11-c6) |
+| Event-driven consumer | Consumer that reacts to a message's arrival | [W11.6](#W11-c6) |
+| Throttling | Receiver-side control on the message consumption rate | [W11.6](#W11-c6) |
 | Request-reply | Async messaging pattern using a return address and correlation identifier instead of blocking | [W11.7](#W11-c7) |
+| Pseudo-asynchronous | Control returns early but the caller still depends on the reply — synchronous in dependency | [W11.7](#W11-c7) |
 
 ## Connections
 

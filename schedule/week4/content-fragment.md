@@ -22,9 +22,11 @@ Two decks. The architecture deck covers: the architecture definition (Bass/Cleme
 
 ### Lecture
 
+{% from "schedule/macros-fragment.md" import term, example with context %}
+
 <panel type="seamless" expanded header=":glyphicon-facetime-video: **Deck 1 — High Level Design: Software Architecture** %%*(slides 2–22)*%%">
 
-**Architecture is defined by Bass, Clements & Kazman: structure(s) = components + externally visible properties + relationships.** The deck's shorthand: externally visible properties ≡ functionalities + NFR — the overall organization, a high-level design (slide 4) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
+**{{ term("software architecture", "the structure(s) of a system: components, their externally visible properties, and their relationships — the overall organization, a high-level design") }} is defined by Bass, Clements & Kazman: structure(s) = components + externally visible properties + relationships.** The deck's shorthand: externally visible properties ≡ functionalities + NFR — the overall organization, a high-level design (slide 4) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
 
 **The building blocks are component, connector, and configuration.** Components model application-specific responsibilities; connectors model interactions for transfer of control and/or data; configuration is the topology (slide 6) → [W4.2]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c2).
 
@@ -44,13 +46,13 @@ Two decks. The architecture deck covers: the architecture definition (Bass/Cleme
 
 **Decompose with guidelines: divide and conquer, high abstraction, more cohesion, less coupling, reuse, flexibility** (slide 14) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
-**Modularity (Parnas): decompose into smaller chunks with well-defined interfaces** — shorter development time, better flexibility, better comprehensibility (slide 15) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
+**{{ term("Modularity", "decomposing a big chunk into smaller chunks with well-defined interfaces (APIs) — Parnas's way to manage complexity") }} (Parnas): decompose into smaller chunks with well-defined interfaces** — shorter development time, better flexibility, better comprehensibility (slide 15) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
 **Slice horizontally (by technical layer — one layer, every domain) or vertically (by business domain — one capability, top to bottom).** The deck's grid is the errand platform: users, vendors, orders, credits × presentation, API, business logic, persistence (slide 16) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
-**Cohesion types (functional → utility) and coupling types (content → import) grade the decomposition** (slides 17–18) → [W4.6]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c6).
+**{{ term("Cohesion", "how strongly a module's facilities belong together — higher is better") }} types (functional → utility) and {{ term("coupling", "how strongly modules depend on each other — lower is better") }} types (content → import) grade the decomposition** (slides 17–18) → [W4.6]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c6).
 
-**Styles follow philosophies, categorized by two questions: how is the code divided (technical vs domain) and how is it deployed (monolith vs distributed)?** The 2×2 names layered, modular monolith, event-driven, and microservices (slides 19–22) → [W4.7]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c7).
+**Styles follow philosophies, categorized by two questions: how is the code divided (technical vs domain) and how is it deployed (monolith vs distributed)?** The 2×2 names {{ term("layered", "monolithic × technical style: layers with downward-only dependencies (Week 6)") }}, {{ term("modular monolith", "monolithic × domain style: one deployed unit, domain-partitioned modules") }}, {{ term("event-driven", "distributed × technical style: components react to events (Week 9)") }}, and {{ term("microservices", "distributed × domain style: independently deployable domain services (Weeks 7–8)") }} (slides 19–22) → [W4.7]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c7).
 
 </panel>
 
@@ -74,7 +76,9 @@ Tutorial 2 works your project Milestone D1 on the errand platform: draft functio
 
 ### Tutorial 2
 
-**What this practises:** turning a project description (must-have Mx and nice-to-have Nx features) into a traced, prioritized product backlog (W3.3), planning the work with concrete dates, and — optionally — LLM-assisted elicitation (W3.7, W2.2). Prerequisite: read the project document fully before starting. Come prepared: finish Question 1 quickly so you can enjoy Question 2.
+{% from "schedule/macros-fragment.md" import term, example with context %}
+
+**What this practises:** turning a project description (must-have Mx and nice-to-have Nx features) into a traced, prioritized {{ term("product backlog", "the ordered list of a product's requirements, each with type, identifier, description, priority, and planned sprint (Week 3)") }} (W3.3), planning the work with concrete dates, and — optionally — LLM-assisted elicitation (W3.7, W2.2). Prerequisite: read the project document fully before starting. Come prepared: finish Question 1 quickly so you can enjoy Question 2.
 
 **Materials:**
 

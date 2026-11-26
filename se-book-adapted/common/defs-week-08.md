@@ -114,3 +114,66 @@
 %%(Source: L8 slides 34, 36.)%%
 
 </span>
+
+<span id="def-domain-event">
+
+**Domain event** — an event that records a state change in the business domain, named in the past tense (e.g., `ErrandPosted`, `CreditReserved`). It is the starting artifact of event storming and the currency of event-driven communication.
+%%(Source: L7 slides 38–41; L8 slide 4; Quiz 4 Q2.)%%
+
+</span>
+
+<span id="def-policy">
+
+**Policy** — a business rule that reacts to a domain event and triggers a command, of the form "when … then …" (e.g., when `ErrandCompleted` then `SettleCredits`). In event storming, it is the policies that delimit the consistent contexts.
+%%(Source: L8 slide 4; L7 slides 38–41; Quiz 3 Q5.)%%
+
+</span>
+
+<span id="def-atomicity">
+
+**Atomicity** — the all-or-nothing property of a transaction: either every change in the group is applied or none is, so no observer sees a half-done operation (e.g., a paid booking must create the reservation *and* charge the card — both or neither).
+%%(Source: L8 slide 10 (the ACID properties); Quiz 3 Q2.)%%
+
+</span>
+
+<span id="def-eventual-consistency">
+
+**Eventual consistency** — the consistency guarantee of a saga-coordinated design: temporary inconsistency between services is allowed while the business process runs, provided the system is guaranteed to reach a consistent state eventually, through completed steps or compensating actions.
+%%(Source: Tutorial 7 solutions Q1; L8 slides 13–15.)%%
+
+</span>
+
+<span id="def-request-sync-response">
+
+**Request/sync response** — an interprocess communication style in which the client makes a request to a service and waits for the response before continuing (e.g., *Get passenger info*: TripManagement calls PassengerManagement and waits).
+%%(Source: L8 slide 30; Quiz 3 Q10.)%%
+
+</span>
+
+<span id="def-notification-one-way">
+
+**Notification (one-way request)** — an interprocess communication style in which the client sends a request and no reply is expected or sent (e.g., *Notify passenger*: DriverManagement tells PassengerManagement, and that is the whole conversation).
+%%(Source: L8 slide 30; Quiz 3 Q10.)%%
+
+</span>
+
+<span id="def-request-async-response">
+
+**Request/async response** — an interprocess communication style in which the client sends a request and the service replies asynchronously, later (e.g., *Trip created*: TripManagement asks Dispatcher and the answer comes back when it is ready).
+%%(Source: L8 slide 30; Quiz 3 Q10.)%%
+
+</span>
+
+<span id="def-client-side-discovery">
+
+**Client-side discovery** — a service-discovery style in which the client queries the service registry itself, determines the network locations of the available instances, and uses a load-balancing algorithm to pick one.
+%%(Source: L8 slide 34; Quiz 3 Q3.)%%
+
+</span>
+
+<span id="def-server-side-discovery">
+
+**Server-side discovery** — a service-discovery style in which the client sends the request to a load balancer, which queries the service registry and routes each request to an available instance (e.g., NGINX Plus, AWS Elastic Load Balancer).
+%%(Source: L8 slide 35.)%%
+
+</span>

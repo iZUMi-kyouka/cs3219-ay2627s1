@@ -66,3 +66,211 @@ A **modular monolith** is a system deployed as a single unit — a monolith — 
 <sub>-- L4 slide 22 (categorization summary)</sub>
 
 </span>
+
+<span id="def-configuration">
+
+**The configuration** of an architecture is its topology or structure — the arrangement of the system's components and connectors. An architecture = components + connectors + configuration.
+
+<sub>-- L4 slide 6</sub>
+
+</span>
+
+<span id="def-reference-architecture">
+
+A **reference architecture** explains the high-level structures of similar applications — numerous applications, same framework (e.g., web applications; the address-book developer guide's Logic/Storage/UI/Model organization) — and leads to architectural patterns.
+
+<sub>-- L4 slide 9</sub>
+
+</span>
+
+<span id="def-architectural-pattern">
+
+An **architectural pattern** is an architectural solution that forms the basis for architectural design: it addresses an application-specific problem within a specific context, adhering to a set of limitations and constraints.
+
+<sub>-- L4 slide 9</sub>
+
+</span>
+
+<span id="def-control-flow">
+
+**Control flow** is the flow that reasons about computation order — how the focus of control moves throughout the execution; data may accompany control.
+
+<sub>-- L4 slide 10</sub>
+
+</span>
+
+<span id="def-data-flow">
+
+**Data flow** is the flow that reasons about data availability, transformation, and latency — how data moves through a collection of computations; as data moves, control is activated.
+
+<sub>-- L4 slide 10</sub>
+
+</span>
+
+<span id="def-call-and-return">
+
+**Call and return** is the interaction style in which control moves from one component to another and back. It can be hierarchical (a master control calling subordinates) or non-hierarchical (objects calling each other's operations — e.g., through a manager for a shared abstract data type (ADT)).
+
+<sub>-- L4 slide 11</sub>
+
+</span>
+
+<span id="def-horizontal-slicing">
+
+**Horizontal slicing** cuts a system by technical layer: one slice is one layer — presentation, API, business logic, persistence — spanning every business domain; the boundary follows the technology.
+
+<sub>-- L4 slide 16</sub>
+
+</span>
+
+<span id="def-vertical-slicing">
+
+**Vertical slicing** cuts a system by business domain: one slice is one capability carried top to bottom — UI → endpoint → logic → persistence; the boundary follows the domain.
+
+<sub>-- L4 slides 16, 20</sub>
+
+</span>
+
+<span id="def-functional-cohesion">
+
+**Functional cohesion** is the strongest form of cohesion: the facilities in the module perform only one computation, with no side effects.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-layer-cohesion">
+
+**Layer cohesion** keeps related services together and everything else out, in a strict hierarchy in which higher-level services can access only lower-level services; accessing a service may result in side effects. (As a cohesion type, "layer" describes the inside of one module — not the system-wide layers of the layered style.)
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-communicational-cohesion">
+
+**Communicational cohesion** keeps together the facilities that operate on the same data.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-sequential-cohesion">
+
+**Sequential cohesion** keeps together a set of procedures that work in sequence to perform some computation — the output of one is the input to the next.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-procedural-cohesion">
+
+**Procedural cohesion** keeps together a set of procedures that are called one after another.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-temporal-cohesion">
+
+**Temporal cohesion** keeps together procedures used in the same general phase of execution, such as initialization or termination.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-utility-cohesion">
+
+**Utility cohesion** keeps together related utilities when there is no way to group them using a stronger form of cohesion.
+
+<sub>-- L4 slide 17, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-content-coupling">
+
+**Content coupling** is the worst form of coupling: a component modifies the internal data of another component.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-common-global-coupling">
+
+**Common/global coupling** couples all the modules that use the same global variable to each other.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-control-coupling">
+
+**Control coupling** is one module (A) directly controlling another (B) by passing information on what B should do — e.g., using a "flag" that defines what B should do.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-data-coupling">
+
+**Data coupling** is one module sharing data with another — e.g., via passing parameters. Weaker than control coupling: the caller passes data, not instructions.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-external-coupling">
+
+**External coupling** is a dependency that exists on elements outside the scope of the system, such as the operating system, shared libraries, or the hardware.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-temporal-coupling">
+
+**Temporal coupling** bundles two actions together just because they happen to occur at the same time.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-import-coupling">
+
+**Inclusion/import coupling** is the coupling introduced by including a file or importing a package.
+
+<sub>-- L4 slide 18, from Lethbridge & Laganière, ch. 9</sub>
+
+</span>
+
+<span id="def-technical-partitioning">
+
+**Technical partitioning** divides code by technical concern — presentation, services, persistence — focusing on separation of concerns and possibly aligning with team expertise (frontend developers, backend developers, database administrators).
+
+<sub>-- L4 slide 20</sub>
+
+</span>
+
+<span id="def-domain-partitioning">
+
+**Domain partitioning** divides code by domain (business) concern — customer, payment, shipping — so that logical components map to the problem and better align the system with the problem in hand.
+
+<sub>-- L4 slide 20</sub>
+
+</span>
+
+<span id="def-monolithic-deployment">
+
+**Monolithic deployment** deploys all the logical components that make up the application as one unit: the application runs as one process.
+
+<sub>-- L4 slide 21</sub>
+
+</span>
+
+<span id="def-distributed-deployment">
+
+**Distributed deployment** runs the application as independent logical components: each runs as an individual process and the components communicate over the network.
+
+<sub>-- L4 slide 21</sub>
+
+</span>

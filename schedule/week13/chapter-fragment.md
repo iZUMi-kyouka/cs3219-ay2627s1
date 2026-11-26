@@ -1,4 +1,4 @@
-{% from "schedule/macros-fragment.md" import icon_outcome with context %}
+{% from "schedule/macros-fragment.md" import term, icon_outcome with context %}
 <h2 id="title">Week 13 — Course Recap</h2>
 
 <span id="prereqs">
@@ -79,7 +79,7 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 ### W13.3 Through-line 2 — communication: sync → async → events → messages ★
 
-**The second through-line is what happens between the pieces once you cut them apart.** Week 10's taxonomy (synchrony, persistence, cardinality) and Week 9's events set up Week 11's engineering patterns; the recap deck compresses this into one slide: message vs event — *intent matters*; pub-sub; messaging; asynchronicity in the request-reply pattern; architect based on business needs (L13 slides 4–7).
+**The second through-line is what happens between the pieces once you cut them apart.** Week 10's three-axis taxonomy (synchrony, persistence, cardinality — the tutorial's word for W10.3's single vs multiple receivers) and Week 9's events set up Week 11's engineering patterns; the recap deck compresses this into one slide: message vs event — *intent matters*; pub-sub; messaging; asynchronicity in the request-reply pattern; architect based on business needs (L13 slides 4–7).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event-driven-architecture" trim />
@@ -95,7 +95,7 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 | Adjacent pair | The single question that separates them | Course example |
 |---|---|---|
-| Synchronous → asynchronous | Does the sender *depend on the reply* to complete its work — not: does control return early? | Module A's background-process HTTP call still depends on B's response — pseudo-asynchronous; C's queue publish does not — truly asynchronous (Tutorial 8 Q1, W11.7) |
+| Synchronous → asynchronous | Does the sender *depend on the reply* to complete its work — not: does control return early? | Module A's background-process HTTP call still depends on B's response — {{ term("pseudo-asynchronous", "control returns early but the caller still depends on the reply — synchronous in terms of dependency (W11.7)") }}; C's queue publish does not — truly asynchronous (Tutorial 8 Q1, W11.7) |
 | Asynchronous request-reply → event | Does the sender expect a *specific* receiver to act and answer — or is it announcing a completed fact to whoever cares? | Research → Archive query carrying a request identifier (Quiz 4 Q7) vs publishing `EquipmentReserved` (Quiz 4 Q1) |
 | Event → other message | Is the payload a fact (event) or a request/instruction for a receiver (command, document)? | `EquipmentReserved` (event) vs `ReserveEquipment` (command) — Quiz 4 Q1; W11.2 |
 
@@ -118,7 +118,7 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 
 ### W13.4 Through-line 3 — scaling: the scale cube ★
 
-**The third through-line asks what happens when any of the above works — and load arrives.** The recap deck's scalability lens is exactly Week 12: the scale cube, scaling databases, scale out, multi-tier scaling (L13 slide 8).
+**The third through-line asks what happens when any of the above works — and load arrives.** The recap deck's scalability lens is exactly Week 12: the {{ term("scale cube", "the three-axis summary of scaling: X replicate copies, Y decompose into services, Z partition data — defined in W12.8") }}, scaling databases, scale out, multi-tier scaling (L13 slide 8).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-scalability" trim />
@@ -144,22 +144,27 @@ Y then X: extract search as an independent microservice (functional decompositio
 **One system, evolved four times, touches every week of the course.** The diagram below evolves the room-booking platform — the running example of Quiz 3 — from a single-server monolith to an event-driven microservice system, annotating each stage with the course concept that justifies it and the communication style that era uses.
 
 <mermaid>
-flowchart LR
+flowchart TB
   subgraph s1["1 · Monolith (W4)"]
-    m["Search · Reservation · Notification<br>one deployment, one server"]
+    direction LR
+    m["Layered code: UI · business logic · data access<br>one deployment, one server"]
   end
   subgraph s2["2 · Modular monolith (W4)"]
+    direction LR
     mm["Search · Reservation · Notification<br>domain modules, one deployment<br>(search: separate index)"]
   end
   subgraph s3["3 · Microservices (W7, W12)"]
-    ms["Search service<br>N instances on demand"] --- lb["Load balancer<br>+ session store"]
-    res["Reservation"] --- ntf["Notification"]
+    direction LR
+    lb["Load balancer<br>+ session store"] --> ms["Search service<br>N instances on demand"]
+    res["Reservation"]
+    ntf["Notification"]
     ms -- "sync call (W6/W10)" --> res
   end
   subgraph s4["4 · Event-driven (W9–W11)"]
-    r2["Reservation"] -- "ReservationCreated (event)" --> b(("Broker"))
-    b -- pub-sub --> n2["Notification"]
-    b -- pub-sub --> a["Analytics"]
+    direction LR
+    r2["Reservation"] -.->|"ReservationCreated (event)"| b(("Broker"))
+    b -.->|"pub-sub"| n2["Notification"]
+    b -.->|"pub-sub"| a["Analytics"]
   end
   s1 ==>|"decompose: Y (still one deployment)"| s2
   s2 ==>|"distribute + replicate: Y then X"| s3
@@ -168,7 +173,7 @@ flowchart LR
 
 %%Notation: each framed stage is one architecture era of the same platform; boxes are components/services, the double circle is the message broker, solid arrows are synchronous calls, and dashed arrows are asynchronous messages/events. The thick arrows show the moves between stages: the first two are scale-cube moves (W12.8 — Y-axis decomposition, then distribution with X-axis replication of the hot service), while the last is a communication-architecture change (Weeks 9–11), not a cube axis.%%
 
-How to read it: stage 1 is the n-tier monolith on one server — fine until summer load arrives (W12.1). Stage 2 partitions by domain but keeps one deployment — the modular monolith, where search already has its own index (Quiz 3 Q1). Stage 3 extracts the 80%-hot module and scales *its* instances behind a load balancer with a session store — Quiz 3's correct answer, built from W12.4–W12.5. Stage 4 completes the arc: reservation publishes events that notification and analytics consume independently, commands still go where action is needed — Weeks 9–11's communication patterns, the same patterns as Quiz 4's EquipmentReserved redesign.
+How to read it: stage 1 is the n-tier monolith on one server — technically partitioned layers (W4's layered style, the L12 slide 10 starting point), fine until summer load arrives (W12.1); the Quiz 3 room-booking platform enters the story at stage 2, already domain-partitioned. Stage 2 partitions by domain but keeps one deployment — the modular monolith, where search already has its own index (Quiz 3 Q1). Stage 3 extracts the 80%-hot module and scales *its* instances behind a load balancer with a session store — Quiz 3's correct answer, built from W12.4–W12.5. Stage 4 completes the arc: reservation publishes events that notification and analytics consume independently, commands still go where action is needed — Weeks 9–11's communication patterns, the same patterns as Quiz 4's EquipmentReserved redesign.
 
 **Retelling the course this way is the exam skill.** Given any scenario — a monolith under load, a modular monolith with a hot module, services that must not block each other — you can name the stage you are in, the axis that moves you forward, and the communication style each stage implies.
 
@@ -265,6 +270,7 @@ This is a recap chapter — the terms below are defined once, in their own weeks
 | Event-driven architecture | Work triggered by events rather than direct calls | [Week 9]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts) |
 | Asynchronous communication | Sender proceeds without waiting for the receiver | [Week 10]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts) |
 | Message construction | Command / document / event payload choice | [Week 11]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts) |
+| Pseudo-asynchronous | Control returns early, but the caller still depends on the reply | [Week 11]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts) |
 | Scalability | Handling growth by adding resources, with stable response times | [Week 12]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts) |
 | Scale cube | X replicate · Y decompose · Z partition data | [Week 12]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#core-concepts) |
 

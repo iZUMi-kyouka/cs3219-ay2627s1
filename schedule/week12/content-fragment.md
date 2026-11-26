@@ -24,7 +24,7 @@
 
 **Scalability is the property of a system to handle a growing amount of work by adding resources — and "growth" has dimensions.** Requests per time window, data volume, and stable response times; load is not constant (a streaming service at 9 pm vs 5 am), so autoscaling must scale *down* as well as up (slides 3–6). → Chapter unit [W12.1]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c1).
 
-**Response time is a distribution, and percentiles are how you specify it.** P50 = typical experience, P95 = the standard service-level-objective threshold, P99 = worst case; e.g. "95% of successful browse errand requests complete in <200 ms" (slide 7). → [W12.2]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c2).
+**Response time is a distribution, and percentiles are how you specify it.** P50 = typical experience, P95 = the standard {{ term("service-level-objective", "a measurable target for a service level, e.g. a percentile response time held over a window — defined in W12.2") }} threshold, P99 = worst case; e.g. "95% of successful browse errand requests complete in <200 ms" (slide 7). → [W12.2]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c2).
 
 **Two strategies: replicate resources for throughput, or optimize what you have.** And scaling post-hoc is expensive — downtime, hardware, rewrites — so scalability is an architectural decision incorporated from the beginning (slides 8–9). → [W12.3]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c3).
 
@@ -34,7 +34,7 @@
 
 **After the services, the database is the bottleneck.** Cache frequently read data (Redis/Memcached), add read replicas with asynchronous replication, partition tables horizontally (by key) or vertically (static vs dynamic columns), or move to distributed databases (slides 15–20). → [W12.6]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c6).
 
-**Scale processing with multiple tiers, and buy responsiveness with queues.** Separate load-balanced, cached tiers per client type (the BFF variant), a core service owning DB access; acknowledge writes into a queue and persist afterwards, since writing to a queue is faster than writing to the DB (slides 20–22). → [W12.7]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c7).
+**Scale processing with multiple tiers, and buy responsiveness with queues.** Separate load-balanced, cached tiers per client type (the {{ term("BFF", "backend-for-frontend: each frontend gets its own purpose-built, separately scaled backend tier — defined in W12.7") }} variant), a core service owning DB access; acknowledge writes into a queue and persist afterwards, since writing to a queue is faster than writing to the DB (slides 20–22). → [W12.7]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c7).
 
 **Swim lanes (pods) contain failures inside a boundary** — easier fault detection, fault isolation, region-specific requirements, faster customer-specific response (slide 23). → [W12.7]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c7).
 
@@ -116,7 +116,7 @@ One possible solution — splitter, then content-based router, then aggregator:
 3. **Message aggregator** — collects the responses (e.g. *item confirmed* / *item out of stock*) from all inventory systems; once all parts are received, combines them into a single Order Confirmation message.
 
 <mermaid>
-flowchart LR
+flowchart TB
   o["New order (N items)"] -.-> ch1[["NEW_ORDER"]]
   ch1 -.-> sp["Splitter<br>(one message per item)"]
   sp -.-> cbr["Content-based router<br>(route on item category)"]

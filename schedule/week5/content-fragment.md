@@ -33,9 +33,9 @@
 
 **Containers answer "where do we host them?".** A {{ term("container", "a standardized unit packaging an app with all its dependencies, abstracting it from the environment it runs in") }} packages the app, its libraries, and its language runtime as a standardized unit that abstracts the application from the environment it runs in; Docker (2013) made that packaging the industry standard — build once, run anywhere. (Slides 27–33.) → [W5.4]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#W5-c4)
 
-**Container sprawl creates a new set of challenges, answered by orchestration.** The {{ term("container orchestration", "automated management of containers at scale: discovery, rollouts, auto-scaling, self-healing, secret/config management") }} story centers on {{ term("Kubernetes", "a container orchestration platform for running distributed apps on containers at scale") }}: pods are the smallest deployable units, a Deployment declares the desired replica count, and a reconcile loop drives desired state = actual state — giving self-healing and horizontal scaling (the Payment Deployment goes from replicas = 1 to 3 under high traffic). (Slides 34–41, 50–66.) → [W5.5]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#W5-c5)
+**Container sprawl creates a new set of challenges, answered by orchestration.** The {{ term("container orchestration", "automated management of containers at scale: discovery, rollouts, auto-scaling, self-healing, secret/config management") }} story centers on {{ term("Kubernetes", "a container orchestration platform for running distributed apps on containers at scale") }}: {{ term("pods", "the smallest deployable units in Kubernetes; a container resides inside a pod with a unique cluster IP") }} are the smallest deployable units, a {{ term("Deployment", "a Kubernetes resource declaring the desired pod replica count, enforced by the cluster") }} declares the desired replica count, and a reconcile loop drives desired state = actual state — giving self-healing and horizontal scaling (the Payment Deployment goes from replicas = 1 to 3 under high traffic). (Slides 34–41, 50–66.) → [W5.5]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#W5-c5)
 
-**Infrastructure itself becomes abstracted away — and immutable.** Apps sit on Kubernetes, which sits on pools of compute/network/storage; servers stop being pets (unique, nursed) and become cattle (identical, replaced), and {{ term("infrastructure as code", "managing infrastructure through version-controlled, reproducible configuration files") }} makes environments reproducible, declarative, and version-controlled. (Slides 41–49.) → [W5.6]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#W5-c6)
+**Infrastructure itself becomes abstracted away — and immutable.** Apps sit on Kubernetes, which sits on pools of compute/network/storage; servers stop being {{ term("pets", "in the pets-vs-cattle metaphor: unique, cared-for servers that are nursed back to health when sick") }} (unique, nursed) and become {{ term("cattle", "in the pets-vs-cattle metaphor: identical, numbered instances replaced with another when one gets sick") }} (identical, replaced), and {{ term("infrastructure as code", "managing infrastructure through version-controlled, reproducible configuration files") }} makes environments reproducible, declarative, and version-controlled. (Slides 41–49.) → [W5.6]({{baseUrl}}/se-book-adapted/chapters/week-05-cloud-native-paradigm.html#W5-c6)
 
 **The lecture closes with where the ecosystem is heading.** Kubernetes everywhere (data centers, cloud, bare metal, VMs, laptops), and 2025 survey findings: AI workloads as the top growth driver, multi-cloud as the default model, cost as the top pain point. (Slides 65–70.)
 
@@ -87,7 +87,20 @@ Only the **subcomponents of the News Communicator** change (e.g., the request bu
 
 **Task 2 — ClassPulse: critique the requirements** *(brought forward and remixed from Tutorial 2)*
 
-ClassPulse helps educators visualize class participation and engagement statistics in real time, collecting data from attendance, quiz submissions, chat interactions, and assignment submissions. The proposed requirements are on the tutorial sheet (FR1–FR7 and NFR1–NFR3).
+ClassPulse helps educators visualize class participation and engagement statistics in real time, collecting data from attendance, quiz submissions, chat interactions, and assignment submissions. The proposed requirements are on the tutorial sheet (FR1–FR7 and NFR1–NFR3):
+
+* FR1: "ClassPulse shall record a student's attendance for a course when an instructor marks the student as present or absent, together with the course, student, and attendance timestamp."
+* FR2: "ClassPulse shall collect attendance, quiz submissions, chat interactions, and assignment submissions, calculate engagement scores, identify trends, and display the results in real time."
+* FR3: "The system shall identify students who are falling behind and notify instructors early so that they can take appropriate action."
+* FR4: "Instructors shall be able to select a visualization and share it with students enrolled in the relevant course. Students shall be able to view visualizations shared with them."
+* FR5: "ClassPulse shall use advanced analytics and artificial intelligence to identify disengaged learners and recommend the best teaching strategies."
+* FR6: "The dashboard shall load quickly and allow instructors to filter, sort, export, and share engagement information."
+* FR7: "Only authorized instructors shall be able to view class engagement statistics, while students shall only be able to view their own statistics and visualizations explicitly shared with them."
+* NFR1: "ClassPulse shall be fast, reliable, secure, user-friendly, and available at all times."
+* NFR2: "ClassPulse shall use a cloud database and WebSockets to update engagement statistics within one second for many simultaneous users."
+* NFR3: "Under a defined workload of 100 simultaneously active instructors, at least 95% of dashboard requests shall return updated engagement data within two seconds, measured from the request being received by the server to the response being returned."
+
+(%%Tutorial 3 sheet, quoted — the PDF is kept offline%%.)
 
 **Task 2.1.** Some requirements are poorly written. Identify them, and suggest changes.
 

@@ -33,15 +33,35 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 
 **AI improves software engineers' efficiency in five modes, and the modes differ in where the human review happens.** The deck's arc — autocomplete to autonomous agents — is really a story about the review point moving later in the workflow (Source: L2 slides 2–3).
 
-**Automation handles repeated tasks you already know how to do.** The task is repeated, and what needs to be done is known — AI automates it efficiently and reliably, every time; e.g., workflow automation such as CI/CD and infrastructure deployment (Source: L2 slide 3).
+**Automation handles repeated tasks you already know how to do.** The task is repeated, and what needs to be done is known — AI automates it efficiently and reliably, every time; e.g., workflow automation such as {{ term("CI/CD", "the automated build–test–release pipeline: continuous integration plus continuous delivery/deployment (defined in Week 1)") }} and infrastructure deployment (Source: L2 slide 3).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-automation" trim />
+</box>
 
 **Pattern detection exploits structure that rules can express.** The task adheres to some rules, so AI sifts through a gigantic codebase to detect vulnerabilities — e.g., identifying query patterns (Source: L2 slide 3).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-pattern-detection" trim />
+</box>
+
 **Collaboration is turn-by-turn development with a human reviewing each step.** AI contributes code sequence prediction and generation, brainstorming code solutions, and rapid prototyping (e.g., Copilot, ChatGPT); in its turn-by-turn form it offers suggestion, discussion, and refinement with humans, who review each step as it happens (e.g., Copilot Chat) (Source: L2 slides 3–4).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-collaboration-ai" trim />
+</box>
 
 **Delegation moves the review to the final output.** The engineer states the desired outcome; the AI plans, executes (updating files, testing, fixing bugs, iterating), and presents for review — you review the final output, not the steps (e.g., Claude Code, Cursor) (Source: L2 slide 3).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-delegation-ai" trim />
+</box>
+
 **Orchestration coordinates several specialized agents in several roles.** AI handles task decomposition, planning, and execution; a human or an AI coordinates — e.g., CrewAI, LangGraph (Source: L2 slide 3).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-orchestration-ai" trim />
+</box>
 
 The diagram below places the five modes on one axis — how much the AI does before a human looks — because that axis decides what kind of mistake you can catch, and when.
 
@@ -52,6 +72,8 @@ flowchart LR
     C --> D["Delegation<br/>(Claude Code, Cursor)"]
     D --> E["Orchestration<br/>(CrewAI, LangGraph)"]
     A -. "human knows each step" .-> A
+    B -. "human acts on the flagged patterns" .-> B
+    C -. "human reviews each step" .-> C
     D -. "human reviews final output" .-> D
     E -. "human (or AI) coordinates agents" .-> E
 </mermaid>
@@ -59,6 +81,14 @@ flowchart LR
 %%Notation: each box is one mode of AI involvement; solid arrows run from less to more autonomy; the dashed annotations state where the human stays in the loop for that mode.%%
 
 How to read it for the course example: in this course's project you might automate builds and deployment (automation), let a tool flag vulnerable dependency usage across services (pattern detection), brainstorm a validation rule with Copilot Chat (collaboration), and hand Claude Code a ticket to implement end-to-end (delegation) — reviewing the diff before merge in every mode (Source: L2 slide 3; Tutorial 1 optional Q6 asks exactly this kind of choice).
+
+**Not every AI application is one of the five modes — predictive analytics estimates instead of matching.** Where pattern detection finds the repeating structure itself, predictive analytics estimates a numeric likelihood or outcome from historical data (Source: Quiz 1 Q1; L3 slide 34).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-predictive-analytics" trim />
+</box>
+
+Quiz 1 Q1 turns the difference into a distractor: estimating which component is *most likely to fail in production* is predictive analytics; finding the other components with *similar vulnerable usage patterns* is pattern detection — the task's rule-like structure is what makes pattern detection the right fit (Quiz 1 Q1, model answer).
 
 <box type="warning" seamless>
 
@@ -87,7 +117,7 @@ In collaboration the human reviews each step as it happens (turn-by-turn); in de
 
 ### W2.2 AI in the SDLC: from code generation to requirements ★★
 
-**AI's contribution now spans every phase of the SDLC, not just writing code.** The deck maps the real-world usage of LLMs in software engineering by phase — development, requirements engineering, quality assurance, maintenance, and management (Source: L2 slides 6–7).
+**AI's contribution now spans every phase of the {{ term("SDLC", "software development life cycle — from conception through development, deployment, and operation to retirement (defined in Week 1)") }}, not just writing code.** The deck maps the real-world usage of LLMs in software engineering by phase — development, requirements engineering, quality assurance, maintenance, and management (Source: L2 slides 6–7).
 
 **The integration changed shape quickly.** Circa 2024, each SDLC phase needed a separate agent, tool, or interaction; now a single multi-agent session can cover several phases in one continuous task (Source: L2 slide 6).
 
@@ -95,6 +125,7 @@ In collaboration the human reviews each step as it happens (turn-by-turn); in de
 
 {% call example("L2 slide 4 — pattern detection that patches a real buffer overflow") %}
 GitHub's vulnerability-detection work observes that vulnerabilities are caused by single repeating patterns, and exploits ML plus expert knowledge to find them. The deck's example is a C function that copies input into a 16-byte buffer with `strcpy` — a classic overflow pattern. The mechanism (code snippet → probability of vulnerability → alert) flags it, and Copilot Autofix produces a patch that switches to `strncpy(buffer, input, sizeof(buffer) - 1)` and null-terminates the buffer. The mechanism components are worth remembering: encoded expert knowledge, large volumes of weak evidence, pattern detection, deductive and inductive reasoning, and higher-level features (Source: L2 slide 4).
+%%Read the slide's nouns as one recipe (site reading of the GitHub post the slide cites): encoded expert knowledge = rules security experts write by hand; large volumes of weak evidence = huge numbers of low-confidence signals (code that merely looks possibly vulnerable) as training material; deductive and inductive reasoning = concluding from those rules and from the data; higher-level features = code characteristics aggregated above the raw text.%%
 {% endcall %}
 
 **Requirements engineering, QA, maintenance, and management each have their own AI uses.** Requirements: classification, analysis and evaluation, elicitation — e.g., LLMREI automates requirements-elicitation interviews with LLMs (connect this to Week 3's "AI in requirements engineering" material, which shows elicitation, refinement, tagging, and ambiguity-detection uses). Quality assurance: vulnerability detection and test generation. Maintenance: program repair, review, debugging. Management: effort estimation (Source: L2 slide 7; L3 slides 33–34).
@@ -122,11 +153,19 @@ GitHub's vulnerability-detection work observes that vulnerabilities are caused b
 
 **The deck names five risk classes — know them by name.** Garbage in, garbage out (output is only as good as your input; regurgitation of bad code, more applicable to niche use cases; correctness is not guaranteed, which reduces trust). Traceability of the source (not all code can be used as is — license terms, correctness — though some tools flag training data, e.g., Amazon CodeWhisperer). Data safety (confidential data may leak — e.g., Samsung bans ChatGPT). Susceptibility to vulnerabilities (bad actors can plant malicious code in the public domain used for training). Increasing technical debt (maintaining others' code is hard; maintaining automatically generated code is harder) (Source: L2 slide 10).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-gigo" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-technical-debt" trim />
+</box>
+
 {% call example("L2 slide 10 — the leak that got a company to ban a chatbot") %}
 The data-safety risk is not hypothetical: the deck cites Samsung banning ChatGPT after confidential data could be leaked through prompts. For this course's project team, the equivalent rule is simple — never paste unreleased code, credentials, or user data into a public AI tool (Source: L2 slide 10).
 {% endcall %}
 
-**Vibe coding compresses the distance from idea to implementation — and that compression has a price.** Its benefits: compressed distance from idea to prototype, requirement to interface, prompt to implementation, and feedback to revised feature; hence rapid prototyping and MVP development, lower barriers for non-specialists and domain experts, and faster exploration of alternative designs. Its costs: inconsistent architecture, reduced security, performance, and maintainability, and an increased review, verification, and rework burden (Source: L2 slide 11).
+**Vibe coding compresses the distance from idea to implementation — and that compression has a price.** Its benefits: compressed distance from idea to prototype, requirement to interface, prompt to implementation, and feedback to revised feature; hence rapid prototyping and {{ term("MVP", "minimum viable product — the smallest build that delivers enough value to test the idea with real users") }} development, lower barriers for non-specialists and domain experts, and faster exploration of alternative designs. Its costs: inconsistent architecture, reduced security, performance, and maintainability, and an increased review, verification, and rework burden (Source: L2 slide 11).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-vibe-coding" trim />
@@ -161,7 +200,19 @@ Benefit: rapid prototyping / a testable MVP that pulls feedback forward (idea �
 
 **End-to-end autonomous development needs more than a good model — it needs plumbing.** For LLMs to carry out software development end to end, the deck lists five requirements: access to tools and data; the ability to perform actions (e.g., retrieve an issue description); collaboration with and delegation of tasks to other agents; tracking of long-running tasks; and exchange of results in a predictable format (Source: L2 slide 12).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-autonomous-development" trim />
+</box>
+
 **Two protocols standardize the plumbing.** {{ term("MCP", "Model Context Protocol — standardizes how an AI application discovers and uses external tools") }} standardizes how AI applications discover and use external tools; {{ term("A2A", "Agent-to-Agent protocol — standardizes communication between independent AI agents") }} standardizes communication between independent AI agents (Source: L2 slide 12).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-mcp" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-02.md#def-a2a" trim />
+</box>
 
 {% call example("L2 slide 12 — one MCP chain, end to end") %}
 The deck's example chain: VS Code + Copilot connects through an MCP connector to a GitHub MCP server, which exposes Git operations, files in the repo, and GraphQL APIs to the model. The model did not gain coding skill from MCP — it gained standardized reach into the tools where software actually lives (Source: L2 slide 12).
@@ -196,7 +247,7 @@ The deck's example chain: VS Code + Copilot connects through an MCP connector to
 
 * AI modes and risks ↔ L2 slides 2–12 ↔ Quiz 1 Q1–Q2 ↔ Tutorial 1 optional Q6 (where would AI help your application most?).
 * Automation and workflow AI ↔ L2 slide 3 ↔ the CI/CD pipeline of Week 1 (W1.5, including its blue-green deployment diagram) — automation was valuable before AI.
-* AI in requirements engineering ↔ L2 slides 6–7 ↔ L3 slides 33–34, detailed in Week 3 (W3.6), rehearsed in Tutorial 2 Task 2.2 (eliciting requirements from an LLM).
+* AI in requirements engineering ↔ L2 slides 6–7 ↔ L3 slides 33–34, detailed in Week 3 (W3.7), rehearsed in Tutorial 2 Task 2.2 (eliciting requirements from an LLM).
 * Trust, verification, and responsibility ↔ L2 slides 10–11 ↔ the L0 AI-usage policy (L1 slide 7) and the review duties in Week 4's architecture decisions.
 
 ## Further reading
@@ -216,9 +267,16 @@ All of the following are cited on the slides: Hou et al., *Large language models
 
 | Term | One-line definition | Unit |
 |---|---|---|
-| Pattern detection (AI) | Exploiting rule-like structure in tasks — e.g., sifting a codebase for vulnerability patterns | [W2.1](#W2-c1) |
+| Automation (AI) | Handles repeated tasks whose steps are known — efficiently and reliably, every time | [W2.1](#W2-c1) |
+| Pattern detection (AI) | Exploits rule-like structure — e.g., sifting a codebase for vulnerability patterns | [W2.1](#W2-c1) |
+| Collaboration (AI) | Turn-by-turn development with a human reviewing each step (Copilot, Copilot Chat) | [W2.1](#W2-c1) |
 | Delegation (AI) | Engineer states the outcome; AI plans, executes, and presents the result for review | [W2.1](#W2-c1) |
+| Orchestration (AI) | Several specialized agents in several roles; AI decomposes and plans, human or AI coordinates | [W2.1](#W2-c1) |
+| Predictive analytics | Estimates likelihoods from historical data (which component fails next) — not pattern matching | [W2.1](#W2-c1) |
 | Vibe coding | Building software by prompting, compressing idea-to-implementation distance at a quality cost | [W2.3](#W2-c3) |
+| Garbage in, garbage out | Output is only as good as your input; correctness not guaranteed, so trust is reduced | [W2.3](#W2-c3) |
+| Technical debt | Accumulated cost of shortcuts; AI-generated code is harder to maintain than others' code | [W2.3](#W2-c3) |
+| Autonomous development | End-to-end development by LLM agents — needs tools, actions, delegation, tracking, predictable formats | [W2.4](#W2-c4) |
 | MCP | Protocol standardizing how AI applications discover and use external tools | [W2.4](#W2-c4) |
 | A2A | Protocol standardizing communication between independent AI agents | [W2.4](#W2-c4) |
 

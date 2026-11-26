@@ -48,6 +48,10 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 
 **Load is not constant, so scaling has a down direction too.** A streaming service at 9 pm faces far more load than at 5 am; autoscaling on a metric — CPU usage, queue length — grows and shrinks capacity with demand. (Source: L12 slide 6.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-autoscaling" trim />
+</box>
+
 **Growth is easiest to see with a physical analogy: add kiosks, or add stores.** A supermarket chain handles more shoppers by adding checkout kiosks (more capacity in one place) or more stores (more places); the software behind it faces exactly the same two levers. (Source: L12 slide 5.)
 
 {% call example("The room-booking platform faces summer (Quiz 3 Q1)") %}
@@ -68,7 +72,7 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 
 **Q2.** In the room-booking scenario, why is "5% each" for reservation and notification the interesting detail?
 <panel type="seamless" minimized header="%%Answer%%">
-Because capacity added anywhere else is mostly wasted: 90% of the load comes from search, so replicating the whole monolith gives reservation and notification replicas they do not need — the scaling decision should follow where the load actually is (Quiz 3 Q1).
+Because capacity added anywhere else is mostly wasted: 80% of the load comes from search, so replicating the whole monolith gives reservation and notification replicas they do not need — the scaling decision should follow where the load actually is (Quiz 3 Q1).
 </panel>
 
 </panel>
@@ -81,13 +85,29 @@ Because capacity added anywhere else is mostly wasted: 90% of the load comes fro
 
 **Percentile metrics describe the distribution from typical to worst case.** P50 (the median) is a typical user's experience; P95 means 95% of requests are faster than this number — a standard threshold for service-level objectives; P99 captures the worst-case scenarios. (Source: L12 slide 7.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-percentile" trim />
+</box>
+
 %%Two terms in that sentence: a *service-level objective* (SLO) is a measurable target for a service level — e.g. a percentile response time held over a window — that a team commits to (Wikipedia: "a target value or range of values for a service level"); the errand requirement below is one. And "the tail" means the slowest few percent of the response-time distribution: P99 says 99% of requests beat the threshold, so the slowest 1% live *beyond* it — it is not the single worst request.%%
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-service-level-objective" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-tail-latency" trim />
+</box>
 
 {% call example("Errand platform browse SLA (L12 slide 7)") %}
 The deck phrases a measurable requirement for the errand platform: "95% of successful browse errand requests complete in <200 ms; 99% complete in <500 ms, in a 7-day window." Two percentiles plus a window — that is a requirement you can measure, alert on, and use to plan scaling.
 {% endcall %}
 
 **Measure first, then plan the scaling strategy: the slowest shared component is the bottleneck.** Percentile metrics tell you *where* the tail latency comes from; scaling the wrong component buys nothing. (Source: L12 slide 7.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-bottleneck" trim />
+</box>
 
 <box type="warning" seamless>
 
@@ -108,6 +128,18 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 ### W12.3 Two strategies to scale — and why late scaling hurts ★★
 
 **There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries, rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP). (Source: L12 slide 8.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-replicating-resources" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-optimizing-resources" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-throughput" trim />
+</box>
 
 **Scaling after deployment is expensive: downtime, hardware cost, and redesign.** The deck's hypothetical: a web server handling 100 requests/second must handle 100,000 — upgrading the database server takes 15 hours and a more powerful machine, schema updates to handle request hotspots mean a DB redesign, and the rapid-development Ruby web server must be reimplemented in C++ to be efficient and scalable. (Source: L12 slide 9.)
 
@@ -150,6 +182,10 @@ Retain the current design until the proposed design demonstrates how atomicity i
 
 **Scale up: pay money, keep the architecture.** Upgrading the service hardware — e.g. from a t3.xlarge instance (4 CPU, 16 GB) to a t3.2xlarge (8 CPU, 32 GB) — is simple, money is the only cost, and larger workloads are supported seamlessly; but there are hard limits on how many CPUs and how much memory one machine can have. (Source: L12 slide 11.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-single-point-of-failure" trim />
+</box>
+
 **Scale out: replicate the service and share the requests.** Run multiple copies on multiple nodes; with N replicas and R requests, each server processes ~R/N requests. This needs two more elements in the design: a load balancer and a session store. (Source: L12 slide 12.)
 
 <box type="info" seamless>
@@ -186,7 +222,7 @@ How to read it: the room-booking monolith can ride out summer on a bigger machin
 
 <box type="warning" seamless>
 
-**Pitfall:** scaling out a *monolith* replicates its inefficiencies. The room-booking monolith is 90% search load; replicating the whole application behind a load balancer gives reservation and notification replicas they do not need — Quiz 3 marks it inferior to extracting search and scaling *its* instances (Quiz 3 Q1).
+**Pitfall:** scaling out a *monolith* replicates its inefficiencies. The room-booking monolith's load is 80% search; replicating the whole application behind a load balancer gives reservation and notification replicas they do not need — Quiz 3 marks it inferior to extracting search and scaling *its* instances (Quiz 3 Q1).
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -218,6 +254,10 @@ Horizontal scaling — there are limits on the CPU and memory you can add to one
 
 **Session state moves out of the service and into a session store.** Any service replica must be able to access the session state when it receives a request that is part of a user session — that is the session store's job. The payoff: **stateless services are cheap to replicate** (Source: L12 slide 14.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-session-store" trim />
+</box>
+
 <box type="info" seamless>
 
 **Stateless vs stateful — one question: if this request lands on a replica that has never seen this client, can it be served?**
@@ -228,7 +268,7 @@ Horizontal scaling — there are limits on the CPU and memory you can add to one
 | Are replicas interchangeable? | No — only the replica holding the state can serve that client's next request | Yes — any replica can serve any request |
 | Effect on scaling out | The balancer cannot route freely; uneven state breaks the R/N evenness | Cheap to replicate — add or remove instances at will |
 
-The failure mode is exactly self-check Q1's static variable: roles stored in one replica's memory make that replica the only one that can serve the client.
+The failure mode to picture: the logged-in user's roles stored in one replica's memory — the static-variable case in this unit's self-check below — make that replica the only one that can serve the client.
 
 </box>
 
@@ -249,7 +289,7 @@ How to read it: the room-booking platform's search module, once extracted, scale
 
 <box type="warning" seamless>
 
-**Pitfall:** hiding state in the instance "just for convenience" — a login token in server memory, a shopping cart in a local cache. The next request may hit a different replica, and the balancer cannot keep replicas equally busy if some hold session state others lack (L12 slide 14). Note the echo from Week 6: REST's statelessness is the same design commitment at the protocol level.
+**Pitfall:** hiding state in the instance "just for convenience" — a login token in server memory, a shopping cart in a local cache. The next request may hit a different replica, and the balancer cannot keep replicas equally busy if some hold session state others lack (L12 slide 14). Note the echo from Week 6: REST's {{ term("statelessness", "each request carries all the context needed to serve it; the server keeps no client state between requests — W6") }} is the same design commitment at the protocol level.
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -274,9 +314,21 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 
 **Caching keeps frequently read, rarely changed data out of the database's critical path.** A cache stores recently retrieved and commonly accessed database results in memory — e.g. Redis or Memcached — so future requests read from the cache instead. The processing logic changes: for frequently read data that changes rarely, check the distributed cache first and return immediately; on a miss, query the database, load the results into the cache, then return — and decide, based on the nature of the data, when to remove or invalidate cached results to prevent stale results. (Source: L12 slide 16.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-caching" trim />
+</box>
+
 **Read replicas share the read load but not the write load.** Configure one or more nodes as read replicas of the main database: writes go only to the primary, and changes are asynchronously replicated to the secondaries — which may live in different regions to serve global clients. Scale-up alone eventually fails: the DB exceeds the processing capability of a single node, low-latency access is needed from clients spread around the globe, and a single node is a single point of failure. (Source: L12 slide 17.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-read-replica" trim />
+</box>
+
 **Partitioning splits one logical table across several physical stores.** Horizontal partitioning splits a logical table into multiple physical partitions, allocating rows by a partitioning strategy — e.g. value-based or a hash of the primary key. Vertical partitioning partitions by columns — e.g. storing static, read-only data apart from dynamic data. (Source: L12 slide 18.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-partitioning" trim />
+</box>
 
 <box type="info" seamless>
 
@@ -292,6 +344,10 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 </box>
 
 **Distributed databases add storage nodes and put up a single logical front.** Data is stored across multiple disks and queried by multiple database engines that present a unified face to the application, which also improves availability. (Source: L12 slides 19–20.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-distributed-database" trim />
+</box>
 
 The diagram shows the options layered onto the room-booking data tier.
 
@@ -341,6 +397,10 @@ Writes are only possible to the primary; secondaries receive changes by asynchro
 
 **Replicate and cache at every tier, and the tiers can scale independently.** In a multi-tiered application, the service calls one or more dependent services that are each replicated and load-balanced — extending the stateless, load-balanced, cached architecture. Different tiers can serve different clients: e.g. separate replicas for web clients and mobile clients, each scaled independently depending on its load; all services use a core service that provides database access. A common variant is the backend-for-frontend (BFF) pattern — each frontend gets its own purpose-built backend tier (the web tier serving web clients, the mobile tier serving mobile clients), shaped for that client's needs and scaled on that client's load. (Source: L12 slides 20–21.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-backend-for-frontend" trim />
+</box>
+
 <mermaid>
 flowchart TB
   w["Web clients"] --> wlb["LB"] --> web["Web service replicas<br>(cached)"]
@@ -354,9 +414,13 @@ flowchart TB
 
 How to read it: the room-booking platform could serve web and mobile searchers through separate load-balanced tiers — mobile search bursts scale the mobile tier without touching reservation — while both tiers share one core service that owns database access (L12 slides 20–21).
 
-**Queues buy responsiveness: acknowledge fast, persist later.** Using caching or messaging brokers, a service can respond without fully persisting in the database — e.g. an address update at checkout time should be persisted, but checkout should not be stalled. Event data is sent to the service, which acknowledges receipt and concurrently stores the data in a remote queue for subsequent writing to the database — writing to the queue is faster than writing to the DB. (Source: L12 slide 22 — this is Week 11's messaging doing scalability work.)
+**Queues buy responsiveness: acknowledge fast, persist later.** Using caching or {{ term("message brokers", "software that passes and buffers messages between components so they need not know each other — W11") }}, a service can respond without fully persisting in the database — e.g. an address update at checkout time should be persisted, but checkout should not be stalled. Event data is sent to the service, which acknowledges receipt and concurrently stores the data in a remote queue for subsequent writing to the database — writing to the queue is faster than writing to the DB. (Source: L12 slide 22 — this is Week 11's messaging doing scalability work.)
 
 **Swim lanes contain failures the way partitions contain data.** A swim lane (or pod) architecture places a group of services within a boundary so that any failure within the boundary is contained and not propagated outside it. %%Here "pod" is the scalability literature's term (AKF, the slide's cited source) for such a fault-isolated grouping of services — often a customer segment, as in the scale cube's Z-axis shards; it is not the Kubernetes pod object.%% Advantages: easy fault detection within the lane, fault isolation, meeting region-specific requirements, and faster response times from a customer-specific perspective. (Source: L12 slide 23.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-swim-lane" trim />
+</box>
 
 <box type="warning" seamless>
 
@@ -386,6 +450,10 @@ Acknowledge the update immediately and store it in a remote queue for subsequent
 * **X-axis — horizontal scaling:** run multiple copies of the application behind a load balancer (W12.4–W12.5).
 * **Y-axis — functional decomposition:** split the application into multiple different functions/services (the modular monolith → microservices move of Weeks 4 and 7).
 * **Z-axis — data partitioning:** run the same code on a subset of the data, distributing data storage — e.g. segment by customer category or geography (W12.6).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-12.md#def-scale-cube" trim />
+</box>
 
 <box type="info" seamless>
 
@@ -451,14 +519,25 @@ Y then X: extract search as an independent microservice and increase its instanc
 | Term | Definition | Unit |
 |---|---|---|
 | Scalability | Handling a growing amount of work by adding resources, while response times stay stable | [W12.1](#W12-c1) |
+| Autoscaling | Growing/shrinking capacity automatically on a metric (CPU, queue length), up and down | [W12.1](#W12-c1) |
+| Percentile (P50/P95/P99) | Point on the response-time distribution: median, 95%-faster, worst-case thresholds | [W12.2](#W12-c2) |
+| Service-level objective (SLO) | Measurable target for a service level, written on percentile response times over a window | [W12.2](#W12-c2) |
+| Tail latency | Response times of the slowest few percent of requests — beyond P95/P99 | [W12.2](#W12-c2) |
+| Bottleneck | The slowest shared component limiting the whole system; measure before scaling | [W12.2](#W12-c2) |
+| Replicating resources | Scaling by adding copies of what you have; increases throughput | [W12.3](#W12-c3) |
+| Optimizing resources | Scaling by getting more out of the same hardware (algorithms, indices, faster language) | [W12.3](#W12-c3) |
+| Throughput | Work processed per unit time (e.g., requests per second) | [W12.3](#W12-c3) |
 | Vertical scaling (scale up) | Adding capability (CPU, memory) to the machines the system runs on | [W12.4](#W12-c4) |
 | Horizontal scaling (scale out) | Adding machines running copies of the service; each handles ~R/N requests | [W12.4](#W12-c4) |
+| Single point of failure | A component whose failure takes the system down because no replica can take over | [W12.4](#W12-c4) |
 | Load balancing | A front door that chooses which replica processes each request, keeping replicas equally busy | [W12.5](#W12-c5) |
 | Stateless service | A service retaining no per-client session state, so any replica can serve any request | [W12.5](#W12-c5) |
 | Session store | Shared storage of session state accessible from every replica | [W12.5](#W12-c5) |
 | Caching | Keeping recently retrieved, commonly accessed results in memory to spare the database | [W12.6](#W12-c6) |
 | Read replica | A secondary node receiving asynchronously replicated changes; reads only | [W12.6](#W12-c6) |
-| Partitioning | Splitting a logical table across physical stores — horizontally by rows, vertically by columns | [W12.6](#W12-c6) |
+| Partitioning (sharding) | Splitting a logical table across physical stores — horizontally by rows, vertically by columns | [W12.6](#W12-c6) |
+| Distributed database | Storage nodes added; multiple engines behind one logical front; improves availability | [W12.6](#W12-c6) |
+| Backend-for-frontend (BFF) | Each frontend gets its own purpose-built, separately scaled backend tier | [W12.7](#W12-c7) |
 | Swim lane / pod | A boundary grouping services so failures inside do not propagate outside | [W12.7](#W12-c7) |
 | Scale cube | X = replicate copies, Y = functional decomposition, Z = data partitioning | [W12.8](#W12-c8) |
 

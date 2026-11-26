@@ -164,6 +164,15 @@ renders the panel; do not close it manually.)
 - Keep notation consistent across chapters (box = component/service, solid
   arrow = synchronous call, dashed arrow = async message/event, cylinder = data
   store).
+- **Never start an arrow with `<`** (`<-->`, `<-.->`): MarkBind's HTML
+  conversion of `<mermaid>` blocks eats these as tags, corrupting the shipped
+  source — the diagram parses in the source file but **fails in the browser**.
+  Use `---`/`-.-` (optionally with a two-headed arrowhead via the node-end
+  syntax, e.g. `A --- B` with an explicit arrowhead statement) and say in the
+  %%Notation%% that the relation is bidirectional.
+- Diagram size: keep ≤ ~8–10 nodes and labels ≤ ~30 characters — the content
+  column is ~944 px, and oversized diagrams render with unreadably small text.
+  Prefer splitting a crowded diagram into two over squeezing it.
 
 ### 3.5 Summaries
 

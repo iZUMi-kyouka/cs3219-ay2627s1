@@ -57,6 +57,9 @@ DUPLICATES = {  # anchor -> (home_week, revisit_note)
     "def-ubiquitous-language": (7, "revisited with the FoC example in Week 8"),
     "def-event-sourcing": (8, "revisited as the storage view of an event in Week 9"),
     "def-cqrs": (8, "revisited in Week 9's four views of an event"),
+    "def-domain-event": (7, "the Week 8/9 event machinery builds on this"),
+    "def-policy": (7, "revisited as an event-storming artifact in Week 8"),
+    "def-caching": (3, "revisited as a scalability lever in Week 12"),
 }
 
 

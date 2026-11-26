@@ -56,6 +56,10 @@ A login action is synchronous by nature: the caller must get a reply — "authen
 
 %%Telling apart — fire-and-forget vs asynchronous request–reply. One distinguishing question: **does the sender eventually get a response?** Fire-and-forget (W9.2): no — the sender publishes and never expects an answer, so there is nothing to correlate (`DeliveryConfirmed` → the Order service moves on forever). Asynchronous request–reply (this unit): yes — the response comes *later*, so the design must carry a status endpoint to ask "done yet?" and a request identifier to match replies to requests (Quiz 4 Q7). Both are asynchronous — the sender never blocks — they differ only in whether a reply exists to wait for.%%
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-async-request-reply" trim />
+</box>
+
 **A slow backend does not force the caller to wait — the async request–reply pattern decouples backend processing from the requester while the requester still gets a clear response.** The trick is to reply *immediately* with a promise instead of a result (slides 7–8, from the Microsoft Azure async-request-reply pattern). The sequence below traces one request through that pattern, from submission to the final redirect.
 
 <mermaid>
@@ -67,13 +71,13 @@ sequenceDiagram
     participant S as Status endpoint
     C->>A: Submit long-running request
     A--)Q: Put work on queue (async)
-    A-->>C: HTTP 202 Accepted + link to status endpoint
+    A-->>C: HTTP 202 Accepted<br/>+ status-endpoint link
     Q--)W: Deliver queued work (async)
     W->>S: Write result / status
     C->>S: Poll: HTTP GET status
     S-->>C: 202 (still pending, with ETA)
     C->>S: Poll again
-    S-->>C: 302 Found — redirect to resource
+    S-->>C: 302 Found — redirect<br/>to resource
     C->>S: Fetch resource at the link
 </mermaid>
 
@@ -87,7 +91,7 @@ The Research service asks the Archive service to locate an old dataset; the sear
 
 <box type="warning" seamless>
 
-**Pitfall — async by default is not free.** The pattern adds a status endpoint, polling traffic, and correlation identifiers to design for. Choose synchronous when the caller genuinely needs the answer to proceed (login, slide 5); go asynchronous when it can continue — and then design the notification handling the definition demands: a way to map each incoming notification back to the request it answers (Quiz 4 Q7's request identifier) (slide 5).
+**Pitfall — async by default is not free.** The pattern adds a status endpoint, polling traffic, and correlation identifiers to design for. Choose synchronous when the caller genuinely needs the answer to proceed (login, slide 5); go asynchronous when it can continue — and then design the notification handling the definition demands: a way to map each incoming notification back to the request it answers, via a {{ term("correlation identifier", "a token the requestor assigns as a unique request ID and the replier copies into the reply, so replies can be matched to requests — defined in W11.3") }} (Quiz 4 Q7's request identifier) (slide 5).
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -123,7 +127,7 @@ The Research service asks the Archive service to locate an old dataset; the sear
 |---|---|---|
 | What it carries | A **fact** — a state change; something that happened in the past | A **request to be executed** — a command (perform an action) or a query (get data) |
 | Delivery | **Broadcast** to other services (pub–sub pattern) | **Point-to-point** between two services |
-| Broker construct | **Topic** (e.g., Kafka, an event broker) | **Queue** (e.g., AWS SQS, a message broker) |
+| Broker construct | **Topic** (e.g., Kafka, an event broker) | **Queue** (e.g., AWS SQS — Amazon's Simple Queue Service, a message broker) |
 | Who receives | Both/All subscribed services receive the same event | The only service the message is addressed to |
 
 (Source: L10 slide 13.)
@@ -150,7 +154,7 @@ flowchart TB
 How to read it: Service 1 broadcasts one fact and both subscribing services receive the same event; in the lower half, Service 1 hands a *task* to exactly one receiver — there is no "everyone who cares", because the sender named its target (L10 slide 13).
 
 {% call example("L10 slide 16 — e-commerce: which construct, and why") %}
-Services: Order, Inventory, Payment, Notification, Analytics, Shipping.
+Services: Order, Inventory, Payment, Notification, Analytics, Shipping — plus the Loyalty Points service that the deck's last step names without listing here.
 
 * Customer places an order → `OrderPlaced`: a **fact** → topic → **event** (Inventory, Analytics, Shipping, Notification react independently).
 * Order service triggers payment → `ProcessPayment`: a **command** → queue → **message** (only Payment should handle it; broadcasting would be incorrect).
@@ -217,22 +221,38 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 
 **Kafka realizes pub/sub as a distributed log.** Kafka is a distributed message streaming platform using publish–subscribe, developed at LinkedIn and donated to the Apache Foundation. Producers publish to a *topic* (identified by name); the topic is broken into *partitions* (P1, P2, P3); each broker (Kafka server) delivers messages to the right consumer; brokers coordinate as a cluster, and you can add brokers without downtime — horizontal scaling. A unit of data within Kafka is called an event, events are categorized into topics, and **all events produced with a given key are written to the same partition** (slides 22–23).
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-kafka" trim />
+</box>
+
 {% call example("Quiz 4 Q9 — the partition key is the ordering fix") %}
 CampusEats publishes `OrderReady` then `OrderCollected` per order to a Kafka topic with three fixed partitions — but assigns partitions *without* using an order identifier, so `OrderCollected` can be processed before `OrderReady` for the same order. The fix that keeps three partitions and restores per-order order: **use `orderId` as the event key**, with a consistent mapping sending all events of the same order to the same partition. (Source: Quiz 4, Question 9.)
 {% endcall %}
 
 **AMQP realizes the queue world as a protocol.** AMQP is an asynchronous communication protocol — an open standard — enabling conforming client applications to communicate with conforming messaging middleware brokers. It is a peer-to-peer protocol — "peer-to-peer" in the protocol sense only: two endpoints communicating as equal parties, one playing the client application, the other a trusted message routing and delivery service, the broker (slide 25). That is unrelated to FoC being a *peer-to-peer platform* in the application sense (W8.1) — same words, different layers.
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-amqp" trim />
+</box>
+
 <box type="info" seamless>
 
-**Four words the deck separates (slide 10) — and they keep the naming straight.** A **protocol** is a set of rules for communication (AMQP). A **standard** is a protocol approved by an authority (the slide names IEEE, W3C) and adopted by many parties — AMQP is an open standard; protocols can also be non-standard, like JMS. A **specification** is the formally written form of a protocol that vendors follow (Java provides the JMS specification). An **implementation** is a vendor's working mechanism for using a protocol — the slide's examples are ActiveMQ and Kafka. That is why "Kafka" and "AMQP/RabbitMQ" can sit in one breath: Kafka is an implementation (of its own messaging protocol); RabbitMQ is an implementation *of AMQP*.
+**Four words the deck separates (slide 10) — and they keep the naming straight.** A **protocol** is a set of rules for communication (AMQP). A **standard** is a protocol approved by an authority (the slide names IEEE, W3C) and adopted by many parties — AMQP is an open standard; protocols can also be non-standard, like JMS (the Java Message Service, the messaging specification for the Java platform). A **specification** is the formally written form of a protocol that vendors follow (Java provides the JMS specification). An **implementation** is a vendor's working mechanism for using a protocol — the slide's examples are ActiveMQ and Kafka. That is why "Kafka" and "AMQP/RabbitMQ" can sit in one breath: Kafka is an implementation (of its own messaging protocol); RabbitMQ is an implementation *of AMQP*.
 
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-protocol" trim />
 </box>
 
 * **The AMQP model:** messages are published to *exchanges* (think post offices or mailboxes); exchanges distribute message copies to *queues*; the broker then delivers messages to consumers subscribed to the queues, or consumers fetch/pull messages on demand (slide 26).
 * **Routing:** the exchange routes each message based on its *bindings*; multiple brokers can talk to each other to get a message to its recipient (slide 27).
 
 **RabbitMQ is the reference implementation of that model.** Message flow: (1) a producer publishes a message to an exchange; (2) the exchange receives it and is responsible for routing; (3) the exchange routes messages into queues depending on message attributes — e.g., the routing key; (4) messages stay in the queue until handled by a consumer; (5) the consumer handles the message. Exchange types: **direct** (route to queues whose binding key exactly matches the routing key), **fanout** (route to all queues bound to it), **topic** (wildcard match between routing key and binding pattern, e.g. `us.#` matches `us.stocks` and `us.sports`), **header** (route on message headers) (slides 28–29).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-10.md#def-exchange" trim />
+</box>
 
 **Message queue systems give you asynchronous *persistent* communication — with honesty about the guarantees.** The sender is only guaranteed that the message will eventually be inserted into the recipient's queue; there is no guarantee on when — or if — it will be read and processed by the receiver (slide 30). Persistence is the next unit's subject.
 
@@ -297,7 +317,7 @@ How to read it: on top, every hop stores the message until the next node is read
 | **Persistent async** | Sender keeps executing without blocking; the message may take an arbitrary time to arrive; the sender may or may not be running by delivery time; disks or memory queues persist it; **delivery is eventually guaranteed** |
 | **Persistent sync** | Sender blocks until an **ack of receipt** (not delivery/response); the message persists in the receiver's queue (or any router) for an arbitrary time |
 | **Transient async** | Sender continues (non-blocking); the **receiver must be running** or the message is discarded; same if any router on the way is down |
-| **Transient sync** | Sender blocks — in three strengths: **receipt-based** (until an ack; says nothing about processing having started), **delivery-based** (the sender blocks until the receiver *takes delivery* of the message — the slide's label "essentially an asynchronous RPC" is the distributed-systems one %%— dimmed: Coulouris et al.%%: the actual processing continues asynchronously after the hand-over, so unlike response-based blocking, your wait ends at delivery, not when the work's reply comes back), **response-based** (until the response — traditional RPC) |
+| **Transient sync** | Sender blocks — in three strengths: **receipt-based** (until an ack; says nothing about processing having started), **delivery-based** (the sender blocks until the receiver *takes delivery* of the message — the slide's label "essentially an asynchronous RPC" is the distributed-systems one (Coulouris et al., *Distributed Systems*): the actual processing continues asynchronously after the hand-over, so unlike response-based blocking, your wait ends at delivery, not when the work's reply comes back), **response-based** (until the response — traditional RPC) |
 
 {% call example("L10 slide 34 — one example per corner") %}
 Email systems are persistent and asynchronous. Messaging/chat apps are persistent and synchronous (the message is stored, but you block on the exchange). UDP communication is transient and asynchronous — no store, no wait. Traditional RPC is transient and synchronous — the reply *is* the delivery.
@@ -350,6 +370,9 @@ A transport operator requires every submitted incident to be analyzed within fiv
 | Queue | Single-receiver FIFO channel; messages not copied | [W10.2](#W10-c2) |
 | Publish–subscribe | Broadcasting-station topology with many subscribers | [W10.3](#W10-c3) |
 | AMQP | Open async messaging protocol: publishers → exchanges → queues → consumers | [W10.3](#W10-c3) |
+| Kafka | Distributed pub/sub streaming platform: topics → partitions over a broker cluster | [W10.3](#W10-c3) |
+| Exchange | AMQP routing step matching routing keys to bound queues (direct/fanout/topic/header) | [W10.3](#W10-c3) |
+| Protocol / standard / specification / implementation | Rules for communication; approved by an authority; formally written; vendor's working mechanism | [W10.3](#W10-c3) |
 | Persistent communication | Store-and-forward; survives inactive senders/receivers | [W10.4](#W10-c4) |
 | Transient communication | Buffered only while applications execute; discarded if undeliverable | [W10.4](#W10-c4) |
 

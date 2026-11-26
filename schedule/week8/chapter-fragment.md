@@ -87,18 +87,30 @@ How to read it: L8 slide 3 gives both glosses — "Student in Identity is an acc
 <include src="../../se-book-adapted/common/defs-week-08.md#def-event-storming" trim />
 </box>
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-domain-event" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-07.md#def-aggregate" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-policy" trim />
+</box>
+
 **How it works:**
 
-* **Start with domain events — {{ term("domain event", "a recorded state change in the business, named in the past tense") }} — the things that happened.** For FoC: `ErrandPosted`, `CreditReserved`, `ErrandCompleted` (slide 4).
-* **Commands cause events.** A command is an instruction to change something, e.g. `PostErrand` or `SettleCredits` (slide 4).
-* **Commands work on aggregates — clusters of related objects treated as a single unit with respect to data changes.** `PostErrand` creates an `Errand`; `Errand` and `Wallet` are aggregates (slide 4).
-* **A policy is a business rule that reacts to an event and triggers a command — "when … then …".** E.g., when `ErrandCompleted` then `SettleCredits` (slide 4).
+* **Start with domain events — the things that happened.** For FoC: `ErrandPosted`, `CreditReserved`, `ErrandCompleted` (slide 4).
+* **Commands cause events.** A {{ term("command", "a request for an action to be performed, expressed as intent in the imperative mood and sent to a specific receiver; it changes application state and returns no data — defined in W9.1") }} is an instruction to change something, e.g. `PostErrand` or `SettleCredits` (slide 4).
+* **Commands work on aggregates.** `PostErrand` creates an `Errand`; `Errand` and `Wallet` are aggregates (slide 4).
+* **A policy reacts to an event and triggers a command — "when … then …".** E.g., when `ErrandCompleted` then `SettleCredits` (slide 4).
 * **Clusters of aggregates, commands, and policies become your microservice candidates.** Everything one aggregate family needs lives in one service; everything else talks to it through events.
 
 The diagram below shows the storming output for the FoC credit economy — read it as the chain of cause and effect the workshop would stick on the wall.
 
 <mermaid>
-flowchart LR
+flowchart TB
     PE["PostErrand<br/>(command)"] -->|"acts on"| AG["Errand<br/>(aggregate)"]
     AG -.->|"ErrandPosted<br/>(event)"| VENDOR["Campus vendors service"]
     CO["CompleteErrand<br/>(command)"] -->|"acts on"| AG
@@ -108,7 +120,7 @@ flowchart LR
     WAL -.->|"CreditReserved<br/>(event)"| LEDGER["Credit service"]
 </mermaid>
 
-%%Notation: a rectangle is a command or an aggregate; the hexagon is a policy; a solid arrow is a command acting on (or being triggered at) an aggregate; a dashed arrow is a domain event published to the rest of the system.%%
+%%Notation: a rectangle is a command or an aggregate; the diamond is a policy; a solid arrow is synchronous control flow — a command acting on an aggregate, or a policy triggering the next command; a dashed arrow is a domain event published to the rest of the system.%%
 
 How to read it: a command acts on an aggregate, the aggregate records an event, and a policy listening to that event fires the next command — so `PostErrand → Errand → … → ErrandCompleted → SettleCredits → Wallet → CreditReserved` is one storming pass over errand fulfillment and the credit economy. Each aggregate family plus its commands and policies is a microservice candidate: an *Order* service around `Errand`, a *Credit* service around `Wallet` (Source: L8 slide 4; Tutorial 6 Q2 repeats these steps on a food-delivery platform).
 
@@ -138,7 +150,7 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 
 **How the data patterns fit together:**
 
-* **Data independence means services must not modify the same data — not that each runs its own database cluster.** The deck is explicit: independence can also be achieved inside one database via RBAC database users with per-table permissions, private tables per service, or a private schema per service (L8 slide 9).
+* **Data independence means services must not modify the same data — not that each runs its own database cluster.** The deck is explicit: independence can also be achieved inside one database via RBAC (role-based access control) database users with per-table permissions, private tables per service, or a private schema per service (L8 slide 9).
 * **Queries that must join several services' data get a read-only copy: the data lake.** Owner services stream data-change events into the lake, which is indexed for queryability (L8 slide 11).
 * **Business processes that span several services' writes get the saga pattern: local transactions plus compensating actions.** There is no distributed ACID transaction to reach for (L8 slides 12–15).
 * **The shared database "solution" reintroduces every coupling you split the monolith to remove — it is an antipattern.** (L8 slide 10.)
@@ -154,7 +166,11 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 **Trade-off — the pattern has costs.** Different kinds of databases must be operated; a large application sees an explosion in the number of databases; and the setup is expensive to manage (L8 slide 8). Weaker forms of independence (private tables, schemas, RBAC users) trade some of that freedom for fewer moving parts (L8 slide 9).
 </box>
 
-**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties (atomicity, consistency, isolation, durability) across them all — but the coupling costs are exactly the ones microservices exist to avoid.
+**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties across them all — but the coupling costs are exactly the ones microservices exist to avoid.
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-atomicity" trim />
+</box>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-shared-database" trim />
@@ -210,7 +226,7 @@ Flight search, Reservations, and Flight tracking each own their own database. Fo
 
 **How it works:**
 
-* **Every step of the transaction defines a compensating action, registered on a routing slip passed along to the next step.** The routing slip is simply the running list that travels *with* the transaction from service to service — each step adds its undo entry to it — so if a later step fails, whoever holds the slip knows exactly which compensations to run %%("routing slip" in the Enterprise Integration Patterns sense: the list of steps rides in the message itself — dimmed: Hohpe & Woolf)%%. (L8 slide 13.)
+* **Every step of the transaction defines a compensating action, registered on a routing slip passed along to the next step.** The routing slip is simply the running list that travels *with* the transaction from service to service — each step adds its undo entry to it — so if a later step fails, whoever holds the slip knows exactly which compensations to run %%("routing slip" in the Enterprise Integration Patterns sense — Hohpe & Woolf: the list of steps rides in the message itself)%%. (L8 slide 13.)
 * **If a later step fails, the routing slip kicks off the compensating actions of all completed steps.** (L8 slide 13.)
 * **A saga does not promise to return to the initial state — only to a reasonably compensated one.** Saga ≠ ACID transaction (L8 slide 13).
 * **Order the steps so the hard-to-compensate ones go last.** If the business rule allows, put notification at the very end of the process to avoid sending lots of correction messages (L8 slide 15).
@@ -222,6 +238,10 @@ The booking saga books payment, reserves the seat, and notifies the customer. If
 {% call example("Tutorial 7 Q1 — reserving credits for an FoC errand") %}
 In the microservices design of the errand workflow, the Order service (errand `PENDING`) asks the Credit service to reserve credits, then tries to mark the errand `OPEN`. If that last local step fails, the compensation runs: the Credit service releases the reserved credits and the Order service marks the errand `CANCELLED`. (Source: Tutorial 7 solutions, Q1.)
 {% endcall %}
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-eventual-consistency" trim />
+</box>
 
 The sequence below traces that FoC saga, including its compensation phase.
 
@@ -326,8 +346,8 @@ How to read it: writes only ever append to the log on the left; the view on the 
 |---|---|---|---|
 | The lever it pulls | **What is stored:** the append-only log of facts, not the current state | **What is separated:** the write model (commands) from the read model (queries) | **What is precomputed:** the result of a predefined query, stored instead of computed on demand |
 | State of the world without it | You'd store current state and overwrite it | One model serves reads and writes | Queries are computed live when asked |
-| Needs the others? | No — it's a storage choice | No — "strictly CQRS isn't really about events" (Fowler); L9 slide 2 | No — a plain database can have one |
-| Course example | The order log: `OrderPlaced` → `OrderValidated` appended, never overwritten (L8 slide 21) | Tutorial 7 Q2: order service writes; validation/tax/email enrich; queries hit the *orders view* | The *orders view* itself — the read model derived from the order events (L8 slides 23–24) |
+| Needs the others? | No — it's a storage choice | No — CQRS "fits well with" event styles but is not defined by them (Fowler's CQRS bliki); L9 slide 2: "CQRS doesn't always need events/event sourcing" | No — a plain database can have one |
+| Course example | The order log: `OrderPlaced` → `OrderValidated` appended, never overwritten (L8 slide 21) | Tutorial 7 Q2: the order service writes; the validation, tax, and email services each enrich the order; queries hit the *orders view* | The *orders view* itself — the read model derived from the order events (L8 slides 23–24) |
 
 They combine naturally — the event log (sourcing) is a ready-made feed from which read models (CQRS) materialize their views — but each can be adopted alone, and the slide 21 note "command/write in (1), query/read in (4)" is where all three meet.
 
@@ -364,6 +384,18 @@ An order is accepted in the *orders* service (write path: the order event is rec
 #### Interprocess communication styles
 
 **Three interaction styles cover the ways one service calls another.** (Source: L8 slide 30, from Richardson & Smith, *Microservices: From Design to Deployment*.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-request-sync-response" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-notification-one-way" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-request-async-response" trim />
+</box>
 
 * **Request/sync response** — the client makes a request to a service and waits for the response. E.g., *Get passenger info*: TripManagement calls PassengerManagement and waits.
 * **Notification (one-way request)** — the client sends a request; no reply is expected or sent. E.g., *Notify passenger*: DriverManagement tells PassengerManagement, and that is the whole conversation.
@@ -402,6 +434,7 @@ The diagram contrasts the two on the same A → B → C workflow — the exact s
 <mermaid>
 flowchart TB
     subgraph ORCH["Orchestration — a central brain drives"]
+        direction TB
         direction LR
         IN["Input stream"] --> ORC["Orchestrator"]
         ORC -->|"1. do your step"| A1["Service A"]
@@ -416,7 +449,7 @@ flowchart TB
         S1["Event stream 1"] --> A2["Service A"]
         A2 -.->|"publishes to stream 2"| B2["Service B"]
         B2 -.->|"publishes to stream 3"| C2["Service C"]
-    end
+    end    ORCH ~~~ CHOR
 </mermaid>
 
 %%Notation: rectangles are services (or the orchestrator); solid arrows are synchronous instructions from the orchestrator; dashed arrows are asynchronous events on streams.%%
@@ -433,8 +466,16 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 
 **Two discovery styles put the registry lookup on different sides of the call.**
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-client-side-discovery" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-08.md#def-server-side-discovery" trim />
+</box>
+
 * **Client-side discovery** — the client queries the service registry, determines the network locations of the available instances, and uses a load-balancing algorithm to pick one (L8 slide 34).
-* **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus or an AWS Elastic Load Balancer (L8 slide 35).
+* **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus or an AWS Elastic Load Balancer (ELB) (L8 slide 35).
 
 **Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. Registries in practice include Apache Zookeeper, Consul, and Etcd — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in (L8 slides 36–37).
 
@@ -475,8 +516,12 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 | Bounded context | The solution-space boundary of inputs, outputs, events, processes, and data models for one subdomain | [W8.1](#W8-c1) |
 | Ubiquitous language | Shared expert–developer vocabulary, valid within one bounded context | [W8.1](#W8-c1) |
 | Event storming | Lightweight workshop practice: events → commands → aggregates → policies → microservice candidates | [W8.1](#W8-c1) |
+| Domain event | A recorded state change in the business, named in the past tense — event storming's starting artifact | [W8.1](#W8-c1) |
+| Policy | Business rule that reacts to an event and triggers a command ("when … then …"); delimits consistent contexts | [W8.1](#W8-c1) |
 | Database-server-per-service | Each service owns its database server; no direct cross-service data access | [W8.2](#W8-c2) |
 | Shared database | One database written by several services — an antipattern for microservices | [W8.2](#W8-c2) |
+| Atomicity | All-or-nothing: every change in a transaction applies or none does | [W8.2](#W8-c2) |
+| Eventual consistency | Temporary inconsistency allowed while a saga runs; the system reaches a consistent state eventually | [W8.2](#W8-c2) |
 | Data lake | Read-only, queryable sink of data streamed from owner services | [W8.2](#W8-c2) |
 | Saga | Sequence of local transactions with registered compensating actions, coordinated via events/messages | [W8.2](#W8-c2) |
 | Event sourcing | Store state changes as immutable events in an append-only log; derive state by replay | [W8.3](#W8-c3) |
@@ -486,6 +531,11 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 | Orchestration | Central "brain" drives a multi-service process | [W8.4](#W8-c4) |
 | Choreography | Each part knows its job and reacts to events; no central brain | [W8.4](#W8-c4) |
 | Service registry | Database of service instances and locations, kept current by (de)registration | [W8.4](#W8-c4) |
+| Request/sync response | Caller sends a request and waits for the response | [W8.4](#W8-c4) |
+| Notification (one-way request) | Request sent; no reply expected or sent | [W8.4](#W8-c4) |
+| Request/async response | Request sent; the reply comes back later | [W8.4](#W8-c4) |
+| Client-side discovery | Client queries the service registry and load-balances itself | [W8.4](#W8-c4) |
+| Server-side discovery | Load balancer queries the registry and routes each request | [W8.4](#W8-c4) |
 
 ## Connections
 

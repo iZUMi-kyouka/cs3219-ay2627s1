@@ -74,3 +74,107 @@
 %%Source: L7 slide 33.%%
 
 </span>
+
+<span id="def-business-capability">
+
+A **business capability** is something the business does (or can do) that delivers value — e.g., a warehouse providing "get a current stock list", finance providing "set up payroll for a new recruit" or "monthly accounts". Microservice boundaries are closely aligned with business capabilities.
+
+%%Source: L7 slides 8–9.%%
+
+</span>
+
+<span id="def-two-pizza-team">
+
+A **two-pizza team** is a small, cross-functional team — small enough that two pizzas feed it — organized around capabilities and owning the whole lifecycle of its services (Amazon's example).
+
+%%Source: L7 slide 10.%%
+
+</span>
+
+<span id="def-service-instance-per-host">
+
+**Service instance per host** is the deployment pattern that runs each service instance in isolation on its own host.
+
+%%Source: L7 slides 11–12.%%
+
+</span>
+
+<span id="def-service-instance-per-container">
+
+**Service instance per container** is the deployment pattern that runs each service instance in its own container, packaged as a container image holding the application and the libraries required to run the service.
+
+%%Source: L7 slides 11–12.%%
+
+</span>
+
+<span id="def-service-instance-per-vm">
+
+**Service instance per VM** is the deployment pattern that packages each service as a virtual machine image (e.g., an Amazon EC2 AMI — Amazon Machine Image) and launches each service instance as a VM from that image.
+
+%%Source: L7 slides 11–12.%%
+
+</span>
+
+<span id="def-stamp-coupling">
+
+**Stamp coupling** is the coupling in which one component passes an entire data structure to another component that needs only part of it — e.g., sharing the entire order with the Warehouse service when only some fields are needed for picking.
+
+%%Source: L7 slides 27–28.%%
+
+</span>
+
+<span id="def-shared-kernel">
+
+A **shared kernel** is the collaboration pattern in which two bounded contexts, developed independently, jointly own a small shared subset of the model and coordinate changes to it.
+
+%%Source: L7 slides 24–25.%%
+
+</span>
+
+<span id="def-upstream-downstream">
+
+An **upstream–downstream** relationship is the provider–consumer collaboration between bounded contexts: the upstream context publishes an API (e.g., the Order context publishes an Order API) and the downstream context fetches or subscribes to it (e.g., the Recommendation context).
+
+%%Source: L7 slides 25–26.%%
+
+</span>
+
+<span id="def-conformist">
+
+A **conformist** relationship is the downstream strategy in which the downstream adopts the upstream's published model as-is, with no influence over the format.
+
+%%Source: L7 slide 26.%%
+
+</span>
+
+<span id="def-supplier-customer">
+
+A **supplier–customer** relationship is the upstream–downstream collaboration in which the upstream designs the API with the downstream's needs in mind.
+
+%%Source: L7 slide 26.%%
+
+</span>
+
+<span id="def-single-responsibility-principle">
+
+The **single-responsibility principle (SRP)** asks that each service have only a small set of responsibilities — applied when decomposing microservices by verb or use case (a Shipping service responsible for shipping complete orders) or by noun/resource (an Account service responsible for all operations on user accounts).
+
+%%Source: L7 slide 36.%%
+
+</span>
+
+<span id="def-domain-event">
+
+A **domain event** is an event that occurs in the domain and is relevant to it — a record of a state change. Event storming starts from domain events that come from real business needs, not from technical data operations (CRUD).
+
+%%Source: L7 slides 38, 43.%%
+
+</span>
+
+<span id="def-policy">
+
+A **policy** is the rule that links an event back to a command — "when event X, then command Y" (e.g., when the payment card is submitted, then confirm the order). In event storming, policies separate the boundaries.
+
+%%Source: L7 slide 41.%%
+
+</span>

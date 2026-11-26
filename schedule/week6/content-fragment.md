@@ -30,7 +30,7 @@
 
 **Styles exist because software is built for a purpose — the lecture classifies them on two axes.** How is the code divided (technical concern vs domain/business concern), and how is the system deployed (single deployed unit vs distributed units)? (Slide 4.) → [W6.1]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c1)
 
-**Layered architecture organizes code as layers with downward-only dependencies.** Buys: structure-enforced separation of concerns, modifiability within a layer (swap Oracle with MySQL), testability (mock the layer below). Costs: all-or-nothing deployability, no independent scaling, no feature ownership, change amplification. Closed layers talk only to the next layer down; open layers may skip. (Slides 6–8.) → [W6.2]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c2)
+**Layered architecture organizes code as layers with downward-only dependencies.** Buys: structure-enforced separation of concerns, modifiability within a layer (swap Oracle with MySQL), testability (mock the layer below). Costs: all-or-nothing deployability, no independent scaling, no feature ownership, change amplification. {{ term("Closed layers", "a layered design where interaction is allowed only between two consecutive layers") }} talk only to the next layer down; {{ term("open layers", "a layered design where any top layer may get service from any bottom layer") }} may skip. (Slides 6–8.) → [W6.2]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c2)
 
 **Pipe-and-filter streams data through independent transformations.** Filters compute incrementally and share no state; pipes connect them. Buys: scalability (replicate a stateless filter), deployability, testability, reuse. Costs: latency per stage, no feedback until the sink, no native partial-failure handling. Suited to batch/stream transformation where throughput beats latency — e.g., the Azure Functions image pipeline (moderation → resizing → reorientation → watermarking → CDN). (Slides 9–12.) → [W6.3]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c3)
 
@@ -38,9 +38,9 @@
 
 **MVC separates the three concerns of an interactive app: view, controller, model.** Buys: separation of concerns, extensibility (new view/controller pairs), testability. Web MVC maps them onto the server (controller handles the HTTP request and prepares the view; view renders the response; model is business logic + persistence), with page/front controllers for routing. Costs: multiple hops per view update and the fat controller. (Slides 16–22.) → [W6.5]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c5)
 
-**The SPA moves a program into the browser.** A JavaScript app downloaded once runs continuously, fetching data via Ajax (JSON instead of full HTML pages): fluid experience and less server rendering, but harder development, a JavaScript requirement, XSS exposure, and server-side re-enforcement of every authorization rule. (Slides 23–25.) → [W6.6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c6)
+**The SPA moves a program into the browser.** A JavaScript app downloaded once runs continuously, fetching data via {{ term("Ajax", "a browser technique where a script sends HTTP requests and handles responses in the background — no page refresh") }} (JSON instead of full HTML pages): fluid experience and less server rendering, but harder development, a JavaScript requirement, XSS exposure, and server-side re-enforcement of every authorization rule. (Slides 23–25.) → [W6.6]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c6)
 
-**The deck closes on diagrams and the model-code gap.** Diagrams are free-form: big picture, shared vision, conversation focus, code map. Common defects: unexplained notation, ambiguous elements, mixed abstraction levels; the guidelines demand titles, legends, labeled lines, explicit elements. (Slides 26–31.) → [W6.11]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c11)
+**The deck closes on diagrams and the {{ term("model-code gap", "the distance between source code and architecture model — models reason about complexity and are never one-to-one mappings of code") }}.** Diagrams are free-form: big picture, shared vision, conversation focus, code map. Common defects: unexplained notation, ambiguous elements, mixed abstraction levels; the guidelines demand titles, legends, labeled lines, explicit elements. (Slides 26–31.) → [W6.11]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c11)
 
 </panel>
 
@@ -87,12 +87,12 @@ Consider a system where (Source: Tutorial 4 sheet, Q1):
 
 | Component/Scenario | Type of coupling | Comment |
 |---|---|---|
-| A writes into B's internal data structures | **Content coupling** | Component modifies internal data of another |
-| B passes a "mode" flag to C | **Control coupling** | Component controls the other by passing information |
-| All three share the global `systemStatus` | **Common/global coupling** | Using global variables |
-| All initialized together at boot | **Temporal coupling** | Actions bundled together because they happen at the same time |
+| A writes into B's internal data structures | **{{ term("Content coupling", "a component modifies the internal data of another — the worst coupling kind (Week 4)") }}** | Component modifies internal data of another |
+| B passes a "mode" flag to C | **{{ term("Control coupling", "one module passes information on what another should do, e.g., a flag (Week 4)") }}** | Component controls the other by passing information |
+| All three share the global `systemStatus` | **{{ term("Common/global coupling", "all modules using the same global variable are coupled to each other (Week 4)") }}** | Using global variables |
+| All initialized together at boot | **{{ term("Temporal coupling", "actions bundled together only because they happen at the same time (Week 4)") }}** | Actions bundled together because they happen at the same time |
 
-(A student addition the teaching team endorsed: the sensor dependency is **external coupling** — inevitable, since the system depends on sensor data.) (Source: Tutorial 4 model solution.)
+(A student addition the teaching team endorsed: the sensor dependency is **{{ term("external coupling", "a dependency on elements outside the system — OS, shared libraries, hardware (Week 4)") }}** — inevitable, since the system depends on sensor data.) (Source: Tutorial 4 model solution.)
 </panel>
 
 **Task 1(b).** Suggest one design modification per case to reduce coupling and make the system more modular.

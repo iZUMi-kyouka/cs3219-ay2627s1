@@ -21,7 +21,7 @@
 
 ### Lecture
 
-**Messaging exists because distributed applications must communicate across platforms, languages, formats and unreliable networks.** The deck's shorthand: every D.A.D needs M.O.M — message-oriented middleware takes care of seamless, loosely coupled communication (slides 4–5). Enterprise integration can be point-to-point, hub-and-spoke, or bus-based; only the message-based abstractions avoid the hub's central bottleneck (slide 7). → Chapter unit [W11.1]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c1).
+**Messaging exists because distributed applications must communicate across platforms, languages, formats and unreliable networks.** The deck's shorthand: every D.A.D needs M.O.M — {{ term("message-oriented middleware", "software that provides messaging capabilities so applications can exchange messages without knowing each other's location, platform or implementation") }} takes care of seamless, loosely coupled communication (slides 4–5). Enterprise integration can be point-to-point, hub-and-spoke, or bus-based; only the message-based abstractions avoid the hub's central bottleneck (slide 7). → Chapter unit [W11.1]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c1).
 
 **Enterprise Integration Patterns give the field a vendor-independent vocabulary.** 65 technology-independent patterns in six categories — construction, channels, routing, transformation, endpoints, systems management — that every MOM should support (slides 8–9, 14–15). → [W11.1]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c1).
 
@@ -39,7 +39,7 @@
 
 **Endpoints are the application-facing side of messaging: channel-specific, single-direction, and consuming either by polling or by reacting to arrival.** Polling consumer vs event-driven consumer, with throttling to control the consumption rate (slides 59–63). → [W11.6]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c6).
 
-**The deck closes by recapping Week 10's open question: asynchronicity in the request-reply pattern.** Returning immediately is not enough — a caller that still depends on the reply to complete its operation is only pseudo-asynchronous (slides 3, 20–26; Tutorial 8 Q1). → [W11.7]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c7).
+**The deck closes by recapping Week 10's open question: asynchronicity in the request-reply pattern.** Returning immediately is not enough — a caller that still depends on the reply to complete its operation is only {{ term("pseudo-asynchronous", "control returns early but the caller still depends on the reply — synchronous in terms of dependency") }} (slides 3, 20–26; Tutorial 8 Q1). → [W11.7]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#W11-c7).
 
 <box type="tip" seamless>
 
@@ -81,14 +81,14 @@ sequenceDiagram
   participant B as Module B
   A->>B: HTTP request (background process)
   Note over A: has returned to its caller...
-  B-->>A: response — still needed to complete the operation
+  B-->>A: response — still needed<br/>to complete the operation
   participant C as Module C
   participant q as queue
   participant D as Module D
   C--)q: publish message
   Note over C: returns, operates independently of D
   q--)D: deliver
-  Note over D: result observed later via separate notification
+  Note over D: result observed later<br/>via separate notification
 </mermaid>
 
 %%Notation: solid arrows are synchronous calls, arrows with open heads are asynchronous messages; the notes show where each module's own work continues.%% A's timeline still hangs on B's reply; C's does not.
@@ -129,11 +129,11 @@ flowchart LR
 
 <mermaid>
 flowchart LR
-  C["Customer"] -- "CustomerCreated / CustomerUpdated (event)" --> b(("Broker"))
-  b -- pub-sub --> O["Order<br>needs name"]
-  b -- pub-sub --> Pay["Payment<br>needs card details"]
-  b -- pub-sub --> S["Shipment<br>needs mailing address"]
-  b -- pub-sub --> N["Notification<br>needs email"]
+  C["Customer"] -.->|"CustomerCreated / CustomerUpdated (event)"| b(("Broker"))
+  b -.->|"pub-sub"| O["Order<br>needs name"]
+  b -.->|"pub-sub"| Pay["Payment<br>needs card details"]
+  b -.->|"pub-sub"| S["Shipment<br>needs mailing address"]
+  b -.->|"pub-sub"| N["Notification<br>needs email"]
 </mermaid>
 
 %%Notation: the double circle is the broker, the dashed-topic fan-out is pub-sub delivery, and each labelled arrow states what the subscriber needs from the event.%% One publication reaches all four subscribers — the Customer service does not know who they are.

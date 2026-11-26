@@ -84,7 +84,19 @@ Team 1: technical division, single deployed unit (layered). Team 2: domain divis
 
 **Layers differ in how strictly they enforce interaction rules.** A *closed* (strict) layer architecture allows interaction only between two consecutive layers; an *open* layer architecture lets any top layer get service from any bottom layer. The lecture's diagram marks the layer interfaces (I-1, I-2, I-3) between Presentation, Business, and Data. (Source: L6-Architecture slide 8.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-closed-layer-architecture" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-open-layer-architecture" trim />
+</box>
+
 **Layers are not tiers.** A layer is a logical division inside the software; a tier is a part deployed separately — the lecture's "typical examples: 2-tiered/3-tiered/n-tiered" depend on how you have packaged the application code. (Source: L6-Architecture slide 6.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-tier" trim />
+</box>
 
 **The style buys structure-enforced separation of concerns, modifiability, and testability.** You can swap technologies within a layer without affecting other layers — e.g., swap Oracle DB with MySQL — and you can test a layer by mocking the layer below. (Source: L6-Architecture slide 7.)
 
@@ -139,6 +151,14 @@ The system can no longer swap the database technology easily — upper layers no
 
 **The style has exactly two kinds of components and one kind of connector.** Components: filters, data source, data sink — each with a set of inputs (read) and outputs (produce). Connectors: pipes, each transmitting one filter's outputs to another filter's inputs. (Source: L6-Architecture slide 9.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-filter" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-pipe" trim />
+</box>
+
 **A filter is independent and incremental.** It transforms the input streams, computes incrementally so output begins before the input is fully consumed, and shares no state with other filters. (Source: L6-Architecture slide 9.)
 
 **The style fits batch and stream transformation, not rich user interaction.** Data flows in streams — good for images, audio, video, or batch data; good for limited user interaction like batch processing. (Source: L6-Architecture slide 10.)
@@ -157,11 +177,11 @@ The diagram traces the Azure image pipeline from source to sink; note the pipes 
 
 <mermaid>
 flowchart LR
-  src(["Photo uploaded (data source)"]) -->|"pipe (storage queue)"| f1["Content moderation"]
+  src(["Photo uploaded<br/>(data source)"]) -->|"pipe:<br/>storage queue"| f1["Content moderation"]
   f1 -->|"pipe"| f2["Resizing"]
   f2 -->|"pipe"| f3["Reorientation"]
   f3 -->|"pipe"| f4["Watermarking"]
-  f4 -->|"pipe"| sink(["CDN publication (data sink)"])
+  f4 -->|"pipe"| sink(["CDN publication<br/>(data sink)"])
 </mermaid>
 
 %%Notation: rounded boxes are the data source and data sink, rectangles are filters, and labeled solid arrows are pipes transmitting data in a defined format.%% To read it: a photo enters at the source and is transformed one stage at a time — moderated, resized, reoriented, watermarked — until it lands in the sink. Because each stage only knows the data format, Quiz 2's fix (replicating the slow resize filter behind the same queue) changes one box and no arrows.
@@ -244,7 +264,19 @@ In spirit: call inventory's availability-check API (explicit, narrow contract). 
 
 **Web MVC assigns the three roles across the client-server split.** The server holds the model; the controller handles the user's HTTP request, selects the model, and prepares the view; the view renders the HTTP response (in ASP.net, ASP files are HTML templates with server-side scripts); the model is business logic + persistence, possibly via ORM, and must manage concurrent modifications. (Source: L6-Architecture slide 20.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-web-mvc" trim />
+</box>
+
 **Controllers grow extra machinery at web scale: page controllers and front controllers.** The controller maps requests to handlers; usually split as a page controller (handles the requests for one specific page) and a front controller (a single entry point that receives *all* HTTP requests and maps each to its handler — middleware can sometimes play this role). (Source: L6-Architecture slide 21.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-page-controller" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-front-controller" trim />
+</box>
 
 **The style's costs are hops and fat controllers.** Performance: multiple hops for a single view update; the "fat controller" anti-pattern — because requests flow through the controller, new logic tends to accumulate there. The buys: usability (the model never calls back the view, so any number of views can serve one model) and modifiability (replace view or model independently). (Source: L6-Architecture slide 22.)
 
@@ -288,7 +320,11 @@ Page controller: handles requests for a specific page. Front controller: the sin
 
 ### W6.6 Single-page applications (SPA) ★
 
-**The SPA trades page refreshes for a program that lives in the browser — better experience, new security bill.** The lecture sets it up by contrasting two web-app flows: the classic form POST (HTML page back, more refreshes, more server work) versus the Ajax flow (a script posts in the background, JSON comes back, fewer refreshes). (Source: L6-Architecture slide 23.)
+**The SPA trades page refreshes for a program that lives in the browser — better experience, new security bill.** The lecture sets it up by contrasting two web-app flows: the classic form POST (HTML page back, more refreshes, more server work) versus the {{ term("Ajax", "a browser technique where a script sends HTTP requests and processes responses in the background — no page refresh") }} flow (a script posts in the background, JSON comes back, fewer refreshes). (Source: L6-Architecture slide 23.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-ajax" trim />
+</box>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-spa" trim />
@@ -305,7 +341,7 @@ flowchart LR
 
 %%Notation: the left box is what runs in the browser after the first load; the right boxes are server-side; the solid arrow ① is the one-time page download, ② and the dashed reply are the ongoing data exchanges — no further HTML documents.%%
 
-How to read it: this is the rightmost column of L4 slide 5 ("client-side MV* web application — focus on client-side customization", JSON data crossing the wire) drawn as a flow. Walk it with the errand platform modernised: the vendor's browser downloads the errand board app once; accepting an errand then calls `POST /orders/{id}/accept` and gets a JSON status back — the client's MV* engine (MVC and its variants) re-renders the board locally with no page reload. Compare with the classic form-POST flow that opened this unit (slide 23): the same user goal now costs one small data exchange instead of a full page round trip, and the server's MVC splits into a JSON API plus a client-side view layer — which is precisely why W6R then asks what constraints a *well-behaved* API should satisfy.
+How to read it: this is the rightmost column of L4 slide 5 ("client-side MV* web application — focus on client-side customization", JSON data crossing the wire) drawn as a flow. Walk it with the errand platform modernised: the vendor's browser downloads the errand board app once; accepting an errand then calls `POST /orders/{id}/accept` and gets a JSON status back — the client's MV* engine (MVC and its variants) re-renders the board locally with no page reload. Compare with the classic form-POST flow that opened this unit (slide 23): the same user goal now costs one small data exchange instead of a full page round trip, and the server's MVC splits into a JSON API plus a client-side view layer — which is precisely why W6.7 then asks what constraints a *well-behaved* API should satisfy.
 
 **How it works:**
 
@@ -314,6 +350,10 @@ How to read it: this is the rightmost column of L4 slide 5 ("client-side MV* web
 **The advantages are user-facing.** A fluid experience, bandwidth saved, and reduced perceived latency. (Source: L6-Architecture slide 24.)
 
 **The disadvantages are developer-facing.** Harder to develop, needs JavaScript, and vulnerable to XSS attacks. (Source: L6-Architecture slide 24.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-xss" trim />
+</box>
 
 **The buys/costs table sharpens the trade.** Buys: usability (no full page reloads), scalability (rendering cost moves to the client; the server sends JSON only), reduced perceived latency (after initial load, data loads in the background). Costs: security (XSS vulnerability; reduced client-side trust — tokens held client-side can be attacked), so every authorization rule must be re-enforced on the server side; and initial performance (larger initial download). (Source: L6-Architecture slide 25.)
 
@@ -370,6 +410,10 @@ Client-side security exposure: XSS vulnerability and reduced client-side trust (
 
 **The word "hypermedia" in the definition is doing real work.** Hypertext is text with hyperlinks to other text; multimedia integrates text, audio, video, and graphics; hypermedia is the nonlinear medium combining them with hyperlinks. REST constrains the transfer of representations *of hypermedia* — which is why links inside representations matter later in W6.9. (Source: L6-REST slide 5.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-hypermedia" trim />
+</box>
+
 **REST exploits HTTP's native capabilities rather than inventing its own protocol.** HTTP requests the access and use of data; the style uses GET, PUT, POST, DELETE natively — the uniform interface of W6.8. (Source: L6-REST slide 4.)
 
 <box type="tip" seamless>
@@ -396,6 +440,10 @@ A style choice. REST is a set of constraints for creating web services, not an a
 
 **Client-server: separate the concerns of storing data and presenting it.** REST applications should have a client-server architecture: the client requests resources, the server holds them; the client is not concerned with data storage, the server not with user interface or user state — improving the portability of the UI and the scalability of server components, so both evolve independently. (Source: L6-REST slide 7.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-client-server-constraint" trim />
+</box>
+
 **Stateless: every request must stand entirely on its own.** Each interaction has to be entirely self-contained — full information in query params, headers, or URI; no client state or "session" kept on the server, so the server is bound by the number of concurrent requests, not the number of clients. This improves scalability (the server quickly frees resources), reliability (recovery from partial failures), and monitoring (analyze one request in isolation). (Source: L6-REST slide 8.)
 
 {% call example("L6-REST slide 8 — the professor who does not remember you") %}
@@ -404,7 +452,15 @@ A student messages: "Prof, I'm John, Team 3, I need to change the presentation s
 
 **Cacheable: responses declare whether — and for how long — they may be reused.** The server's response states if the data is cacheable (and for how long) or not; the client returns cached data for subsequent equivalent requests, potentially eliminating interactions and improving efficiency and user-perceived performance. The minus: the client can receive stale data. (Source: L6-REST slide 9.)
 
-**Layered system: each layer sees only its immediate neighbor.** The application is organized as a (network) layered system; intermediaries may improve availability and performance (load balancing, caching) and provide data transformation and filtering — at the cost of overall system complexity. (Source: L6-REST slide 10.)
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-cacheable" trim />
+</box>
+
+**Layered system: each layer sees only its immediate neighbor.** The application is organized as a (network) layered system; intermediaries may improve availability and performance ({{ term("load balancing", "distributing requests across multiple server instances — Week 12 develops it in full") }}, caching) and provide data transformation and filtering — at the cost of overall system complexity. (Source: L6-REST slide 10.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-rest-layered-system" trim />
+</box>
 
 **Uniform interface: one way in, for every client.** There should be a uniform way of interacting with a given server irrespective of device or application type — generality applied to the component interface. Implementations are decoupled from the services they provide; interactions exploit HTTP requests (GET, PUT, POST, DELETE) and responses (status codes like 200 OK, 404 NOT FOUND), with the HTTP body transferring the resource representation. (Source: L6-REST slide 11.)
 
@@ -417,6 +473,10 @@ A student messages: "Prof, I'm John, Team 3, I need to change the presentation s
 </box>
 
 **Code-on-demand (optional): extend the client by downloading executable code.** Applets and JavaScript code are the lecture's examples — it simplifies the client from having to pre-implement all functionality and allows extensibility. It is the one constraint REST marks optional. (Source: L6-REST slide 15.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-code-on-demand" trim />
+</box>
 
 The diagram shows how statelessness, cacheability, and layering combine in one request path.
 
@@ -469,10 +529,26 @@ Statelessness — no session is kept on the server, so any replica (or a restart
 
 **Anything can be a resource — it is the key abstraction of information in REST.** A document, an image, a user; a resource is a conceptual mapping to a set of entities, identified using stable, global, unique resource identifiers — e.g., `/device-management/managed-devices/{device-id}`. (Source: L6-REST slide 12.)
 
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-resource" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-uri" trim />
+</box>
+
 **Clients operate on representations, not on the resource itself.** A representation consists of data plus metadata describing the data; the client holding a representation has enough information to modify the resource on the server — e.g., `HTTP DELETE /device-management/managed-devices/{device-id}`. (Source: L6-REST slide 12.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-representation" trim />
+</box>
 
 <box type="tip" seamless>
 **Tip:** {{ term("content negotiation", "the HTTP mechanism by which clients request a preferred representation format and the server chooses the appropriate one") }} answers the natural follow-up — how does one uniform interface carry text, images, video, and PDFs? The Content-Type header (MIME types) specifies the representation format; clients request preferred formats via `Accept:`; binary media travel as binary streams over HTTP. Example from the lecture: `GET /document/lecture5` with `Accept: application/pdf`. (Source: L6-REST slide 13.)
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-content-negotiation" trim />
 </box>
 
 **Messages must be self-describing.** Each message includes enough information to describe how to process it, so the server can easily analyze the request; components can fully understand resources or relevant states just by inspecting representations. (Source: L6-REST slide 14.)
@@ -547,7 +623,11 @@ Self-describing: the message carries its own processing information — `id`, `s
 | Complex aggregation across services | Chatty APIs, over-fetching | Event-driven materialized views / CQRS |
 | Intermittently connected systems (IoT, edge) | Requires immediate availability | Store-and-forward messaging |
 
-%%Jargon in the table (terms from L6-REST slide 18): a *saga* runs a long-running business process as a sequence of local steps with compensating actions; *CQRS* (command–query responsibility segregation) keeps separate write-side and read-side models; a *materialized view* is a precomputed read model kept up to date from events; *store-and-forward* queues messages until a disconnected party reconnects. The messaging rows are developed in Weeks 9–11.%%
+%%Jargon in the table (terms from L6-REST slide 18): a *saga* runs a long-running business process as a sequence of local steps with compensating actions; *CQRS* (command–query responsibility segregation) keeps separate write-side and read-side models; a *materialized view* is a precomputed read model kept up to date from events; *store-and-forward* queues messages until a disconnected party reconnects; *WebSockets* is a persistent, two-way connection over which the server can push updates to the client without the client polling — the push-based answer to the polling cost in that row. The messaging rows are developed in Weeks 9–11.%%
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-grpc" trim />
+</box>
 
 {% call example("Quiz 2 Q1 — the Grab-like app, Design A vs Design B") %}
 In a Grab-like ride-hailing app, **Design A** has Booking make a synchronous call-and-return to Matching; **Design B** has Booking publish a `BookingRequested` event to the middleware. During peak hours the Matching component crashes for two minutes. Design B **offers reliability by storing the event in the middleware until Matching becomes available** — Booking does not wait, and nothing is lost. Design A's synchronous coupling is precisely the "REST enforces synchronous request–response coupling" row above; the async alternative is Week 9's event-driven architecture. (Source: Quiz 2, Q1; L6-REST slide 18.)
@@ -582,6 +662,10 @@ REST enforces synchronous request–response coupling: Booking would need to cal
 **How it works:**
 
 **The model-code gap is the distance between your source code and your architecture model — reduce it, never expect to close it.** Quiz 2 states the correct reading: **architecture models help us reason about complexity and scale and cannot be treated as one-to-one mappings to source code**; models must not be made extensional — turned into a one-to-one mirror of the code — to "eliminate" the gap, and design decisions are not all executable. (Source: L6-Architecture slide 26; Quiz 2, Q3.)
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-06.md#def-model-code-gap" trim />
+</box>
 
 **Diagrams fail in predictable ways.** Notation not explained or inconsistent; ambiguous purpose or meaning of elements; missing or ambiguous relationships; generic terms like "business logic"; omitted technology choices; mixed levels of abstraction; too much or too little detail; no context or logical starting point. (Source: L6-Architecture slide 30.)
 
@@ -664,14 +748,33 @@ Any four: unexplained/inconsistent notation; ambiguous element purpose/meaning; 
 |---|---|---|
 | Architectural style | A reusable way of organizing the major parts of a system (defined in Week 4) | [W6.1](#W6-c1) |
 | Layered architecture | Layers of components with dependencies pointing downward, each layer one responsibility | [W6.2](#W6-c2) |
+| Closed layer architecture | Interaction only between two consecutive layers — the strict default | [W6.2](#W6-c2) |
+| Open layer architecture | Any top layer may get service from any bottom layer, skipping intermediates | [W6.2](#W6-c2) |
+| Tier | A part deployed separately — a packaging division; a layer is a logical division | [W6.2](#W6-c2) |
 | Pipe-and-filter | Independent transforming filters connected by pipes; no shared filter state | [W6.3](#W6-c3) |
-| Modular monolith | One deployable organized internally into domain modules behind explicit APIs | [W6.4](#W6-c4) |
+| Filter | A self-contained processing step: transforms input streams, computes incrementally, shares no state | [W6.3](#W6-c3) |
+| Pipe | The connector transmitting one filter's outputs to another filter's inputs in a defined format | [W6.3](#W6-c3) |
+| Modular monolith | One deployable organized internally into domain modules behind explicit APIs (defined in Week 4) | [W6.4](#W6-c4) |
 | MVC | View + controller + model separation for interactive applications | [W6.5](#W6-c5) |
+| Web MVC | MVC on the web: server holds the model; controller handles the request and prepares the view; view renders | [W6.5](#W6-c5) |
+| Page controller | Handles the requests for one specific page | [W6.5](#W6-c5) |
+| Front controller | The single entry point receiving all HTTP requests and mapping each to its handler | [W6.5](#W6-c5) |
 | SPA | A browser-resident program that fetches data in the background without page refreshes | [W6.6](#W6-c6) |
+| Ajax | Script-driven background HTTP requests and responses — no page refresh | [W6.6](#W6-c6) |
+| Cross-site scripting (XSS) | Malicious code running in the victim's browser — why SPA authorization is re-enforced server-side | [W6.6](#W6-c6) |
 | REST | Constraint set for distributed hypermedia systems over HTTP | [W6.7](#W6-c7) |
+| Hypermedia | The nonlinear medium combining text, graphics, audio, video, and hyperlinks | [W6.7](#W6-c7) |
+| Client-server constraint | Separate storing data (server) from presenting it (client); both evolve independently | [W6.8](#W6-c8) |
 | Statelessness | Every request self-contained; no client session state on the server | [W6.8](#W6-c8) |
+| Cacheable constraint | Responses declare reuse; clients may serve cached copies — possibly stale | [W6.8](#W6-c8) |
+| Layered system (REST) | Each layer sees only its immediate neighbor; intermediaries balance load and cache | [W6.8](#W6-c8) |
 | Uniform interface | One standard interaction way: HTTP verbs, status codes, body representations | [W6.8](#W6-c8) |
+| Code-on-demand | REST's optional constraint: extend the client by downloading executable code | [W6.8](#W6-c8) |
+| Resource | REST's key abstraction of information — a conceptual mapping to entities, addressed by a stable URI | [W6.9](#W6-c9) |
+| Uniform resource identifier (URI) | The stable, global, unique identifier addressing a resource | [W6.9](#W6-c9) |
+| Representation | Data + metadata exchanged; enough for the client to understand and modify the resource | [W6.9](#W6-c9) |
 | Content negotiation | Client requests a preferred representation format; server chooses the appropriate one | [W6.9](#W6-c9) |
+| gRPC | Binary, HTTP/2, strongly-typed RPC framework for high-frequency service-to-service calls | [W6.10](#W6-c10) |
 | Model-code gap | The distance between source code and architecture model — reducible, not removable | [W6.11](#W6-c11) |
 
 %%Next: [Week 7]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html) takes the modular monolith from W6.4 and asks when to split it: the microservice style, its trade-offs against the monolith, and the domain-driven design toolkit — domains, bounded contexts, aggregates — for finding the seams.%%
