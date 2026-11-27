@@ -48,6 +48,8 @@ Builds on **Week 9** — events, fire-and-forget communication, EDA, and event-d
 | Reach | One receiver at a time | Enables one-to-many sends |
 | Protocol examples | HTTP/HTTPS | AMQP |
 
+%%The mapping burden has a classroom face (L10 recording, ~[24:00]): if you ask ten questions during a lecture and I answer them in whatever order they surface, answering is my whole job — recognizing which answer belongs to which of your questions is yours. A correlation identifier is exactly that bookkeeping, done on the sender's side.%%
+
 <panel type="seamless" minimized header="%%What is loose coupling?%%">
 
 <include src="../../se-book-adapted/common/defs-week-07.md#def-loose-coupling" trim />
@@ -59,6 +61,12 @@ A login action is synchronous by nature: the caller must get a reply — "authen
 {% endcall %}
 
 **HTTP/HTTPS is the canonical synchronous request–reply protocol.** A client, typically a web browser, sends a request for a resource to a server, and the server sends back a response corresponding to the resource — or an error message if it cannot process the request. The resource can be a simple HTML file returned verbatim, or a program generating the response dynamically (slide 6).
+
+**Synchronous communication carries connection overhead — the channel must be kept alive for the whole conversation.** The classic picture is a telephone call: both parties are online start to finish, and even when a provider (an ISP) does the maintaining, the overhead is real (L10 recording, ~[21:00]).
+
+**Between services, WebSockets are the canonical keep-alive channel.** The protocol terminates a socket that stays silent too long, so the two sides exchange heartbeat messages — "I am alive" / "I am also alive" — for as long as the channel is needed (L10 recording, ~[22:00]).
+
+**Failure handling in synchronous communication is the sender's job.** The receiver does not even know it was supposed to receive something, so a sender that gets no response retries the request — up to a configured limit, or with the exponential-backoff schedule TCP/IP uses (L10 recording, ~[23:00]).
 
 #### Asynchronicity inside request–reply
 
@@ -93,6 +101,16 @@ sequenceDiagram
 
 How to read it: the client sends a request and gets **HTTP 202 (Accepted)** plus a link to a status endpoint; while work is pending, polling the status endpoint also returns 202; when the work completes, the status endpoint returns **302 (Found)** redirecting to the resource, which the client then fetches. If the request was invalid in the first place, the API replies immediately with an error code such as **HTTP 400 (Bad Request)** (slides 7–8).
 
+<panel type="seamless" minimized header=":glyphicon-question-sign: **Common question — isn't a WebSocket asynchronous, then?**">
+
+The channel itself is synchronous: the connection must be kept alive with heartbeats for as long as you want to use it. You can run a synchronous call over a WebSocket, or place an event bus on it so events are picked up as they arrive — either way the underlying socket needs its lifeline maintained (asked in lecture; L10 recording, ~[26:00]). %%Grounding: RFC 6455 gives WebSocket ping/pong control frames, and servers and proxies reap idle sockets — heartbeats keep the channel alive.%%
+
+</panel>
+
+{% call example("L10 recording ~[28:00] — Canvas bulk download") %}
+Downloading all team submissions at semester's end: each deck is 2–20 MB and the files sit in S3 buckets behind Canvas, which must fetch them, zip them, and stage the result — minutes of work. Choosing "download all" returns immediately with a "files are downloading" notice, and the lecturer goes on grading other things while Canvas works in the background. Note what the pattern does *not* do: HTTPS itself stays synchronous — "HTTP cannot be made asynchronous". What changes is that client and backend are decoupled for the processing duration, with the client satisfied by an acknowledgment that the request is being processed (L10 recording, ~[30:00]).
+{% endcall %}
+
 {% call example("Quiz 4 Q7 — an async query must be correlatable") %}
 The Research service asks the Archive service to locate an old dataset; the search may take hours, and Research must continue other work and later associate each reply with the correct search. Sending the locate-dataset request asynchronously is right — but treating "the next reply" as the result of the latest search is wrong when several searches can be in flight. The fitting design: send an asynchronous query to Archive **and include a request identifier** that Archive returns with its reply. (Source: Quiz 4, Question 7.)
 {% endcall %}
@@ -100,6 +118,8 @@ The Research service asks the Archive service to locate an old dataset; the sear
 <box type="warning" seamless>
 
 **Pitfall — async by default is not free.** The pattern adds a status endpoint, polling traffic, and correlation identifiers to design for. Choose synchronous when the caller genuinely needs the answer to proceed (login, slide 5); go asynchronous when it can continue — and then design the notification handling the definition demands: a way to map each incoming notification back to the request it answers, via a {{ term("correlation identifier", "a token the requestor assigns as a unique request ID and the replier copies into the reply, so replies can be matched to requests — defined in W11.3") }} (Quiz 4 Q7's request identifier) (slide 5).
+
+**Pitfall — poll periodically, not frantically.** Polling the status endpoint every second while doing nothing else is *busy waiting* — the operating-system term for cycling without useful work — and wastes the client's resources. The pattern intends the client to continue its own work and check back periodically (L10 recording, ~[32:00]).
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -129,7 +149,7 @@ The Research service asks the Archive service to locate an old dataset; the sear
 <include src="../../se-book-adapted/common/defs-week-09.md#def-event" trim />
 </box>
 
-**The two constructs share three properties and differ in one.** Both utilize asynchronous communication, facilitate decoupling of services, and carry some information from one service to the other for the second to consume — *the intent with which a message or event is sent makes the difference* (slide 12).
+**The two constructs share three properties and differ in one.** Both utilize asynchronous communication, facilitate decoupling of services, and carry some information from one service to the other for the second to consume — *the intent with which a message or event is sent makes the difference* (slide 12). Typical realizations: Kafka as the event broker, RabbitMQ and AWS SQS as messaging systems — and Redis, or RabbitMQ itself, can be configured to play either role (L10 recording, ~[40:00]).
 
 | | Event | Message |
 |---|---|---|
@@ -140,7 +160,15 @@ The Research service asks the Archive service to locate an old dataset; the sear
 
 (Source: L10 slide 13.)
 
+**On an architecture diagram, the verb tense is the tell.** Events are stated in the past tense — `OrderPlaced`, `PaymentRejected`, `OrderShipped` — because they report what already happened (L10 recording, ~[37:00]).
+
+**Messages read as instructions, and the distinction carries into code.** Message names are commands — `NotifyCustomer`, `ShipOrder`, `ApplyPayment` — and when you translate the architecture into code, an event travels as a payload the consumer reacts to, while a command typically becomes a call to the service that performs it (L10 recording, ~[38:00]).
+
 **Ownership follows the channel — and it flips between the two.** For events, the **publisher owns the event payload and the underlying channel (topic)** on which events get published — e.g., a Content service owns the topic on which new content is published and the payload of that event. For messages, the **receiver owns the message payload and the underlying channel (queue)** — e.g., a Payment service decides on which queue payment messages must be sent, and what details are needed for payments to be initiated (slide 15).
+
+{% call example("L10 recording ~[55:00] — the receiver dictates what it accepts, and where") %}
+A Payment service is configured to receive Singapore-dollar payments from Singapore-issued cards. A tourist offers a USD Amex. Taken to its strictest, the receiver refuses: "I accept SGD only — converting is your problem." And if the payment system had several gateways — SGD-only, global, Amex-only — the receiver dictates *which channel* each kind of payment message must be sent to. That is message ownership in action: the receiver owns the payload because it works on it, and owns the channel because it dictates where the work arrives. (In practice, other mechanisms handle the conversion — the point is the receiver's right to dictate.)
+{% endcall %}
 
 The diagram puts the two side by side — the exact contrast the deck draws on slide 13.
 
@@ -180,6 +208,13 @@ Events handle the *reactive* flow; messages handle *reliable task handoff*.
 
 Note the shape of both answers: the *fan-out* is intent (event vs messages), and the *email to the user* is a directed task handed to one service — a message either way.
 
+The recording works through the trade-offs the slides only imply (L10 recording, ~[60:00]–[68:00]):
+
+* **Event-only can mis-order the flow.** Consumers process at different speeds, so the Notification service may react to `TenantDeleted` and email the user *before* the slower domain services have finished deleting the tenant's data — the business requirement's *sequence* is not enforced, only its eventual outcome.
+* **Messages-all-the-way enforces the sequence, at a price.** Individual commands to every service, each responding on a shared return channel, let the tenant manager wait for all confirmations before directing Notification — but that is many API-style requests where one cheap event publication would do.
+* **The hybrid buys both.** The event drives the fan-out, a message channel collects the confirmations to enforce sequencing, and the final directed message goes to Notification.
+* **The W8.4 vocabulary names the difference.** Firing an event and letting each service decide what to do is **choreography**; issuing explicit commands that dictate *when* each service acts is **orchestration** — "sending commands is kind of a telltale sign that it is an orchestration" (L10 recording, ~[68:00]).
+
 <box type="warning" seamless>
 
 **Pitfall — mislabeling intent corrupts the design.** Broadcast a command and you get races ("let whichever receives it first become the reservation authority" — the wrong answer to Quiz 4 Q1); masquerade a command as a past-tense event and consumers react to something that never happened. And per slide 14's warning, the *constructs* can be used either way — "message going to a topic & event going to a queue" is possible, which is exactly why you must reason from intent, not from the channel name.
@@ -187,7 +222,7 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 
 <box type="info" seamless>
 
-**Two senses of "message" — which one is in play?** In this unit's technical vocabulary, a **message** is the command/query construct: a *request to be executed*, sent point-to-point to one receiver over a queue, owned by the receiver — an event is the *other* construct (a past-tense fact, broadcast on a topic, owned by the publisher). In broader industry usage, "message" means any payload sent between services — events included. The deck flags this itself (slide 14: "the terms can be used either way, when referring to one specific thing => confusing"). So: within W10 arguments (ownership, channels, intent), use the narrow sense; when reading Kafka documentation or W9's prose, expect the broad sense, and classify the payload by *intent*, not by the word.
+**Two senses of "message" — which one is in play?** In this unit's technical vocabulary, a **message** is the command/query construct: a *request to be executed*, sent point-to-point to one receiver over a queue, owned by the receiver — an event is the *other* construct (a past-tense fact, broadcast on a topic, owned by the publisher). In broader industry usage, "message" means any payload sent between services — events included. The deck flags this itself (slide 14: "the terms can be used either way, when referring to one specific thing => confusing"). So: within W10 arguments (ownership, channels, intent), use the narrow sense; when reading Kafka documentation or W9's prose, expect the broad sense, and classify the payload by *intent*, not by the word. The recording adds a decoding rule for casual reading (L10 recording, ~[53:00]): the channel names out the construct — "a message sent to a topic" means an *event* on a pub-sub topic, and "an event sent to the queue" means a *message* on a queue; topic ⇒ pub-sub ⇒ events, queue ⇒ messages.
 
 </box>
 
@@ -216,7 +251,7 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 <include src="../../se-book-adapted/common/defs-week-10.md#def-queue" trim />
 </box>
 
-**Multiple receivers mean pub/sub: one sender's communication is available to many subscribers.** A message can also be published to a topic — a broadcasting station: anyone interested can subscribe, and send–receive operations are controlled by configuration — who subscribes to a topic is set up as configuration on the broker rather than named in the sender's code (the deck's phrase, slide 21). Publishers are aka producers, senders, or observables; subscribers are aka consumers, receivers, or observers (slides 20–21) — the last pair borrows the Observer design pattern's names (a subject notifies its observers), so "observable" is just the thing being watched — the event source — and the "observer" is what gets notified.
+**Multiple receivers mean pub/sub: one sender's communication is available to many subscribers.** A message can also be published to a topic — a broadcasting station: anyone interested can subscribe, and send–receive operations are controlled by configuration — who subscribes to a topic is set up as configuration on the broker rather than named in the sender's code (the deck's phrase, slide 21). Publishers are aka producers, senders, or observables; subscribers are aka consumers, receivers, or observers (slides 20–21) — the last pair borrows the Observer design pattern's names (a subject notifies its observers), so "observable" is just the thing being watched — the event source — and the "observer" is what gets notified. The recording adds the boundary difference: in the Observer pattern everything happens inside one process, whereas pub/sub decouples the same roles across the network (L10 recording, ~[73:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-10.md#def-topic" trim />
@@ -225,7 +260,10 @@ Note the shape of both answers: the *fan-out* is intent (event vs messages), and
 <box type="important" seamless>
 
 **You can — and will — have both.** Sync and async communication coexist in one architecture/application, and so do queues and topics: commands flow point-to-point while facts fan out (slide 20; L10 slide 16's e-commerce table).
+
 </box>
+
+**Two mechanisms reach many receivers — broadcast and multicast.** Pub/sub *broadcast* pushes one event to the broker, which notifies every subscriber. *Multicast* keeps the message construct: the sender explicitly copies the message to each designated receiver, and uninterested services are never bothered — RabbitMQ's fanout exchange is exactly this copying behavior (L10 recording, ~[70:00]).
 
 **Kafka realizes pub/sub as a distributed log.** Kafka is a distributed message streaming platform using publish–subscribe, developed at LinkedIn and donated to the Apache Foundation (slide 22).
 
@@ -240,8 +278,14 @@ A unit of data within Kafka is called an event, events are categorized into topi
 <include src="../../se-book-adapted/common/defs-week-10.md#def-kafka" trim />
 </box>
 
+The recording grounds the constructs physically (L10 recording, ~[74:00]): brokers are the cluster's servers and host the topics — and a topic is purely *logical*, an identifier that must map onto real storage. Its **partitions are the physical manifestation**: log files, fast-access databases, or in-memory structures, with a producer typically writing to one partition. Configure one topic with one partition and you have reduced Kafka to an ordinary messaging system. Because the cluster accepts added brokers without downtime, retention can be extended as far as policy allows — which is what makes Kafka usable as the event store in CQRS (W8.3). %%Retention grounding: Kafka's shipped default is *finite* — `log.retention.hours=168`, i.e. 7 days (Confluent's retention documentation). The lecture cites 14 days (L10 recording, ~[76:00]); the precise number is a configuration choice — the teaching point is that the default is finite, not forever.%%
+
 {% call example("Quiz 4 Q9 — the partition key is the ordering fix") %}
 CampusEats publishes `OrderReady` then `OrderCollected` per order to a Kafka topic with three fixed partitions — but assigns partitions *without* using an order identifier, so `OrderCollected` can be processed before `OrderReady` for the same order. The fix that keeps three partitions and restores per-order order: **use `orderId` as the event key**, with a consistent mapping sending all events of the same order to the same partition. (Source: Quiz 4, Question 9.)
+{% endcall %}
+
+{% call example("L10 recording ~[46:00] — four order events, three partitions, three speeds") %}
+A service emits `OrderPlaced`, `PaymentReceived`, `OrderFulfilled`, `OrderDelivered` to an *orders* topic with three partitions and no key — so Kafka hands them out round-robin: P0, P1, P2, P0. Three consumers in the consumer group each read one partition, on differing hardware, at 1, 5, and 2 events per second. The receiver service can then observe `OrderPlaced`, `OrderFulfilled`, `PaymentReceived`, `OrderDelivered` — business-flow nonsense caused purely by processing-speed skew, since each partition preserves its own order but the partitions run independently. Each consumer tracks an **offset** — its position in its partition (W10.3's topic definition) — so when the event at offset 3 arrives while the group's cursor sits at 1, the consumer knows to wait for event 2. Under heavy load this skew is real; under normal conditions partitions keep up and it rarely bites (L10 recording, ~[50:00]). %%Round-robin grounding: the no-key default partitioner historically assigns partitions round-robin; recent Kafka clients use a sticky variant that fills one partition's batch before switching — the ordering consequence is the same (Confluent, partitioner docs).%%
 {% endcall %}
 
 **AMQP realizes the queue world as a protocol.** AMQP is an asynchronous communication protocol — an open standard — enabling conforming client applications to communicate with conforming messaging middleware brokers. It is a peer-to-peer protocol — "peer-to-peer" in the protocol sense only: two endpoints communicating as equal parties, one playing the client application, the other a trusted message routing and delivery service, the broker (slide 25). That is unrelated to FoC being a *peer-to-peer platform* in the application sense (W8.1) — same words, different layers.
@@ -284,11 +328,19 @@ Exchange types: **direct** (route to queues whose binding key exactly matches th
 <include src="../../se-book-adapted/common/defs-week-10.md#def-exchange" trim />
 </box>
 
-**Message queue systems give you asynchronous *persistent* communication — with honesty about the guarantees.** The sender is only guaranteed that the message will eventually be inserted into the recipient's queue; there is no guarantee on when — or if — it will be read and processed by the receiver (slide 30). Persistence is the next unit's subject.
+**Message queue systems give you asynchronous *persistent* communication — with honesty about the guarantees.** The sender is only guaranteed that the message will eventually be inserted into the recipient's queue; there is no guarantee on when — or if — it will be read and processed by the receiver (slide 30). The recording motivates the queue with the four sender/receiver liveness combinations (L10 recording, ~[88:00]):
+
+* **Both active** — the queue merely buffers the message briefly.
+* **Sender active, receiver passive** — the queue *is* the persistence, holding messages until the receiver wakes.
+* **Sender done, receiver waking** — the queue replays messages in the order they were sent.
+* **Both gone** — the queue holds everything until a receiver arrives.
+
+In all four, the guarantee is the same: the message **will** be delivered — never *when*. Persistence is the next unit's subject.
 
 <box type="warning" seamless>
 
 **Pitfall — ordering is a per-partition promise, not a topic-wide one.** Topics allow non-sequential processing across partitions (slide 14), and Quiz 4 Q8's reviewer is wrong to call unequal partition speeds an ordering violation — per-partition ordering says nothing about processing order across partitions. When relative order within a group matters, key those events to one partition (Quiz 4 Q9).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -301,6 +353,9 @@ Exchange types: **direct** (route to queues whose binding key exactly matches th
 
 **Q3.** Why does adding Kafka brokers scale the system horizontally without downtime?
 <panel type="seamless" minimized header="%%Answer%%">Because the topic's partitions are spread over brokers that coordinate as a cluster; new brokers take over partitions and traffic without a stop — the deck's horizontal-scaling point (slide 22).</panel>
+
+**Q4.** The design needs exactly one service to act on an information item that other services could also use. Message or event? *(Asked in lecture.)*
+<panel type="seamless" minimized header="%%Answer%%">Either, deliberately. A message to the one designated receiver — or multicast copies to a fixed list — if the recipient set is fixed and known. An event with a single subscriber configured if the information may matter to others later. The lecture's rule of thumb (L10 recording, ~[59:00]): information meant for a designated recipient ⇒ message; information other services can use ⇒ event — or accept replicating individual messages to each receiver.</panel>
 
 </panel>
 
@@ -317,6 +372,8 @@ Exchange types: **direct** (route to queues whose binding key exactly matches th
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-10.md#def-transient-communication" trim />
 </box>
+
+The recording reaches for the postal past to make store-and-forward concrete (L10 recording, ~[90:00]): a letter rides with a courier to a post office, is *stored* there, and waits until the next courier picks it up for the next hop — repeated until the addressee collects it. Email literalizes the metaphor: POP — the *Post Office Protocol* — keeps a delivered message in the mailbox until your client (e.g. Thunderbird) reads it, and you can configure whether a copy stays in the mailbox afterwards; until the client reads, the message simply waits.
 
 The diagram shows the two delivery disciplines end to end.
 

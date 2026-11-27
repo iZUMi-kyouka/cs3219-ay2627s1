@@ -52,6 +52,8 @@
 
 %%"...as long as there were no machines, programming was no problem at all; when we had a few weak computers, programming became a mild problem, and now we have gigantic computers, programming has become an equally gigantic problem." — Edsger Dijkstra, The Humble Programmer (EWD340), quoted on L1 slide 13%%
 
+**The first response was to borrow what already worked: methodical manufacturing.** The 1960s programmer punched programs into cards, and when hardware leapt ahead, developers "still thought in punch-card ways" — software came out slow, costly, and poor in quality. Researchers looked at how wartime systems engineering churned out tanks, missiles, and artillery quickly and reliably by following a method, and imported that idea into software: the methodical repetition that keeps quality high — which accumulated into exactly the sub-fields listed above (L1 recording, ~[30:00]).
+
 **A second crisis — "Software Crisis 2.0" (1970–now) — came from abundance, not scarcity.** Push factors: enormous advances in hardware, falling hardware costs, rising processing power, device proliferation, and an effectively infinite amount of available data. Pull factors: {{ term("digital natives", "people who grew up with digital technology and take it for granted") }} consuming technology. The responses named on the slide are exactly this course's syllabus: parallel processing, cloud computing, data analytics, security, IoT (Internet of Things — everyday devices such as sensors and cameras connected to the internet), edge computing (processing data on or near the device that produces it, instead of in a distant cloud data center), DevOps, CI/CD, and microservices (Source: L1 slide 14).
 
 <box type="definition" seamless>
@@ -61,6 +63,8 @@
 {% call example("Quiz 1 Q3 — the farm that grew a crisis 2.0") %}
 Quiz 1 describes a farm deploying many low-cost soil, weather, and irrigation sensors that generate a continuous stream of data, creating opportunities for automated farm-condition analysis software. This is a **push** factor: the large number of sensors deployed makes a large volume of data available to use and analyze — the technology push came first, and the software opportunity follows it (Quiz 1 Q3, model answer).
 {% endcall %}
+
+%%The lecture floated a candidate Crisis 3.0 (L1 recording, ~[45:00]): AI developing faster than we can assure its quality. Its emerging research response is responsible software engineering, on two fronts — assuring security and safety when AI agents build software, and using such tools responsibly yourself. The practices and processes for that crisis are still being invented.%%
 
 <box type="warning" seamless>
 
@@ -85,13 +89,26 @@ The constraint flipped: in the 1960s the crisis was that software could not keep
 
 </panel>
 
+**Q3.** (Asked in lecture, as a think-pair-share.) Match each Crisis 2.0 response to the factor it answers: parallel processing, cloud computing, edge computing and IoT, security and privacy.
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+The mapping is many-to-many, not one-to-one — the professor endorsed arguing several responses together (L1 recording, ~[35:00]–[40:00]):
+
+* **Parallel processing** responds to advances in hardware — multi-processing systems need efficient processing
+* **Cloud computing** responds to increasing processing power — powerful remote machines host services that anyone anywhere can use
+* **Edge computing and IoT** respond to low-cost (and low-power) hardware — cheap enough to put processing where the data is generated
+* **Security and privacy** respond to the digital-natives pull factor — many devices, much data produced and consumed
+
+</panel>
+
 </panel>
 
 <span id="W1-c2"></span>
 
 ### W1.2 Types of software applications ★
 
-**"Different needs, different applications" — and different applications are not developed and deployed the same way.** Before choosing tools, processes, or architecture, characterize what kind of application you have (Source: L1 slides 15–16).
+**"Different needs, different applications" — and different applications are not developed and deployed the same way.** Before choosing tools, processes, or architecture, characterize what kind of application you have (Source: L1 slides 15–16). %%The lecture's version of the tagline: you cannot have one application that does everything — the old "kitchen sink app" (L1 recording, ~[45:00]).%%
 
 **Applications differ along four axes.** Nature of code and data: closed-source, open-source, and open-content — where open-content is the data-side sibling of open-source: material (text, media, datasets) that others may legally copy, modify, and redistribute, like Wikipedia's articles %%("open content" — dimmed: Wikipedia)%%, versus closed-source code you cannot inspect and open-source code you can. Deployment mode: desktop, embedded and edge, cloud-native. Clients: who and what consumes the software. Computation and response: real-time, concurrent, distributed (Source: L1 slide 16).
 
@@ -117,7 +134,15 @@ The constraint flipped: in the 1960s the crisis was that software could not keep
 
 %%The deck lists sub-categories for the other three quadrants but pairs the **Clients** quadrant with a picture only: several client computers sending requests to one web server. Read the axis as "who or what consumes the software" — human users, other systems, or client devices calling your application the way those pictured machines call the web server. Tutorial 1's classification questions (Q1 A–C) exercise only the other three axes, so don't expect a ready-made checklist for this one.%%
 
-{{ term("cloud computing", "software infrastructure hosted on an external data center, with software and services delivered over the internet") }} **Cloud computing comes in service models that differ in how much the vendor manages.**
+**The axes overlap — one system can sit in several categories at once.** The lecture's example is a self-driving car approaching a pedestrian: the braking decision is real-time (the window between stimulus and response is split-second), and it must be made on the vehicle itself — embedded and edge — because a round trip to a distant cloud server would outlast the pedestrian's crossing (L1 recording, ~[45:00]).
+
+{% call example("L1 recording ~[50:00] — a room-temperature controller vs a student-records system") %}
+A standalone controller that regulates one room's temperature has a small, well-defined purpose: it can be built with a waterfall process, structured as a {{ term("monolith", "a system deployed as a single unit — Week 4 contrasts it with decomposed styles") }}, and embedded in a single chip. Maintaining student records is the opposite: too large for one chip, dependent on its own infrastructure, and naturally distributed — processing for different aspects happens in different places, the way banking and e-commerce systems distribute computation between client and server while collectively forming one application. Knowing which kind of system you are building tells you the deployment, the process, and the design before you start (L1 recording, ~[50:00]).
+{% endcall %}
+
+{{ term("cloud computing", "software infrastructure hosted on an external data center, with software and services delivered over the internet") }} **The service models exist because owning hardware was never the customer's core business.** On-premise means you manage everything — and looks affordable until air-conditioning, power, space, and rentals turn capital expenditure (capex) into a permanent operating expenditure (opex). A company whose business is e-commerce should not be choosing hard disks and processors; cloud providers took over that headache, and the service models below differ in how much of the stack they took over (L1 recording, ~[50:00]).
+
+**Cloud computing comes in service models that differ in how much the vendor manages.**
 
 - **IaaS** (e.g., AWS, Google Cloud) rents raw infrastructure
 - **PaaS** (e.g., AWS Elastic Beanstalk, Heroku) hosts your application on a managed platform
@@ -143,8 +168,16 @@ The constraint flipped: in the 1960s the crisis was that software could not keep
 <include src="../../se-book-adapted/common/defs-week-05.md#def-cloud-native" trim />
 </box>
 
+**The lecture's cloud-enabled story is COBOL core banking.** Core-banking systems written decades ago in COBOL were designed for a single on-premise server; digital banking made them impossible to scale that way, so vendors wrote wrappers around them and deployed them on security-compliant cloud instances — cloud-enabled, not cloud-native (L1 recording, ~[55:00]).
+
+%%One recap nuance from the L2 recording (~[5:00]): "cloud" names two different things — a paradigm for where computations run, and a deployment method. Cloud-native is the paradigm; cloud-enabled is legacy software redeployed by the method.%%
+
 {% call example("L1 slide 19 — two designs for the same web app") %}
-The deck contrasts an example cloud-native app design with an example monolithic web-app design for the same kind of product: the cloud-native version is decomposed into small services behind APIs, while the {{ term("monolith", "a system deployed as a single unit — Week 4 contrasts it with decomposed styles") }} runs everything in one deployable unit. The design you pick changes how you build, deploy, and scale — which is why application type is decided early (Source: L1 slide 19, image from Microsoft's cloud-native introduction).
+The deck contrasts a monolithic web-app design with a cloud-native design of the same kind of product. The monolith keeps identity, catalog, ordering, basket, marketing, and location as modules of one application over one shared database; the cloud-native version makes every concern a small application of its own, each with its own database — and draws the ordering service split in two, which the lecture reads two ways: the functionality was divided into two smaller microservices packaged as one concern, or the instance was scaled up to meet demand (Source: L1 slide 19; L1 recording, ~[60:00]).
+
+==Exam hint (L1 recording, ~[60:00]):== asked "what principle does this design support?", loose coupling, high cohesion, single responsibility, and separation of concerns are all *acceptable* answers — but they are the answers of someone fresh out of CS2103, and in CS3219 the professor expects the more specific one. For the monolith diagram, that answer is **separation of concerns**: identity is a *concern* — possibly many classes collaborating on authentication and authorization — and you do not need object-oriented programming to separate concerns.
+
+The decomposed design pays off in reuse and scale: an identity microservice is not tied to this e-commerce application — the same service can manage users and permissions in a banking system or a social-media app — so well-separated services are designed for reuse, and each is independently scalable by design (L1 recording, ~[60:00]).
 {% endcall %}
 
 {% call example("Tutorial 1 Q1 — four applications, four classifications") %}
@@ -185,6 +218,8 @@ Cloud (or cloud-enabled), concurrent and distributed (many transactions and regi
 </box>
 
 **Six factors affect software development.** Requirements, the process itself (resources, time), criticality, people (competence), consequences, and technology (Source: L1 slide 22). ==A process is a means, not an end: the factors pick the process, not the other way round.==
+
+**The lecture's reason for processes is people, not code.** Building large software means working with a team, and where people are involved, communication and collaboration can go wrong — a shared process prevents those mishaps. Every process model, whatever its packaging, arranges the same core steps: requirements analysis, design, testing, deployment, then deciding what to do next with the running application (L1 recording, ~[65:00]).
 
 **Scrum is an agile process built on iterative development with feedback loops.** Work happens in fixed sprints, opened by sprint planning; each sprint ends with a working increment that generates feedback, enabling quick response to changes (Source: L1 slide 23). The diagram below shows that loop and why it responds quickly to change.
 
@@ -240,6 +275,8 @@ Product: PeerPrep — "to be the most awesome interview preparation platform". T
 %%Reading the security jargon in these rows (not on the slide): *hashing* a password stores a one-way scrambled digest of it instead of the password itself; *salted* hashing mixes random data in before hashing, so identical passwords still produce different digests; *SHA256* is a standard hash algorithm; a *dictionary attack* guesses passwords from lists of common words — which the validation rules above are designed to block.%%
 {% endcall %}
 
+%%The lecture connected the backlog to the project: CS2103/CS2113 recorded requirements as user stories, but CS3219 expects functional specifications — what each term means and how they differ is Week 3 material (L1 recording, ~[65:00]).%%
+
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** Iterating is not an excuse for an empty plan. Scrum responds to change *between* increments; inside a sprint the team still commits to planned backlog items — Quiz 1 makes exactly this distinction (a clinic re-prioritizes its backlog after a sprint demo because feedback from the working increment guides subsequent priorities, not because "agile teams must change all requirements after every sprint").
@@ -275,7 +312,7 @@ Criticality (and consequences): strict timing constraints and the risk of physic
 <include src="../../se-book-adapted/common/defs-week-01.md#def-deployment" trim />
 </box>
 
-**Six deployment considerations each map to quality attributes.** The internet as a virtual worldwide marketplace — applications must reach users on many device and platform combinations, pushing designs toward cloud-nativity (the slide's stated consideration) → portability. Large-scale content delivery between endpoints → availability, performance. Heterogeneous platforms (OS/browser combinations) → interoperability. Dependency and change management ("uses" relationships, versions, compatibility) → maintainability. Coordination and communication among components (API design; synchronous vs asynchronous) → performance. Security (privacy, authentication, authorization, integrity) → security, usability — the slide pairs usability in deliberately: the security mechanisms users must operate (logins, one-time passwords, permission prompts) are part of what they experience, so hardening security taxes usability too (Source: L1 slides 28–29).
+**Six deployment considerations each map to quality attributes.** The internet as a virtual worldwide marketplace — applications must reach users on many device and platform combinations, pushing designs toward cloud-nativity (the slide's stated consideration) → portability. Large-scale content delivery between endpoints → availability, performance. Heterogeneous platforms (OS/browser combinations) → interoperability. Dependency and change management ("uses" relationships, versions, compatibility) → maintainability. Coordination and communication among components (API design; synchronous vs asynchronous) → performance. Security (privacy, authentication, authorization, integrity) → security, usability — the slide pairs usability in deliberately: the security mechanisms users must operate (logins, one-time passwords, permission prompts) are part of what they experience, so hardening security taxes usability too (Source: L1 slides 28–29). ==The lecture's framing: do not memorize the list — know "if I am doing this, this is what I get," and let it drive your project decisions (L1 recording, ~[75:00]).==
 
 <panel type="seamless" minimized header="%%What are quality attributes? (formally defined in Week 3)%%">
 
@@ -286,6 +323,12 @@ Criticality (and consequences): strict timing constraints and the risk of physic
 <include src="../../se-book-adapted/common/defs-week-03.md#def-internal-quality-attribute" trim />
 
 </panel>
+
+{% call example("L1 recording ~[70:00] — Netflix: a deployment decision that changes the design") %}
+Asked in lecture whether Netflix is centralized or distributed, the class answered distributed. Streaming means the movie must reach the user fast — nobody enjoys a loading spinner — so cache it closer to the user. Caching is a deployment decision (it belongs to the deployment architecture) that buys the quality attribute performance — and it changes the application's logic: look in the cache, return on a hit, otherwise fetch, put it in the cache, and return.
+
+The mirror trade-off: demand security at all costs and you add two-factor authentication — and usability drops, because the user must now fetch a phone and approve every login. Quality attributes trade against each other, and deployment choices are where the trade happens (L1 recording, ~[70:00]).
+{% endcall %}
 
 **Three runtime stacks differ in what each application's owner must bring.** ("Tenant" is the multi-tenancy word for the party renting space on shared hardware — here, whoever owns each application.) The diagram below shows the same three applications deployed on bare metal, on virtual machines, and in containers (Source: L1 slide 30).
 
@@ -332,6 +375,8 @@ How to read it for the course example: a smart-home security camera (Tutorial 1,
 <include src="../../se-book-adapted/common/defs-week-01.md#def-hypervisor" trim />
 </box>
 
+**The lecture explains the noisy neighbour mechanically: memory ballooning.** A {{ term("ballooning", "a hypervisor technique that reclaims over-committed memory: a VM promised more memory than physically exists is made to give some back as demand rises elsewhere") }} hypervisor grants each VM as much memory as it requests, backed by less physical memory than promised — an application told it has 20 GB may really be backed by 8 GB. As demand rises, memory is pushed out and reclaimed, and other VMs on the same host slow down: your neighbour's demand becomes your performance problem (L1 recording, ~[80:00]).
+
 **Containers are lighter than VMs — they include only the OS processes and dependencies the application needs.** This {{ term("containerization", "packaging an application with only the OS processes and dependencies it needs, to run identically on any host") }} gives better hardware utilization and rapid deployment:
 
 - Write once, run anywhere
@@ -362,6 +407,8 @@ Image vs container: the **image** is the blueprint built from the Dockerfile; th
 <include src="../../se-book-adapted/common/defs-week-05.md#def-container-orchestration" trim />
 </box>
 
+The lecture makes orchestration concrete: code a rule such as "if load goes beyond 60%, deploy another container," and load balancing and scalability come with the orchestrator (L1 recording, ~[85:00]).
+
 **Serverless goes lighter still: you ship code, the provider runs it on demand.** In the {{ term("serverless", "a cloud-native model where developers package code and the provider provisions, scales, and manages the servers it runs on") }} model there are still servers — developers and enterprises just don't manage them. Applications deploy via containers managed by the platform, respond to demand by scaling automatically, and are metered on demand (no cost when idle), e.g., AWS Lambda. Serverless functions work on Function-as-a-Service (FaaS %%— the slide writes "FAAS"%%) with an event-driven execution model — they run when needed, are {{ term("stateless", "retaining no memory between runs: each invocation starts fresh — which is why continuous in-memory state does not fit serverless") }}, and are ephemeral with short execution times, e.g., batch processing of images and video or scheduled data compression (Source: L1 slides 37–38).
 
 <box type="definition" seamless>
@@ -374,6 +421,8 @@ Image vs container: the **image** is the blueprint built from the Dockerfile; th
 
 %%"Event-driven" here is the execution-model sense: a function runs in response to a triggering event — an HTTP request, an uploaded image, a scheduled time — and sits idle otherwise. Week 9 uses the same phrase at architecture scale (event-driven architecture); the mechanism is the same idea, react to events instead of running continuously, so the Week 1 term is a preview, not a different concept.%%
 
+**The lecture's serverless walk-through shows why the model is cheap and why it is stateless.** An authorization check is one small function: query the user database (DynamoDB in the example), look up the encoded rule, compare. Deployed serverless, it sleeps until an event — a new request carrying the user's data and intent — wakes it; it answers yes or no, hands any logging or persistence to other services ("not my problem"), and goes back to sleep. You are billed only while it runs, so an idle system costs nothing. Statelessness cuts both ways: no overhead and quick execution on the plus side, and on the minus side anything that must be remembered needs additional components, which complicates the architecture (L1 recording, ~[85:00]–[90:00]).
+
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** No mechanism wins everywhere. The deck's own "KIV" notes (Singapore-English shorthand for "keep in view" %%— dimmed: Wiktionary, Malaysian/Singaporean English%% — the deck's way of flagging points to keep in mind):
@@ -384,6 +433,15 @@ Image vs container: the **image** is the blueprint built from the Dockerfile; th
 
 Tutorial 1 Q2–Q3 makes you argue the trade-off for a concrete app — e.g., serverless suits a streaming platform's thumbnail generation but never its main video delivery path.
 </box>
+
+<panel type="seamless" minimized header="%%Asked in lecture: a hospital record system vs a hackathon platform — which deployment for each?%%">
+
+The lecture put both to a class vote (L1 recording, ~[80:00]–[85:00]):
+
+* **Hospital patient-record system** — bare metal is "not completely wrong": it provides the isolation and security such a system needs, and on an internal network security is guaranteed without touching the internet. VMs and containers are also defensible — scalability improves, but authorization and encryption must be airtight, and data covered by the PDPA should not leave Singapore %%tightened: strictly, the PDPA's Transfer Limitation Obligation (s26) forbids transferring personal data overseas unless the recipient is bound to a comparable standard of protection — dimmed: PDPC Advisory Guidelines on the PDPA%%.
+* **A hackathon platform that must go live in two hours** — containers win: quick uptime, a small prototype deployed incrementally, and easy scaling from 100 users to 300 by adding containers.
+
+</panel>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -411,6 +469,8 @@ The real-time multiplayer game server — serverless functions are stateless and
 
 **Between "it works on my machine" and "users have the new version" sits a pipeline you design on purpose.** A {{ term("deployment pipeline", "an automated implementation of the application build, deploy, test, and release process") }} is an automated implementation of the application build, deploy, test, and release process; a CI/CD pipeline is the automated workflow that enables teams to build, test, and deploy code efficiently and reliably (Source: L1 slides 39–40).
 
+%%Deck coverage note: the L1 recording ends before the delivery slides (deck pp. 39–50) — the professor taught this unit at the start of the L2 session, so the lecture enrichments below cite the L2 recording.%%
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-01.md#def-deployment-pipeline" trim />
 </box>
@@ -420,6 +480,8 @@ The real-time multiplayer game server — serverless functions are stateless and
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-ci-cd" trim />
 </box>
+
+**Continuous integration exists because the old rhythm hurt.** The lecture's war story from pre-CI industry practice (L2 recording, ~[10:00]): code checked in by Friday 4 p.m. went into the weekly build, and the team celebrated at the Friday beer bash. Monday morning brought the week's accumulated bugs, because integration, building, and testing happened in one big batch. Integrating small and often — each check-in verified automatically — is the cure. The professor's pointer: the GitHub Actions tests CS2103/CS2113 runs on every push and pull request are already continuous integration (L2 recording, ~[15:00]).
 
 **Continuous delivery keeps every good build releasable; continuous deployment releases it automatically.** Continuous delivery ensures every good build is potentially ready for production release; continuous deployment automates the release of a good build into the production environment. The payoff the deck claims: low-risk releases, faster time to market and early feedback, higher quality, lower cost (Source: L1 slides 41–42).
 
@@ -431,7 +493,21 @@ The real-time multiplayer game server — serverless functions are stateless and
 <include src="../../se-book-adapted/common/defs-week-01.md#def-continuous-deployment" trim />
 </box>
 
+**The two CDs differ in who exercises the release option.** The lecture's one-line grasp (L2 recording, ~[20:00]): with continuous delivery, software *can* be released into production at any time — an option somebody must exercise; with continuous deployment, it *is* released — automatically, with people involved only when something goes wrong. Whether you can afford the second depends on the application and your confidence in your tests: safety-critical and mission-critical systems (banking, hospital management) need extra scrutiny and may keep the human switch, while a social-media or e-commerce application can deploy continuously — if it breaks, you lose revenue, not lives. The lecture's own reason for keeping a human: its monitoring system routed all of a data center's traffic, so someone had to verify the release before flipping the switch (L2 recording, ~[15:00]).
+
+<panel type="seamless" minimized header="%%Asked in lecture: why would continuous delivery lower cost — aren't you doing the same work repeatedly?%%">
+
+Automating the same steps *should* cost more, yet the slides claim lower cost. The lecture's answers (L2 recording, ~[15:00]–[20:00]):
+
+* **Automation saves man-hours** of manual verification
+* **Continuous monitoring shows where to optimize** resources
+* **Bugs caught late are the expensive kind** — fixing a small bug in a just-released feature beats dissecting a few hundred thousand lines of interactions after one big integration (the cost-of-fixing-vs-time curve from CS2103)
+
+</panel>
+
 **Release strategies trade downtime against risk.** In-place deployment stops each running unit (the slide says "module/compute" — a server or compute instance), installs the latest version on it, restarts, and validates — minimal infrastructure disturbance and cost, but availability suffers while the unit is down. Rolling deployment replaces the running infrastructure piece by piece (e.g., old containers replaced one-by-one by new ones) — but old and new versions coexist with no isolation, which complicates rollback. %%In-place vs rolling — tell them apart by asking *what gets replaced*: in-place reuses the same instances (stop → install → restart on each), so capacity dips during the update; rolling retires the instances themselves and brings up new ones one by one, so old and new versions coexist mid-rollout — which is exactly why rollback is complicated.%% Blue-green deployment shifts traffic between two identical environments running different versions — near-zero downtime and easy rollback. Canary deployment incrementally rolls out to a small subset of users first, shrinking the blast radius — the share of users a faulty new version can hurt before anyone intervenes — and enabling A/B testing (showing different variants to different user groups so their behavior can be compared) (Source: L1 slides 43–45).
+
+**Downtime tolerance is measured in nines.** "Three nines" means 99.9% availability and "five nines" 99.999% — the lecture's example of an availability requirement that rules in-place deployment out (L2 recording, ~[25:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-01.md#def-in-place-deployment" trim />
@@ -441,6 +517,8 @@ The real-time multiplayer game server — serverless functions are stateless and
 <include src="../../se-book-adapted/common/defs-week-01.md#def-rolling-deployment" trim />
 </box>
 
+**Rolling deployments with containers replace instances while the world watches one address.** The lecture's mechanics (L2 recording, ~[25:00]–[30:00]): build the image, push it to a registry such as Docker Hub, and let the cloud platform pull the new image, validate it, and retire old containers one by one — keeping the application's address (IP and port, or a name lookup) constant so users never notice. Two things to watch mid-rollout: version 2 of one microservice must still work with version 1 of another, and users can land on either version — the lecture's example is Facebook's new welcome page, where some login sessions saw the old plain blue page and others the new graphics.
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-blue-green-deployment" trim />
 </box>
@@ -448,6 +526,12 @@ The real-time multiplayer game server — serverless functions are stateless and
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-01.md#def-canary-deployment" trim />
 </box>
+
+{% call example("L2 recording ~[35:00] — canary in practice, and why it is called that") %}
+The lecture's release ladder: first {{ term("dogfooding", "eating your own dogfood — a company's own employees run the new version internally before any customer does") }}, with the company's own employees using the new version internally. Then a wider canary audience (the deck's example: Facebook releasing to a few hundred thousand users before everyone). Then GA — general availability — for all users. The professor's industry version: release to one brave customer under a contractual waiver for a few weeks, then to the next, before general release.
+
+%%Why "canary": miners carried canaries into coal mines because the gases there affect a canary much faster than a human; if the canary faded, people stayed out — later, cages with oxygen pumps revived the bird (dimmed: Science and Industry Museum, "Exploring our collection: the canary resuscitator"). The canary deployment is the same early-warning mechanism for software (L2 recording, ~[35:00]–[40:00]).%%
+{% endcall %}
 
 <box type="info" seamless>
 
@@ -498,17 +582,23 @@ flowchart LR
 
 How to read it: L1 slide 44 defines blue/green as "shift traffic between 2 identical environments … run different versions of the application in each", buying near-zero downtime and rollback. Walk it with Tutorial 1's banking platform: v1.4 serves all customers on blue while v1.5 is deployed and {{ term("smoke-tested", "given a quick round of basic checks that catches obvious breakage before deeper testing") }} on green; flipping the router moves everyone to v1.5 in one step, and if the new release misbehaves, flipping back restores v1.4 instantly — no redeploy, no downtime window (Source: L1 slide 44; Tutorial 1 teaching-team suggestions Q5).
 
+Two lecture details complete the picture (L2 recording, ~[30:00]): blue-green is expensive — you maintain two identical environments (the names are arbitrary); and the idle environment can run as a {{ term("shadow deployment", "a release that receives copies of live traffic for testing, while live traffic keeps going to the current version") }}, so it is tested against real load before the switch. Rollback stays trivial as long as the old version is not torn down immediately, and one CI/CD pipeline serves both environments.
+
 **DevOps is the practice umbrella that makes the pipeline an organizational habit.** {{ term("DevOps", "a set of software development practices combining development (Dev) and operations (Ops) to reduce the time from commit to production at high quality") }} combines software development and operations, intending to reduce the time between committing a change and that change running in normal production, while ensuring high quality (Source: L1 slide 46).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-02.md#def-devops" trim />
 </box>
 
+**DevOps is at heart a cultural shift: break the wall between Dev and Ops.** The lecture's memory of the pre-DevOps hierarchy — developers as "gods," testers as "demigods," the rest mere mortals — is the barrier the practice removes. Teams become cross-functional (developers, testers, and operations together — for example, one team per enterprise customer), so the person who built the feature, the person who tested it, and the person who runs it resolve incidents in one room (L2 recording, ~[40:00]). DevOps work concentrates after the commit — build, test, merge, stage, deploy — which is why it leans on tooling, and why, in the lecture's words, you cannot have a DevOps team that does not practice continuous integration (L2 recording, ~[45:00]).
+
 **DevOps names its practices concretely.** Continuous integration, continuous delivery, continuous monitoring and logging, communication and collaboration, and {{ term("infrastructure as code", "managing and provisioning infrastructure through version-controlled configuration files, so environments are consistent and repeatable (defined in Week 5)") }}; new roles follow — e.g., site reliability engineers (SREs), who improve customer experience by creating software that improves the reliability of systems in production, fixing issues, responding to incidents, and taking on-call responsibilities (Source: L1 slide 48). The claimed benefits: speed of delivery, reliability, scale, and improved collaboration (Source: L1 slide 49).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-01.md#def-site-reliability-engineer" trim />
 </box>
+
+%%The AI era added its own role, which the lecture mentioned next: the {{ term("forward deployment engineer", "an engineer who deploys and adapts a vendor's AI products inside enterprise customers' environments — a role coined at Palantir and now prominent at OpenAI (dimmed: openai.com/business/forward-deployed-engineering)") }} (FDE) (L2 recording, ~[45:00]).%%
 
 {% call example("Tutorial 1 Q5 — the same release, four strategies") %}
 Tutorial 1 asks each application to pick a release strategy. The teaching-team suggestions:

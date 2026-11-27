@@ -43,6 +43,14 @@ A **quality attribute** is a property of the system — such as performance, sca
 
 </span>
 
+<span id="def-safety">
+
+**Safety** is the quality attribute of a system not causing harm to life or property — being bug-free is not the same as being safe. Safety matters where software failure has physical stakes: a controller regulating wall pressure in a chemical plant is safety-critical, because software that fails to control the pressure can let it build until the plant explodes.
+
+%%Source: L3 slide 10 lists safety in the taxonomy without defining it; definition and example from the lecture discussion (L3 recording, ~[55:00]).%%
+
+</span>
+
 <span id="def-requirement-tradeoff">
 
 A **requirement trade-off** is a design situation in which improving one quality attribute degrades another — e.g., adding redundant checks and backups improves reliability but makes the system slower and costlier — forcing prioritization under resource constraints.
@@ -125,9 +133,9 @@ A **product-centric requirement** states what the system will do — "The system
 
 <span id="def-software-requirements-specification">
 
-A **software requirements specification (SRS)** is a traditional textual requirements document that only records what is to be done in the project — unlike the product backlog, it is not by itself a planning tool for sequencing the work.
+A **software requirements specification (SRS)** is a traditional textual requirements document that only records what is to be done in the project — unlike the product backlog, it is not by itself a planning tool for sequencing the work. It is typically a large, static artifact mixing in design and team-allocation decisions: developed once, signed off, and rarely updated — which suits stable, contract-driven projects more than modern evolving products.
 
-<sub>-- L3 slide 29</sub>
+<sub>-- L3 slide 29; static-artifact critique from the lecture (L3 recording, ~[35:00])</sub>
 
 </span>
 
@@ -261,9 +269,18 @@ An **internal quality attribute** is not directly observed when the software is 
 
 <span id="def-pairwise-prioritization">
 
-**Pair-wise prioritization** compares requirements (or quality attributes) two at a time to force an order: for each pair, ask "if we could fund only one of these two, which one?" — the more important item wins the head-to-head, and tallying the wins across all pairs yields the overall ranking, with the consistent losers exposing the nice-to-haves. Feasibility takes priority: an infeasible requirement is dropped before it is ranked.
+**Pair-wise prioritization** compares requirements (or quality attributes) two at a time to force an order: for each pair, ask "if we could fund only one of these two, which one?" — the more important item wins the head-to-head, and tallying the wins across all pairs yields the overall ranking, with the consistent losers exposing the nice-to-haves. One concrete scoring from the lecture: each favored comparison earns 1 point, each indifference 0.5, each loss 0 — tally the scores and pick the top items (e.g., the top four for a four-member team). Feasibility takes priority: an infeasible requirement is dropped before it is ranked.
 
+%%Scoring detail: L3 recording, ~[89:00].%%
 <sub>-- L3 slides 23, 25</sub>
+
+</span>
+
+<span id="def-moscow-prioritization">
+
+**MoSCoW prioritization** sorts requirements into four classes — **must have** (needed for the product to succeed), **should have** (valued but not necessary), **could have** (nice to have), and **will not have** (explicitly excluded this time) — so the team agrees on what it is deliberately *not* doing, not only what it is doing.
+
+%%Source: named in the lecture (L3 recording, ~[87:00]) and in the prioritization reference linked on L3 slide 23. Wording after Atlassian, "Product prioritization frameworks" (tertiary source).%%
 
 </span>
 

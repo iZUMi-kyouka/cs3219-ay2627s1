@@ -17,12 +17,15 @@ The lecture ("Recent trends in software engineering: AI in SE — autocomplete t
 * [W2.2 AI in the SDLC: from code generation to requirements]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#W2-c2)
 * [W2.3 What the evidence and the risks say]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#W2-c3)
 * [W2.4 From assistants to autonomous development: MCP and A2A]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#W2-c4)
+* [W2.5 The developer's role when AI does the typing]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#W2-c5)
 
 </span>
 
 <span id="lecture">
 
 ### Lecture
+
+%%Enrichments from the lecture recording — explanations, analogies, and Q&A — are woven into the linked chapter units, marked "(L2 recording, ~[MM:SS])". The week's first half (recap, delivery/CI-CD/DevOps) belongs to Week 1's W1.5 unit, and the project briefing, quiz/administration chat, and feasibility demo are not course content and are omitted.%%
 
 **AI improves engineers' efficiency in five modes, and the review point moves with each mode.** From least to most autonomy (slides 3–4):
 
@@ -102,5 +105,7 @@ The lecture ("Recent trends in software engineering: AI in SE — autocomplete t
 <include src="../../se-book-adapted/common/defs-week-02.md#def-a2a" trim />
 
 </panel>
+
+**The lecture closed by asking what remains for the developer.** Student answers (specify and verify, take responsibility, keep the big picture, prevent scope creep) met the professor's list — interpret requirements, own architecture and design, plan long-term evolution, orchestrate with specific context, be the quality guardian — and the industry one-liner: be adaptable, and spend saved time learning what the AI did → [W2.5]({{baseUrl}}/se-book-adapted/chapters/week-02-modern-software-engineering.html#W2-c5).
 
 </span>

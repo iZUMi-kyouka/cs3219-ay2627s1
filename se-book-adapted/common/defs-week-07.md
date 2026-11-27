@@ -178,3 +178,11 @@ A **policy** is the rule that links an event back to a command — "when event X
 %%Source: L7 slide 41.%%
 
 </span>
+
+<span id="def-conways-law">
+
+**Conway's Law** is the observation that organizations which design systems are constrained to produce designs that are copies of the communication structures of those organizations — a product's structure tends to mirror the structure of the teams that built it. It is an observation, not a physical law.
+
+%%Source: L7 recording, ~[42:00]; Melvin E. Conway, "How Do Committees Invent?", Datamation 14(5), 1968.%%
+
+</span>

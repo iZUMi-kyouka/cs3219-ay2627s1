@@ -41,6 +41,22 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirement" trim />
 </box>
 
+**A requirement specification reads as a set of capabilities and constraints.** Capabilities state what users can do through the system; constraints bound where, how, or under what conditions those capabilities operate — and constraints typically end up among the non-functional requirements, as the operating boundaries of the product.
+
+<box type="info" seamless>
+
+**Telling apart — capability vs constraint.** One distinguishing question: **does the sentence enable an action, or bound one?**
+
+| | Capability | Constraint |
+|---|---|---|
+| States | An action the system makes possible | A boundary the system operates within |
+| FoC example | "The courier should be able to pick up an errand from a pickup point and hand it over at the drop-off point the requester specified" | "All locations supported by FoC are confined to campus" |
+| Where it lands | Functional requirements | Usually non-functional requirements ("these are the operating boundaries of the product") |
+
+%%Both sentences paraphrase the lecturer's FoC examples (L3 recording, ~[25:00]). Exam hint from the same passage: "spoiler alert — we'll be looking at these kinds of examples; noting them will help you come up with the requirements of the project later."%%
+
+</box>
+
 **Requirements development has four phases, and they loop.**
 
 - {{ term("elicitation", "discovering requirements, e.g., by interview, workshop, document analysis, or prototyping") }} discovers requirements
@@ -88,6 +104,16 @@ How to read it for the running example: FoC's "a student profile will be disable
 For FoC, the wallet-refund rule ("if the requester removes the errand, the courier leaves it, or the pickup time is missed, the charged credits should be returned") could surface from all three source kinds: help-desk problem reports after a courier no-show leaves credits stuck, an interview with the campus office that owns the credit economy, and an event-response table listing the stimulus "courier marks delivered" against the response "held credits transfer to the courier" (Source: requirement quoted from L4-AlternativeExamplesForProductBacklog, credit service 5.5; source types from L3 slide 5).
 {% endcall %}
 
+{% call example("How elicitation and validation run in this course") %}
+For the course project, elicitation is mostly **brainstorming** from the project context — plus **document analysis of competing products**: "take a look at other apps like Grab and Gojek and see what all they provide." Validation is the point where the team presents the requirement set and receives "ok / not ok / need more work" feedback — and a problem found there sends work back to any earlier phase, because the process is iterative, not linear (L3 recording, ~[27:00] and ~[30:00]; L3 slide 4).
+{% endcall %}
+
+<box type="tip" seamless>
+
+**Real requirement inputs arrive underspecified — treat clarifying questions as part of elicitation.** The lecturer's project context deliberately leaves things open (e.g., "there should be an admin capability" — without saying who the admin is, how it works, or what interface it gets): "this is kind of a realistic way in which you can get software requirements from the field." The elicitation response is to ask, and to get assumptions validated before you build on them (L3 recording, ~[5:00]).
+
+</box>
+
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** A teammate says "requirements are just what the customer asks for on day one". Which part of the requirements-development loop does this ignore, and what does that loop contribute?
@@ -103,6 +129,14 @@ It ignores analysis (decompose, derive, negotiate; identify gaps), specification
 <panel type="seamless" minimized header="%%Answer%%">
 
 Observation (watch users do their jobs; "day in the life" studies, workflow diagrams) and interviews (e.g., a product champion per vendor) — the knowledge is tacit and practiced, so watching and asking beats questionnaires (Source: L3 slide 5).
+
+</panel>
+
+**Q3.** Classify as capability or constraint: (a) "A requester can specify the pickup and drop-off points for an errand"; (b) "All locations supported by the platform are confined to campus".
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+(a) Capability — it enables an action the system makes possible. (b) Constraint — it bounds the operating space without enabling anything, and lands among the non-functional requirements as an operating boundary (L3 recording, ~[25:00]).
 
 </panel>
 
@@ -122,7 +156,7 @@ Observation (watch users do their jobs; "day in the life" studies, workflow diag
 <include src="../../se-book-adapted/common/defs-week-03.md#def-non-functional-requirement" trim />
 </box>
 
-**FRs specify behavior; NFRs constrain how the system works and is built.** An FR "specifies something the system should do — typically, specify a behavior or function". An NFR "describes something not directly related to the functionality of the system — may describe how well the system works — can include other attributes too (see quality attributes later)": reliability, efficiency, usability (Source: L3 slide 9).
+**FRs specify behavior; NFRs constrain how the system works and is built.** An FR "specifies something the system should do — typically, specify a behavior or function". An NFR "describes something not directly related to the functionality of the system — may describe how well the system works — can include other attributes too (see quality attributes later)": {{ term("reliability", "the ability of the system to keep working correctly over time") }}, efficiency, usability (Source: L3 slide 9).
 
 **The same capability can generate both an FR and NFRs.** FoC's errand flow shows this: F7.1 ("a student should only be matched to one outstanding errand, and any race condition in reassignment should be shown and rejected") is functional — a *race condition* being two overlapping attempts (say, two reassignments at the same instant) whose outcome would depend on timing rather than on the rules; its sibling NFR ("publishing an errand, replacing a courier, recording pickup, holding or releasing credits, completing delivery and sending notifications shall never become inconsistent when services restart, messages arrive late or operations are retried") constrains how well that behavior must hold (Source: L4-AlternativeExamplesForProductBacklog, order service F7.1 and NFR).
 
@@ -145,7 +179,19 @@ Test each sentence against the se-book wording: FR = "what the system should do"
 FR: "The passenger shall be able to print boarding passes for all flight segments for which she has checked in" — a behavior the system must offer. NFR: "Mean time between failure >= 9000 hrs" — a constraint on how reliably the system runs, with no single feature attached (Source: L3 slide 9).
 {% endcall %}
 
+<panel type="seamless" minimized header="%%Common question — why does the boarding-pass FR insist on *all* flight segments?%%">
+
+The lecturer walked the multi-leg case: flying from Singapore to a far-off destination with two transits means three flights — and an airline cannot check you in for the first leg and "not care what happens in between." Processing the check-in "should be reliable, meaning all segments should be included at minimum", so once you check in you know you are safe to travel to your destination without worrying about the middle legs (L3 recording, ~[43:00]). One sentence of FR text, one reliability expectation behind it — the two requirement classes travel together.
+
+</panel>
+
 **Write NFRs in measurable terms where possible.** A testable NFR lets the requirement be verified or tested objectively — Quiz 1 makes exactly this point: NFRs are stated in measurable terms "to allow the requirement to be verified or tested objectively" (Quiz 1 Q5, model answer). FoC's NFRs do this: "Support an initial capacity of up to 30000 registered users", "Response time for all page loads should take no more than 2 seconds", "A student profile will be disabled after 3 failed password or OTP attempts" (Source: Tutorial 2 appendix N1.1, N2.1.1; L4-AlternativeExamplesForProductBacklog N2.2.1).
+
+<panel type="seamless" minimized header="%%Common question — can a requirement be dropped because it cannot be tested?%%">
+
+Yes — a requirement no one can verify cannot be accepted or enforced, so it does not belong in the set. The lecturer applied this while scoping the course project: courier GPS location tracking was declared out of scope with the reasoning "I cannot test this … cannot test [it] means no point trying to force you to do it" (L3 recording, ~[15:00]). The same logic underlies the measurable-NFR rule above: if you cannot state the test, you cannot state the requirement.
+
+</panel>
 
 <box type="warning" seamless>
 
@@ -190,7 +236,23 @@ I, III, and V — they state the capability from the user's point of view. II an
 <include src="../../se-book-adapted/common/defs-week-03.md#def-product-centric-requirement" trim />
 </box>
 
-**Refinement goes at least two levels, from capability to testable rule.** FoC's user management does this in public: F1 "FoC should allow user to register using email/password" refines to F1.1 "FoC should validate email and password", which refines to "Password should be validated based on rules such as it should contain upper and lower case letters and numbers, minimum length, avoid dictionary attack etc.," %%— a dictionary attack being an attempt to get in by trying common words and known passwords, which is exactly what the length and character-mix rules make harder%% — and F2 "FoC should store user information securely" refines to "Password should be salted hashed using SHA256 or equivalent algorithm" and "FoC should only store hashed email address in the database" (Source: L3 slide 8 %%— a salted hash stores the password only after mixing in a random value (the salt) and applying a one-way hash function such as SHA-256, so equal passwords never produce equal stored results and the original password cannot be recovered%%).
+**Translate a usage-centric need by asking "what should I develop?" — not "what does the user want?"** User stories are deliberately vague about implementation — "don't talk about user interfaces … talk about how you want to use it, not what button to press" — so specification re-asks the question from the developer's side (L3 recording, ~[27:00]).
+
+{% call example("The lecturer's trampoline analogy") %}
+"A user wants to jump around — what should you develop? A trampoline." Likewise, "a user wants to see email by date — what should you develop? The capability to filter by date": provide a filter or a sort mechanism, whichever is more effective (L3 recording, ~[34:00]).
+{% endcall %}
+
+<box type="warning" seamless>
+
+**Pitfall / trade-off:** "The user can do X" is still usage-centric. The lecturer flags this as a common student mistake in backlog exercises: renaming the user story to "the user can view suppliers" only swaps the grammatical subject — the product-centric move is to ask "if the user can do that, what should the *system* provide?" and answer from the system's side (L3 recording, ~[34:00]).
+
+</box>
+
+**Refinement goes at least two levels, from capability to testable rule.** FoC's user management does this in public: F1 "FoC should allow user to register using email/password" refines to F1.1 "FoC should validate email and password", which refines to "Password should be validated based on rules such as it should contain upper and lower case letters and numbers, minimum length, avoid dictionary attack etc.," %%— a dictionary attack being an attempt to get in by trying common words and known passwords, which is exactly what the length and character-mix rules make harder%% — and F2 "FoC should store user information securely" refines to "Password should be salted hashed using SHA256 or equivalent algorithm" and "FoC should only store hashed email address in the database" (Source: L3 slide 8 %%— dimmed: a salted hash stores the password only after mixing in a random value (the salt) and applying a one-way hash function such as SHA-256, so equal passwords never produce equal stored results and the original password cannot be recovered%%).
+
+{% call example("L3 slide 8 — a second user story refined: update personal particulars") %}
+"As a user, I can update my personal particulars in FoC" refines into rows the deck spells out: "FoC should authenticate the user before updating particulars" → "FoC should ask user for password and OTP to authenticate"; "New email provided should be confirmed using OTP based mechanism"; "FoC should allow selecting an image from the system for profile picture". The lecture's walkthrough supplies the *why*: changing your date of birth in a banking system demands proof that it is really you — so an update flow re-authenticates (password plus OTP), then validates the changed data with the same OTP mechanism registration used. "One user story got translated to so many things" that you can pick a single row and write its code (Source: L3 slide 8; L3 recording, ~[40:00]).
+{% endcall %}
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirement-refinement" trim />
@@ -206,11 +268,19 @@ I, III, and V — they state the capability from the user's point of view. II an
 <include src="../../se-book-adapted/common/defs-week-03.md#def-software-requirements-specification" trim />
 </box>
 
+**The deck frames the SRS as the archaic alternative the backlog replaces.** The lecturer's gloss: an SRS is "a big fat document" that mixes in design decisions and which team implements what — a static artifact you develop once, sign off, and rarely update, which "doesn't suit many modern applications"; the backlog stays live and sequenced instead (L3 recording, ~[35:00]; L3 slide 29).
+
 **Every backlog row carries traceability fields.** In FoC: type (FR/NFR), identifier (F1, F1.1, F1.1.1, F2 … N1, N1.1 …), description (the documented requirement), priority (H/M/L or 1/2/3), and sprint ID (the planned sprint/iteration); requirements should also be traced to use-case, design-document, code-module, and test-case references (Source: L3 slide 26).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirement-traceability" trim />
 </box>
+
+<panel type="seamless" minimized header="%%How should traceability reach the code?%%">
+
+The lecturer's recommended practice: identify the functional requirements, keep each pull request small enough to satisfy specific requirements, and tag it with the requirement's identifier. He contrasted it with two real past reports: one dumped pull requests with no one-to-one correspondence to requirements — just "a dump of PRs" a reader must reverse-engineer — and a better one linking the requirement "system allows users to create an account using first name, last name, username, email, password" to PR24, which he rated only "somewhat traceable" because the PR still bundles admin routes and feedback messages. He also ranked the identifier as the most important traceability field: "who did what — you need to know who, you need to know what; both of them need an identifier" (L3 recording, ~[89:00]–~[92:00]).
+
+</panel>
 
 {% call example("Tutorial 2 appendix — the errand platform's backlog rows, quoted") %}
 The tutorial's appendix shows the granularity expected for the project (FoC): "F1: Support user account creation" (High, sprint 1) → "F1.1: New users can create an account using their username, email and password" → "F1.1.1: The system should ensure that the account being created has a unique username and email to prevent duplicates"; "F2: Support viewing suppliers" → "F2.1: The system should display the suppliers with name and category visible when the user is logged in" (High, sprint 1) → "F2.1.1: The system should display the supplier details, such as descriptions, opening hours, etc., when the user selects a supplier" (Medium, sprint 1); "F3: Support managing orders" → "F3.1: FoC should allow creating an errand request" (High, sprint 2) → "F3.1.1: FoC should check if there are sufficient credits in the user's wallet to create an errand" (Medium, sprint 2); "F4: Support a closed credit economy on the platform" → "F4.1: The system should assign users with X number of credits when they first sign up" (High, sprint 3). NFRs follow the same pattern: "N1: Performance - Capacity" → "N1.1: Support an initial capacity of up to 30000 registered users" → "N1.1.1: Support data capacity increase up to 10x the initial planned user base" (Medium, sprint 1); "N2: Performance - Responsiveness" → "N2.1: FoC should have a responsive UI" → "N2.1.1: Response time for all page loads should take no more than 2 seconds" (Medium, sprint 1). The appendix also notes that "F2.1: Users can view supplier name and category when logged in" (usage-centric) and "F2.1: The system should display the supplier name and category when logged in" (product-centric) name the same capability — the product-centric wording defines the desired behavior better (Source: Tutorial 2 appendix). %%The appendix's own typos (e.g., "inital") are silently corrected in quotes above.%%
@@ -239,6 +309,14 @@ It does not say what the system displays, where, or under which conditions — t
 
 </panel>
 
+**Q3.** A teammate writes in the backlog: "Users can register on FoC using email and password." Why is stopping there a mistake, and what is the product-centric rewrite?
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+It restates the user story from the user's side — the "the user can do X" trap. The product-centric question is "what should the system provide?", answered by "FoC should allow users to register using email and password", which then refines into validation rows (F1.1) and secure-storage rows (F2) (Source: L3 slide 8; L3 recording, ~[37:00]).
+
+</panel>
+
 </panel>
 
 <span id="W3-c4"></span>
@@ -255,6 +333,10 @@ It does not say what the system displays, where, or under which conditions — t
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-availability" trim />
+</box>
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-03.md#def-safety" trim />
 </box>
 
 **External attributes are observed when the software executes and shape the user's perception of quality.** Internal attributes are not directly observed during execution — developers and maintainers perceive them, and they encompass design aspects that may impact external attributes (Source: L3 slide 11).
@@ -281,13 +363,39 @@ The connection is the point: an internal attribute is a *design property that ma
 
 </box>
 
+<panel type="seamless" minimized header="%%Common question — is integrity external or internal? (asked in lecture)%%">
+
+The deck's classification lists integrity as external, and a student pushed back: "the user doesn't know data is compromised until you tell them." The lecturer's verdict: it is a *gray area that can be both* — corrupted data on a user-facing page is observed immediately (you get garbled things instead of the page), while corruption sitting in account records only surfaces "when you query and you get gibberish instead of the right valid ones" (L3 recording, ~[46:00], asked in lecture). Borderline cases exist; classify by who observes the sentence *as written*, and say which side you mean.
+
+</panel>
+
+{% call example("Efficiency is internal; the slowness users see is performance") %}
+"You're using quicksort versus bubble sort — that's an efficiency matter. The user doesn't know whether you're using quicksort or bubble sort; the user only sees that the sorting takes a long time. That's basically performance" (L3 recording, ~[49:00], asked in lecture). The internal-to-external street runs one way: an inefficient algorithm for shifting through video frames (internal) degrades the streaming quality and lag the user sees (external) — "you need to be a bit careful about both; they are not mutually exclusive" (L3 recording, ~[50:00]).
+{% endcall %}
+
 {% call example("FoC — one attribute, two sides") %}
 Scalability has an external side users feel ("the application must support the entire campus without slowing down" — order service NFR) and an internal side developers choose (run three Docker containers per microservice behind Nginx — a web server commonly used as the front proxy that spreads requests across replicas — and enable Kubernetes auto-scaling, an architecture decision made to deliver the external claim) (Source: L4-AlternativeExamplesForProductBacklog, order service NFR "Capacity").
 {% endcall %}
 
-**Different application types emphasize different attributes.** Embedded software: performance, efficiency, reliability, robustness, safety, security. Web applications: availability, integrity, interoperability, performance, scalability, security, usability. Desktop and mobile software: performance, security, usability (Source: L3 slide 13).
+**Different application types emphasize different attributes.** Embedded software: performance, efficiency, reliability, robustness, safety, security. Web applications: availability, integrity, interoperability, performance, scalability, security, usability. Desktop and mobile software: performance, security, usability (Source: L3 slide 13). The lecture's gloss on *why* web apps look like this: people move applications to the web so they are available "all the time" — or, more precisely, 99.999% of the time — and interoperable across desktop and phone (L3 recording, ~[60:00]).
 
-**Deployment choices are quality-attribute decisions.** The deck asks what attributes {{ term("blue-green deployment", "shifting traffic between two identical environments running different versions — near-zero downtime and easy rollback (defined in Week 1)") }} and Docker + Kubernetes support: blue-green buys availability (near-zero downtime) and fast rollback; containerized orchestration buys scalability and deployability — matching Week 1's deployment mechanisms (Source: L3 slide 12; see W1.4–W1.5).
+**Deployment choices are quality-attribute decisions — and the lecture worked the mapping in detail.** The deck asks what attributes {{ term("blue-green deployment", "shifting traffic between two identical environments running different versions — near-zero downtime and easy rollback (defined in Week 1)") }} and Docker + Kubernetes support (Source: L3 slide 12; see W1.4–W1.5). The discussion first separated the rows: **blue-green is a deployment strategy, Docker + Kubernetes a deployment mechanism** — you can run blue-green without containers, and use containers for strategies other than blue-green (L3 recording, ~[52:00]). The class then mapped attributes to each (student answers, asked in lecture):
+
+- **Availability — blue-green.** One environment serves users while the other is prepared; switching routes traffic to an already-running system, so requests keep going through (L3 recording, ~[54:00], asked in lecture).
+- **Reliability — blue-green.** If the new version misbehaves, you switch back at once — from the user's point of view the service kept working (L3 recording, ~[56:00]).
+- **Scalability — Docker + Kubernetes.** Kubernetes policies spawn extra nodes when load rises past a threshold and delete them when it falls: "scalability takes care of both sides, it's not just always expanding" (L3 recording, ~[58:00], asked in lecture).
+- **Portability — Docker + Kubernetes.** A container runs on any system that runs the Docker engine — move it and it works (L3 recording, ~[59:00], asked in lecture).
+
+<panel type="seamless" minimized header="%%Common question — doesn't blue-green also buy safety? Or verifiability? (asked in lecture)%%">
+
+Two student proposals got corrected in the discussion:
+
+- **"Safety?"** — no: *being bug-free is not necessarily safe*. Safety as a quality attribute is about harm to life or property — the lecture's example is a controller regulating wall pressure in a chemical plant, where bad software can let pressure build until the plant explodes. Blue-green deployment has no such physical stakes (L3 recording, ~[55:00], asked in lecture).
+- **"Verifiability?"** — the reasoning offered (test one environment before switching, switch back on failure) actually describes *reliability* from the user's point of view. Verifiability is about how well you can test the system — work done before deployment (L3 recording, ~[56:00], asked in lecture).
+
+</panel>
+
+**Quality attributes can be satisfied without touching the code.** The lecturer's takeaway from the exercise: the application's code was finished — only the deployment changed — yet availability, reliability, scalability, and portability all moved. That is the requirements connection: the NFRs document the attributes the system must support, and the strategy or mechanism is then chosen to deliver them (L3 recording, ~[58:00]).
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -296,6 +404,14 @@ Scalability has an external side users feel ("the application must support the e
 <panel type="seamless" minimized header="%%Answer%%">
 
 External: (a) users feel response time; (c) users experience the lockout. Internal: (b) perceived by developers/maintainers (a design property that impacts the external security users feel); (d) perceived by the team, impacts how safely external behavior can be changed (Source: L3 slide 11; requirements from L4-AlternativeExamplesForProductBacklog N2.2.1 and Tutorial 2 appendix).
+
+</panel>
+
+**Q2.** A teammate claims "we use Docker + Kubernetes, so we are doing blue-green deployment." What is wrong with the claim, and which quality attribute does each actually buy?
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+Blue-green is a deployment *strategy*; Docker + Kubernetes is a deployment *mechanism* — the two are independent (blue-green works without containers; containers serve other strategies too). Blue-green buys availability (an already-running environment takes traffic) and reliability (instant switch-back); container orchestration buys scalability (nodes added on load spikes, removed when load drops) and portability (containers run wherever the Docker engine runs) (L3 recording, ~[52:00]–~[59:00]).
 
 </panel>
 
@@ -342,6 +458,25 @@ The user service's NFRs secure accounts:
 The user service's FRs add authorization: "Before a user edits a pickup place, withdraws an errand or marks delivery confirmed, the backend should verify that the user is allowed and return an error code otherwise", and the edge proxy — the entry-point service that fronts the platform's other services, from the FoC architecture in the example decks — "shall decode the JWT and answer with an error code when the credential is absent, expired or wrong" (a JWT — JSON Web Token — is a signed token that proves who the caller is; the proxy checks it before any request passes inward %%— dimmed: RFC 7519%%). The supplier service adds auditing-minded rules: "No confidential details should appear when a supplier request fails" and "Extra protection must be added to staff-only supplier URLs" (Source: L4-AlternativeExamplesForProductBacklog, user service F2, N2; supplier service NFR3).
 {% endcall %}
 
+**Security requirements come with working habits, not just definitions.** The lecture pressed three of them on the same slide:
+
+- **Record them early in the product cycle** — not as an afterthought: the demo question "what happens if this user tries to delete that user's account?" should never be the first time the team has considered it (L3 recording, ~[68:00]).
+- **Make them specific and testable** — "you can't say *make the system secure*. How do you verify? Put a lock? Doesn't work" (L3 recording, ~[68:00]).
+- **Never argue "no money, no security"** — even the no-real-money course platform keeps its security requirements, because privacy remains: storing usernames and passwords in plain-text files is still unacceptable (L3 recording, ~[70:00]).
+
+{% call example("A security requirement phrased to be verifiable") %}
+"If the request is authenticated, then the data flow should be only through the HTTPS channel" — you can log the packets and check whether data appears unencrypted in plain HTTP; if it does, the requirement is violated (L3 recording, ~[68:00]). Contrast the unverifiable "make the system secure" (L3 recording, ~[70:00]).
+{% endcall %}
+
+<panel type="seamless" minimized header="%%Requirement questions per security mechanism%%">
+
+The lecture turned each mechanism into questions a requirement should answer:
+
+- **Authentication** — what is the preferred strategy for resolving forgotten passwords: an OTP, an emailed reset link, or security questions? And do critical transactions demand re-authentication — like a bank's push notification asking "we notice a transfer being made from the web; if this is you, press yes, otherwise contact the bank to lock your account" (L3 recording, ~[65:00]).
+- **Auditing and logging** — what activity should be logged, and at what level of detail? ("Some user logged in" is potentially critical: if user A logged into user B's account, the log is where the investigation starts.) And who may access the logs — a bank will not hand your account logs to you; only certain people internally can investigate (L3 recording, ~[67:00]).
+
+</panel>
+
 **Performance is primarily responsiveness, and its requirements reach into architecture and hardware.** Low performance means unhappy users; in real-time systems it can impact safety (an overloaded system may miss critical alerts).
 - Stringent query response times may demand replicated databases
 - Latency requirements may lead to deploying caches
@@ -352,6 +487,52 @@ The user service's FRs add authorization: "Before a user edits a pickup place, w
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-performance" trim />
 </box>
+
+{% call example("In real-time systems, performance failures become safety failures") %}
+An autonomous car whose performance degrades does not just feel sluggish — the brake command that should fire within the next couple of processor cycles instead fires three to five seconds later, and "safety is compromised because of this" (L3 recording, ~[76:00]). In ordinary application development the stakes differ: performance reaches into the choice of architecture, design, and deployment instead (L3 recording, ~[77:00]).
+{% endcall %}
+
+**Performance is not one dimension — latency and throughput pull in different directions.** The lecture separated the two headline dimensions: **throughput is volume over time** — 10,000 transactions completed per minute — while **latency is the time to satisfy one request** — about a second normally, maybe ten in degraded mode (L3 recording, ~[74:00]).
+
+<panel type="seamless" minimized header="%%What are latency and throughput? (defined in Weeks 9 and 12)%%">
+
+<include src="../../se-book-adapted/common/defs-week-09.md#def-latency" trim />
+
+<include src="../../se-book-adapted/common/defs-week-12.md#def-throughput" trim />
+
+</panel>
+
+<box type="info" seamless>
+
+**Telling apart — latency vs throughput.** One distinguishing question: **are you measuring the wait for one request, or the work completed per unit time?**
+
+| | Latency | Throughput |
+|---|---|---|
+| Measures | Time to satisfy one request | Volume of work over time |
+| The lecture's numbers | ~1 s per transaction; ~10 s degraded | 10,000 transactions per minute |
+| Application that prioritizes it | Gaming — if background graphics fail to load you keep playing, as long as the characters respond to input | Streaming — how many frames per second can be processed *is* the product |
+| Deepened in | W9 (synchronous communication adds latency) | W12 (replication adds capacity) |
+
+%%The numbers and the gaming/streaming pairing are the lecturer's (L3 recording, ~[74:00]–~[75:00]). Which dimension matters depends on the use case — the same NFR list can serve both a game and a stream; the weighting is the requirement (W3.6).%%
+
+</box>
+
+**Under overload, a system should fail gracefully — degrade, not die.** The lecture's phrase for designed degraded operation: "it's failing — don't die, fail gracefully, die slowly." Prefer the server that keeps working at reduced capacity over the one that simply stops answering (L3 recording, ~[72:00]).
+
+{% call example("Degraded mode, with the lecturer's numbers") %}
+A web server satisfies 10,000 requests per minute at peak. Something goes wrong. It can declare "I died — no more requests," or it can queue the incoming work and serve at reduced speed — 100 requests per minute, longer waits, but every request eventually satisfied. The degraded-but-alive option is the one to design for (L3 recording, ~[72:00]).
+{% endcall %}
+
+<panel type="seamless" minimized header="%%How does a performance requirement reach into architecture, design, deployment, and hardware?%%">
+
+The lecture chained one requirement through all four layers:
+
+- **Architecture** — a large data volume pushes toward a distributed application and a **sharded database**: split the data, e.g., names A–D in one database and E onward in another, so a query scans a small portion instead of the whole store. Netflix's multi-level caching — so a movie starts the moment you click — is the same layer's choice (L3 recording, ~[77:00]).
+- **Design** — a cache must be accounted for up front: the query flow becomes "check the cache first; on a miss, go to the server, load the cache, then respond" (L3 recording, ~[78:00]).
+- **Deployment** — Shopee's sale days bring a request spike, so the deployment enables Kubernetes + Docker auto-scaling: more requests, more instances (L3 recording, ~[79:00]).
+- **Hardware** — a cache sitting on a 500 RPM hard disk, or behind a 1 Gbps link, is wasted money: the hardware must match the requirement (L3 recording, ~[79:00]).
+
+</panel>
 
 **Caching is the deck's worked performance technique.** Caching stores frequently accessed data closer to the user — high-speed, typically transient storage holding a subset of data (e.g., Amazon ElastiCache — AWS's managed cache service; Redis — an open-source, in-memory data store that answers reads far faster than a disk database and can double as fast lookup storage) (Source: L3 slide 18).
 
@@ -375,7 +556,11 @@ How to read it for the running example: FoC's credit service keeps replay tags i
 <include src="../../se-book-adapted/common/defs-week-12.md#def-scalability" trim />
 </box>
 
-**Two scaling directions trade resilience against simplicity.** Vertical scaling adds capability to existing machines (upgrade and swap to a better configuration): easier to maintain, but a single point of failure. Horizontal scaling adds machines (nodes): more resilience and fault tolerance, but more cost and complexity — e.g., Kubernetes horizontal pod autoscaling, where Kubernetes (the container orchestrator of W1.4) watches the load and automatically adds or removes pods — its units of deployed containers, each running one of the service's replicas — to match demand. Microservices designed small, focused, and independently deployable suit horizontal scaling (Source: L3 slide 20). FoC's capacity NFR makes the horizontal choice explicitly: "run three Docker containers for each microservice behind Nginx and enable Kubernetes auto-scaling" — three equivalent nodes behind a front proxy, consistent with the Kubernetes HPA example on the slide (Source: L4-AlternativeExamplesForProductBacklog, order service NFR). Week 12 redraws this same contrast on the room-booking platform and adds what scale-out needs to actually work — a load balancer and a session store (see [W12.4]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c4)).
+{% call example("FoC — planning for growth from pilot to campus") %}
+Design FoC for 10,000 students as the pilot, deployed for SOC and CDE — then the platform goes NUS-wide: roughly 60,000 students, "six times more." The database must either be able to expand to that many rows for every service or be replaced by one that supports them: "either dynamically add capacity, or you relocate" (L3 recording, ~[80:00]). And the estimate has a horizon: you cannot future-proof for a hundred years — estimate the next ten, plan for them, then plan the following ten (L3 recording, ~[81:00]).
+{% endcall %}
+
+**Two scaling directions trade resilience against simplicity.** Vertical scaling adds capability to existing machines (upgrade and swap to a better configuration): easier to maintain, but a single point of failure. Horizontal scaling adds machines (nodes): more resilience and fault tolerance, but more cost and complexity — e.g., Kubernetes horizontal pod autoscaling, where Kubernetes (the container orchestrator of W1.4) watches the load and automatically adds or removes pods — its units of deployed containers, each running one of the service's replicas — to match demand. Microservices designed small, focused, and independently deployable suit horizontal scaling (Source: L3 slide 20). The lecture's software-scaling example: MapReduce-style distributed processing (Hadoop-class systems) — move the computation to where the data lives instead of pulling all the data to one node (L3 recording, ~[81:00]). FoC's capacity NFR makes the horizontal choice explicitly: "run three Docker containers for each microservice behind Nginx and enable Kubernetes auto-scaling" — three equivalent nodes behind a front proxy, consistent with the Kubernetes HPA example on the slide (Source: L4-AlternativeExamplesForProductBacklog, order service NFR). Week 12 redraws this same contrast on the room-booking platform and adds what scale-out needs to actually work — a load balancer and a session store (see [W12.4]({{baseUrl}}/se-book-adapted/chapters/week-12-scalability.html#W12-c4)). The lecture adds what horizontal scaling demands in return: **routing** — "you can't just say, oh, I have another pod, let's go" — incoming requests need a mechanism that decides where they go, and that is part of what makes the architecture harder (L3 recording, ~[84:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-vertical-scaling" trim />
@@ -417,11 +602,21 @@ The FoC capacity pair shows how they travel together: the requirement is the *bo
 <include src="../../se-book-adapted/common/defs-week-03.md#def-deployability" trim />
 </box>
 
+**Processes, not just products, satisfy quality attributes.** The lecture's remark on the slide's list: CI/CD and DevOps are "kind of a process way of doing" things — mechanisms that support deployability requirements. Evidence that a quality attribute can be delivered by *how the team works*, not only by what the system is (L3 recording, ~[85:00]).
+
 **Usability measures the effort to prepare input, operate, and decipher output.** Measures include average time to specify inputs, number of interactions to get information, time to complete a task, user errors or trials needed, and waiting time; ease of learning (meaningful messages, verbose prompts, tooltips) and ease of use (customizations, autocompletion, autocorrection, scriptable) (Source: L3 slide 22).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-usability" trim />
 </box>
+
+**Usability requirements are counts and timings — and each error is a design lead.** Measuring "how many errors does the user make" is only half the job: ask *why* the errors happen — an over-complex interaction, badly placed icons — "so then you go fix those problems" (L3 recording, ~[85:00]).
+
+{% call example("The lecturer's own unusable system") %}
+Adding a student to a tutorial group in ModReg takes "at least eight to ten clicks": "is it usable? Definitely not, not by my definition" (L3 recording, ~[85:00]). The count of interactions is the measure; the number itself is the verdict.
+{% endcall %}
+
+**The course platform's "responsive UI" requirement is a usability requirement.** A responsive layout adjusts to the screen size and puts the most important content at the top; a non-responsive one forces scrolling and zooming and lets icons overlap (L3 recording, ~[86:00]).
 
 {% call example("FoC — usability vs security, in one rule") %}
 "A student profile will be disabled after 3 failed password or OTP attempts" is a security rule with a usability cost: a student who fat-fingers their password three times loses access until they click a verification link in their university email. The rule's balance (3 attempts; self-service recovery) is a usability decision as much as a security one (Source: L4-AlternativeExamplesForProductBacklog, user service N2.2.1–N2.2.2; L3 slides 14, 22).
@@ -447,6 +642,14 @@ The FoC capacity pair shows how they travel together: the requirement is the *bo
 <panel type="seamless" minimized header="%%Answer%%">
 
 Those three are observable quantities; "easy to deploy" is not. Measurable statements can be verified or tested objectively — the same principle Quiz 1 Q5 tests for NFRs (Source: L3 slide 21; Quiz 1 Q5).
+
+</panel>
+
+**Q3.** FoC's degraded mode serves 100 requests per minute instead of its usual 10,000, and each request now takes about 10 seconds instead of 1. Which performance dimensions changed, and what is this behavior called?
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+Throughput dropped tenfold (work completed per minute); latency rose tenfold (wait per request). Serving slowly from a queue instead of refusing requests is failing gracefully — degraded-but-alive operation (L3 recording, ~[72:00]–~[74:00]).
 
 </panel>
 
@@ -476,6 +679,10 @@ flowchart TB
 
 How to read it: with Quiz 3's room-booking platform, extracting the search module as an independently scaled microservice lifts *scalability* (the summer load is absorbed by more search instances) but pays in *cost and complexity* — more deployables, more moving parts — which is exactly why the quiz's correct answer ties the split to demand ("increase its instances based on demand", Quiz 3 Q1). L3's tables give you the vocabulary of the pans: an embedded system cares about performance and safety, a web app about performance, scalability and security (L3 slide 13) — and the seesaw reminds you that adding security checks also adds latency, so the architect must say *which* side they are choosing to load.
 
+{% call example("Two requirements that cannot both win — memorable vs secure passwords") %}
+"It should be easy for the user to remember the username and password" collides head-on with "the password should be secure": the security rules forbid dictionary terms and consecutive letters and demand a number beside a symbol — exactly the properties that make a password hard to remember. "There's no way you can satisfy all of them, so you need to reach a compromise" (L3 recording, ~[86:00]). The lecturer's aside: surfacing such conflicting requirements is precisely one of the things LLMs do well (L3 recording, ~[87:00]).
+{% endcall %}
+
 **Why trade-offs exist — two different pressures the slide keeps separate.** Project constraints (resource limits, few skilled engineers, budgets and time, technical limitations) force you to *prioritize* which attributes to fund — the slide's own conclusion (its "⇒" marker): this is a planning and resource-allocation problem. Attribute conflicts are the other pressure: improving one attribute can genuinely degrade another, which is what the slide's table records. The deck works from a sample prioritization table for an airport check-in kiosk (Figure 14-1 on L3 slide 23, offline with the slide PDFs): rows are attributes, each carries a priority **Score** (Security 7, Integrity 6, Usability 5 … Verifiability 1, Robustness 1), and the cell symbols give the direction of influence — a "plus" (drawn `^` in the figure) means improving the row attribute improves the column attribute; a "minus" (drawn `<`) means improving the row attribute degrades the column one (Source: L3 slide 23).
 
 **The conflicts are directional, and Quiz 1 tests two of them.** Improving interoperability by allowing open data exchange and API access can expose the system to more vulnerabilities, weakening security; improving reliability by introducing redundant checks, backups, and recovery routines makes the system slower and more resource-hungry, degrading efficiency (Quiz 1 Q7, model answer; Source: L3 slide 23).
@@ -493,10 +700,16 @@ How to read it: with Quiz 3's room-booking platform, extracting the search modul
 </box>
 
 {% call example("L3 slide 24 — the same four NFRs, two very different systems") %}
-The healthcare examples pair two scenarios that both list performance, scalability, usability, and deployability as NFRs, yet weight them differently: an A&E (accident & emergency) bedside clinical decision support system that helps with patient triage — deciding which patients need treatment first — versus a national health-record platform for citizens' health data — both list the same four NFRs (performance, scalability, usability, deployability), and the slide's point is that the same list serves both because the weighting differs with the context: the bedside tool lives or dies on instant response, the national platform on serving huge populations dependably. %%The full slide (L3, offline) shows the two lists verbatim.%% The lesson: the attribute list is generic; the prioritization is what makes it a requirement (Source: L3 slide 24).
+The healthcare examples pair two scenarios that both list performance, scalability, usability, and deployability as NFRs, yet weight them differently: an A&E (accident & emergency) bedside clinical decision support system that helps with patient triage — deciding which patients need treatment first — versus a national health-record platform for citizens' health data — both list the same four NFRs (performance, scalability, usability, deployability), and the slide's point is that the same list serves both because the weighting differs with the context: the bedside tool lives or dies on instant response ("thinking doesn't take time, talking takes time — no talking, only thinking: the patient is dying, you want to diagnose soon"), the national platform on serving huge populations dependably — so scalability leads there. %%The full slide (L3, offline) shows the two lists verbatim.%% The lesson: the attribute list is generic; the prioritization is what makes it a requirement (Source: L3 slide 24; quotes from L3 recording, ~[88:00]).
 {% endcall %}
 
 **Trade-off analysis needs a common language and structure.** Use quality models and frameworks that provide a common language and structure for describing, measuring, and comparing quality attributes — e.g., pair-wise prioritization; feasibility takes priority (Source: L3 slide 23).
+
+**MoSCoW is the other framework the lecture named.** Where pair-wise forces an order by head-to-head comparison, MoSCoW sorts requirements into four labeled classes — including an explicit *will not have*, which makes the de-scoping visible to everyone (L3 recording, ~[87:00]).
+
+<box type="definition" seamless>
+<include src="../../se-book-adapted/common/defs-week-03.md#def-moscow-prioritization" trim />
+</box>
 
 **For FoC, pairwise prioritization identifies the nice-to-haves.** The deck asks: "You can use pair-wise prioritization to identify the Nice-to-haves in FoC" — comparing requirements two at a time to force an order, which is exactly what sprint planning needs (Source: L3 slide 25).
 
@@ -527,6 +740,14 @@ Security (protect accounts against unauthorized access) is bought at a usability
 
 </panel>
 
+**Q3.** In one sentence each: what does pair-wise prioritization ask, and what does MoSCoW decide?
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+Pair-wise asks, for every pair, "if we could fund only one of these two, which one?" — then tallies the wins (1 point per favored comparison, 0.5 per indifference, 0 per loss). MoSCoW assigns each requirement a class — must, should, could, or will not have — making the exclusions explicit rather than merely ranked (L3 slides 23, 25; L3 recording, ~[87:00]–~[89:00]).
+
+</panel>
+
 </panel>
 
 <span id="W3-c7"></span>
@@ -540,6 +761,8 @@ Security (protect accounts against unauthorized access) is bought at a usability
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirement-verification" trim />
 </box>
+
+**The unambiguity property fails quietly — the lecture's cautionary tale.** "A user can log in with username or OAuth" looks acceptable, yet when the lecturer asked what had actually been implemented, one developer answered "our system uses username and password" and another said "GitHub login" — and because none of them had written the code themselves (AI had), the ambiguity was never forced into the open (L3 recording, ~[95:00]). A requirement each reader can interpret differently is not one requirement but two.
 
 **Requirement documents come in textual and visual forms.** Textual: vision and scope document, use case document, software requirements specification (SRS), product backlog. Visual: structured analysis models — a data flow diagram (how data moves through the system's processes), an entity-relationship diagram (the entities in stored data and how they relate), a state-transition diagram (the states a thing moves through and the events that move it), and a dialog map (a state-transition diagram drawn over the user-interface dialogs, showing which screens can follow which %%— dimmed: Wiegers & Beatty, *Software Requirements*%%) — and object-oriented analysis models (e.g., object-oriented domain models — conceptual models of the problem-domain's things, their properties, and relations; for FoC: students, errands, wallets, vendors. Week 8 develops this idea as domain-driven design) (Source: L3 slide 29).
 
@@ -581,15 +804,17 @@ Tools range from spreadsheets to GitHub, Jira, and dedicated requirements-manage
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirements-management" trim />
 </box>
 
+**Requirements are not set in stone — "those days are gone."** The management loop exists because requirements change. The lecture's realistic caveat: under deadline heat, teams skip the writing-down steps and just implement — tolerable under student constraints, but the full discipline is what industry certification and government contracts demand (L3 recording, ~[94:00]).
+
 **AI now assists requirements engineering — with the same caveat as Week 2.** Uses:
 
-- Elicitation — persona specification (acting as a domain expert or user) and contextual information (questions relevant to the product context)
-- Analysis — requirement refinement (identify sub-tasks/sub-features) and automated templating and tagging
+- Elicitation — persona specification (acting as a domain expert or user — the lecture's mechanics: "you say this is the persona, this is the use case; now you act like someone, I ask you questions, you answer") and contextual information (questions relevant to the product context)
+- Analysis — requirement refinement (identify sub-tasks/sub-features) and automated templating and tagging (the lecture's version: specify a grammar or rough structure, and the LLM produces requirements in the right format)
 - Automated tagging and categorization by type and priority (better traceability, e.g., automated tracing of tests to requirements)
 - Natural language processing — identify ambiguity, conflicting requirements; fill missing requirements; fix inconsistencies
 - Predictive analytics — which requirements are likely to be implemented successfully (helping identify and prioritize)
 
-The deck's warning: don't simply trust the black box — be aware of non-deterministic outputs and non-explainable chains of thought (Source: L3 slides 33–34; Tutorial 2 Task 2.2 rehearses the elicitation use).
+The lecture's closing advice on all of these uses: *use but verify*. LLMs are effective at conflict and completeness checking — "quite effective actually" — but outputs are non-deterministic: the same question may not get the same answer the second time, and growing robustness has not removed that possibility, so "don't simply trust it like a black box" (L3 recording, ~[95:00]; Source: L3 slides 33–34; Tutorial 2 Task 2.2 rehearses the elicitation use).
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -669,6 +894,7 @@ All cited on the slides: the IEEE Standard Glossary definition of requirements; 
 | Quality attribute | A property (performance, security, usability…) whose combination defines software quality | [W3.4](#W3-c4) |
 | External quality attribute | Observed while the software executes; shapes the user's perception of quality | [W3.4](#W3-c4) |
 | Internal quality attribute | Not directly observed in execution; perceived by developers, impacts external attributes | [W3.4](#W3-c4) |
+| Safety | Not causing harm to life or property — bug-free is not the same as safe | [W3.4](#W3-c4) |
 | Security | Resisting unauthorized use while serving legitimate users — confidentiality, integrity, authentication, authorization, auditing | [W3.5](#W3-c5) |
 | Confidentiality | Protecting data against unauthorized disclosure or access | [W3.5](#W3-c5) |
 | Integrity | Protecting data against unauthorized modification | [W3.5](#W3-c5) |
@@ -687,6 +913,7 @@ All cited on the slides: the IEEE Standard Glossary definition of requirements; 
 | Interoperability | Working with other systems; open exchange exposes more attack surface | [W3.6](#W3-c6) |
 | Efficiency | How well the system uses resources — what reliability's redundancy taxes | [W3.6](#W3-c6) |
 | Pair-wise prioritization | Comparing requirements two at a time to force an order; feasibility takes priority | [W3.6](#W3-c6) |
+| MoSCoW prioritization | Sorting requirements into must / should / could / will not have — exclusions made explicit | [W3.6](#W3-c6) |
 | Requirements verification | Written the requirements right? Completeness, correctness, feasibility, prioritization, unambiguity | [W3.7](#W3-c7) |
 | Requirements management | The collect → analyze → record → prioritize → trace → revise loop, tool-supported | [W3.7](#W3-c7) |
 

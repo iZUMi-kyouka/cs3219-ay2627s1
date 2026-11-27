@@ -49,7 +49,7 @@ Builds on **Week 4** (architecture and deployment styles), **Week 6** (architect
 **Subdomains are where microservice candidates come from.** Each subdomain focuses on one set of responsibilities and typically mirrors part of the business organization's structure, so a subdomain boundary is cohesive inside and loosely coupled outside — exactly the shape a microservice needs.
 
 {% call example("L8 slides 2–3 — the FoC errand platform") %}
-The FoC domain is **peer-to-peer campus errands**; its problem space is "gigs" — in the gig-economy sense: small, one-off jobs that someone else performs for pay, which is exactly what an FoC errand is. Within that domain sit subdomains such as **errand fulfillment**, the **closed credit economy**, **campus vendors**, and **identity**. Each is a candidate for its own microservice, owned by a small team and deployable on its own.
+The FoC domain is **peer-to-peer campus errands**; its problem space is "gigs" — in the gig-economy sense: small, one-off jobs that someone else performs for pay, which is exactly what an FoC errand is. Within that domain sit subdomains such as **errand fulfillment**, the **closed credit economy**, **campus vendors**, and **identity**. Each is a candidate for its own microservice, owned by a small team and deployable on its own — and each carries its own responsibility. The closed credit economy, for instance, must transfer credits **all-or-none**: successfully completing an errand moves credits from one person's wallet to another's, with no middle ground, and it must do so reliably (L8 recording, ~[10:00]).
 {% endcall %}
 
 **Bounded contexts are the solution-space twin of subdomains.** You design one bounded context per subdomain implementation, and it gathers everything that implementation needs.
@@ -60,15 +60,19 @@ The FoC domain is **peer-to-peer campus errands**; its problem space is "gigs" �
 
 **Ideally a bounded context and its subdomain align completely — but they live in different spaces.** Subdomains are discovered from the business (problem perspective); bounded contexts are engineered by you (solution perspective) and may split or merge subdomains as the design demands.
 
-{% call example("L8 slide 3 — user authentication inside the Identity subdomain") %}
-In the FoC Identity subdomain, *user authentication* and *access control* are two bounded contexts of the subdomain's implementation: each has its own inputs, events, processes, and data models, even though both serve the one "identity" responsibility.
+**A bounded context is cut so that its contents change together — one context, one reason to change.** Swap the authentication mechanism and the *authentication* context changes; add a new role and the *access control* context changes. The lecture's phrasing: contexts "work together, live together, change together," and you should not be able to give a context multiple reasons to change — single responsibility, applied to a context (L8 recording, ~[15:00]).
+
+{% call example("L8 slide 3 + recording ~[12:00] — the Identity subdomain's two contexts") %}
+In the FoC Identity subdomain, *user authentication* and *access control* are two bounded contexts of the subdomain's implementation: each has its own inputs, events, processes, and data models, even though both serve the one "identity" responsibility. The login requirement — "the user logs in by providing a username, a password, and a one-time code" — belongs entirely to the authentication context: how usernames are validated and stored, how passwords are stored and compared, how one-time codes are generated and accepted, and nothing else. Deciding what *roles* a logged-in user may hold belongs to the access-control context. Each context changes only when its own concern changes.
 {% endcall %}
 
-**A ubiquitous language keeps each context internally consistent.** A shared vocabulary between domain experts and developers lets them talk without translation — and accepting that a word changes meaning when you cross a context boundary is part of the design, not a defect.
+**A ubiquitous language keeps each context internally consistent.** A shared vocabulary between domain experts and developers lets them talk without translation — and accepting that a word changes meaning when you cross a context boundary is part of the design, not a defect. The recording adds two practical pay-offs: misunderstandings surface early as bugs, because everyone — stakeholders, developers, testers, code reviewers — uses the same terminology (L8 recording, ~[15:00]); and when a term starts meaning different things to different people, you have probably found the edge of a bounded context (L7-DDD recording, ~[10:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-ubiquitous-language" trim />
 </box>
+
+**Mapping contexts to services is a design decision, not a formula.** More often than not you pick up a bounded context and implement it as one service — but you can also make a conscious decision to cover two contexts in one service, the way a "user service" might merge authentication and role-based access control. The recording's warning cuts the other way too: nothing stops you from splitting one context into two services if the design demands it (L8 recording, ~[15:00]; W7.8 makes the same point from the identification side).
 
 The diagram below draws the two contexts slide 3 names, side by side: each is a designed boundary of the solution space, and the same word, `Student`, deliberately means a different thing inside each.
 
@@ -90,7 +94,7 @@ How to read it: L8 slide 3 gives both glosses — "Student in Identity is an acc
 
 #### Event storming: a lightweight practice to discover microservices
 
-**Event storming finds microservice candidates by storming through the business as a chain of things that happened.** It needs no tooling beyond a wall and sticky notes, which is why the deck calls it lightweight (L8 slides 2, 4).
+**Event storming finds microservice candidates by storming through the business as a chain of things that happened.** It needs no tooling beyond a wall and sticky notes, which is why the deck calls it lightweight (L8 slides 2, 4); the lecture's own gloss is "brainstorming with events" (L8 recording, ~[20:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-event-storming" trim />
@@ -110,8 +114,8 @@ How to read it: L8 slide 3 gives both glosses — "Student in Identity is an acc
 
 **How it works:**
 
-* **Start with domain events — the things that happened.** For FoC: `ErrandPosted`, `CreditReserved`, `ErrandCompleted` (slide 4).
-* **Commands cause events.** A {{ term("command", "a request for an action to be performed, expressed as intent in the imperative mood and sent to a specific receiver; it changes application state and returns no data — defined in W9.1") }} is an instruction to change something, e.g. `PostErrand` or `SettleCredits` (slide 4).
+* **Start with domain events — the things that happened.** For FoC: `ErrandPosted`, `CreditReserved`, `ErrandCompleted` (slide 4); the recording's other examples are `UserRegistered` and `PaymentCompleted` (L8 recording, ~[15:00]). Sequence the events you can think of before asking why each happened.
+* **Commands cause events.** A {{ term("command", "a request for an action to be performed, expressed as intent in the imperative mood and sent to a specific receiver; it changes application state and returns no data — defined in W9.1") }} is an instruction to change something, e.g. `PostErrand` or `SettleCredits` (slide 4). Commands represent *intent* — the desire to make something happen; events represent *facts* — the record that it did happen (L7-EventStorming recording, ~[2:00]). In microservices, commands tend to cross service boundaries as the entry points (API calls), while events become the integration points between services (L7-EventStorming recording, ~[4:00]).
 * **Commands work on aggregates.** `PostErrand` creates an `Errand`; `Errand` and `Wallet` are aggregates (slide 4).
 * **A policy reacts to an event and triggers a command — "when … then …".** E.g., when `ErrandCompleted` then `SettleCredits` (slide 4).
 * **Clusters of aggregates, commands, and policies become your microservice candidates.** Everything one aggregate family needs lives in one service; everything else talks to it through events.
@@ -133,6 +137,10 @@ flowchart TB
 
 How to read it: a command acts on an aggregate, the aggregate records an event, and a policy listening to that event fires the next command — so `PostErrand → Errand → … → ErrandCompleted → SettleCredits → Wallet → CreditReserved` is one storming pass over errand fulfillment and the credit economy. Each aggregate family plus its commands and policies is a microservice candidate: an *Order* service around `Errand`, a *Credit* service around `Wallet` (Source: L8 slide 4; Tutorial 6 — you will meet it in Week 9 — repeats these steps on a food-delivery platform).
 
+{% call example("L8 recording, ~[20:00] — the policy that decouples Order from Credit") %}
+The professor connected this directly to the project: one of the most common pieces of D1 feedback was that the order side and the credit side are two independent things, and Order code must not reach into credit logic. Event storming shows exactly where to cut. `ErrandCompleted` happens in the Order context. The policy *when `ErrandCompleted` then `SettleCredits`* is the seam between them: the Order service only says "I'm done," and the Credit service — solely responsible for moving credits from one wallet to another — reacts by running `SettleCredits` on the `Wallet` aggregate. The policy is what keeps the two services decoupled.
+{% endcall %}
+
 <box type="warning" seamless>
 
 **Pitfall — a subdomain is not a bounded context.** The subdomain belongs to the problem space and is discovered; the bounded context belongs to the solution space and is designed. Treating the business org chart as your service diagram, or letting one word ("Student") keep two meanings inside one context, are the two classic failures of a first DDD attempt (L8 slide 3).
@@ -149,6 +157,9 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 **Q3.** Why can `Student` safely mean "account holder" in Identity and "requestor or courier" in Order?
 <panel type="seamless" minimized header="%%Answer%%">Because the two models live in different bounded contexts, each with its own ubiquitous language; the word is only ambiguous if you let one model leak across the boundary (L8 slide 3).</panel>
 
+**Q4.** Your team decides to merge the authentication and access-control contexts into a single "user service." Is that a violation of DDD?
+<panel type="seamless" minimized header="%%Answer%%">No — bounded contexts and services don't have to map 1:1. Covering two contexts in one service is a conscious design decision (as is splitting one context across two services); what matters is that each context keeps one reason to change and its own ubiquitous language (L8 recording, ~[15:00]; W7.8).</panel>
+
 </panel>
 
 <span id="W8-c2"></span>
@@ -156,6 +167,14 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 ### W8.2 Data patterns: owning, querying, and reconciling data ★★
 
 **A microservice you cannot deploy independently is not a microservice, and a shared table is the classic threat to that independence.** The deck's guiding question is "what is the barrier for independent deployment?" — and its guideline answers it: microservices must own their data (L8 slide 6).
+
+**The lecture pins the threat down precisely: co-ownership of data.** The professor opened the patterns half by asking what blocks independent development and deployment, and worked through the class's answers (asked in lecture, L8 recording, ~[25:00–30:00]):
+
+* **Other services' APIs are not the threat.** Teams agree on the interfaces and payloads *before* independent work starts — that is a prerequisite, not a blocker.
+* **Communication itself is not the threat.** Messages, events, HTTP requests, and {{ term("gRPC", "an open-source remote-procedure-call framework that lets a service call another service's methods over the network %%Wikipedia: gRPC%%") }} calls all just carry data from one side to the other; even "do something" is an instruction encoded as data.
+* **Co-ownership is the threat.** Data written by one service and updated by another cannot be developed or deployed independently. The mildest form — write-before-read (create the order before you can read it) — is unavoidable coupling; multiple services that can *write or update the same data* block independence outright.
+
+**The guideline follows: own your data, and expose it only through well-defined APIs.** No service reaches directly into another service's store; the API is the only route to its data (L8 recording, ~[30:00]; L8 slide 6).
 
 **How the data patterns fit together:**
 
@@ -168,7 +187,11 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 <include src="../../se-book-adapted/common/defs-week-08.md#def-database-per-service" trim />
 </box>
 
-**Database-per-service buys loose coupling and per-service freedom.** Each service scales its database independently and may pick or replace the database technology that fits its access pattern — a search index for one service, a relational store for another (L8 slide 8).
+**Database-per-service buys loose coupling and per-service freedom.** Each service scales its database independently and may pick or replace the database technology that fits its access pattern — a search index for one service, a relational store for another (L8 slide 8). Scaling happens at the data level: move the database to a bigger machine, or replicate it — whichever mechanism you have (L8 recording, ~[30:00]). The recording also gives the selection question to ask per service: *what shape is the data?* Very sparse data — tables where only a few entries are filled — is better served by a document store than by near-empty relational tables (L8 recording, ~[35:00]).
+
+{% call example("L8 recording, ~[35:00] — the prototype that outgrew its database") %}
+A startup builds its proof of concept on SQLite because it is enough to demo. The demo earns funding, traffic arrives, and SQLite no longer fits — so the team swaps the underlying database technology wholesale, and nobody outside the service objects. Database-per-service is what makes that swap possible: the technology choice is private to the service.
+{% endcall %}
 
 <panel type="seamless" minimized header="%%What is loose coupling?%%">
 
@@ -181,17 +204,30 @@ How to read it: a command acts on an aggregate, the aggregate records an event, 
 **Trade-off — the pattern has costs.**
 
 * Different kinds of databases must be operated.
-* A large application sees an explosion in the number of databases.
+* A large application sees an explosion in the number of databases — and in their *variety*: at Netflix scale (thousands of services), hiring and staffing teams who can handle a huge range of database technologies becomes its own problem (L8 recording, ~[35:00]).
 * The setup is expensive to manage (L8 slide 8).
 
 Weaker forms of independence (private tables, schemas, RBAC users) trade some of that freedom for fewer moving parts (L8 slide 9).
 </box>
 
-**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties (atomicity, consistency, isolation, durability) across them all — but the coupling costs are exactly the ones microservices exist to avoid.
+**The shared database is what the guideline rules out.** It tempts because some transactions need data owned by other services, some queries must join data owned by multiple services, and one database enforces ACID properties (atomicity, consistency, isolation, durability) across them all — but the coupling costs are exactly the ones microservices exist to avoid. The recording's one-line caution: an antipattern is defined by *looking* feasible — that is precisely why it keeps getting chosen (L8 recording, ~[45:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-atomicity" trim />
 </box>
+
+<panel type="seamless" minimized header="%%Common question (asked in lecture): what do the four ACID properties guarantee?%%">
+
+A student walked through them in class (L8 recording, ~[40:00]):
+
+* **Atomicity** — everything passes or nothing passes; there is no half-done transaction (the definition above).
+* **Consistency** — the database's invariants still hold after every transaction: whatever the update touches, everything related to it stays valid.
+* **Isolation** — a transaction does not interfere with data another transaction is working on.
+* **Durability** — once the database acknowledges a write, you are assured you can retrieve it, whatever happens next.
+
+%%A single relational database hands you all four for free — a failed update rolls back automatically. That free lunch is exactly what makes the shared database tempting.%%
+
+</panel>
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-shared-database" trim />
@@ -219,6 +255,14 @@ flowchart TB
 
 How to read it: on the left, each flight-domain service touches only its own store, so a schema change or a technology swap in Reservations cannot break Flight search. On the right, all three write one store — the schema change now needs all three teams to coordinate (development-time coupling), their writes can conflict at runtime, and one engine must satisfy three different access patterns (L8 slide 10).
 
+%%What a *join* is, since the recording pauses on it: combining rows from two tables against a matching criterion — three rows here, four there, up to a 3 × 4 combination. Inner/outer/left/right join variants are out of scope for this course (L8 recording, ~[40:00]).%%
+
+<box type="tip" seamless>
+
+**Own your design decisions — do not offload them to a tool.** The lecture reports TAs finding teams that could not explain decisions an AI coding tool had made for them — why authentication was done a certain way, why a service was generating tokens it should not generate. Using tools to write code is fine; making the architectural choice, justifying it, and being able to explain it is yours. As the professor put it: don't say "Claude said" and leave it at that (L8 recording, ~[45:00]).
+
+</box>
+
 {% call example("L8 slide 9 — data independence without separate servers") %}
 The same flight platform can keep one database server yet stay independent: create different database users with specific read/write permissions on their own tables (RBAC), or give each of Flight search, Reservations, and Flight tracking its own private set of tables, or its own private schema within the shared server %%("schema" here: a named namespace of tables inside one database — a stronger separation than private tables, since the names in different schemas cannot collide)%%.
 {% endcall %}
@@ -231,7 +275,7 @@ The same flight platform can keep one database server yet stay independent: crea
 <include src="../../se-book-adapted/common/defs-week-08.md#def-data-lake" trim />
 </box>
 
-**Streaming, not direct reads, keeps the ownership rule intact.** Owner microservices push data-change events through a messaging infrastructure such as RabbitMQ or Kafka into the lake; a consumer such as an Analytics service queries the lake, never the owners (L8 slide 11).
+**Streaming, not direct reads, keeps the ownership rule intact.** Owner microservices push data-change events through a messaging infrastructure such as RabbitMQ or Kafka into the lake; a consumer such as an Analytics service queries the lake, never the owners (L8 slide 11). The recording explains *why* a broker sits in the middle: the lake is optimized for reads, not writes, while the owners' data changes fast — so the broker temporarily holds the change events and trickles them into the lake at the lake's pace (L8 recording, ~[50:00]).
 
 <panel type="seamless" minimized header="%%What are RabbitMQ and Kafka?%%">
 
@@ -242,7 +286,7 @@ The same flight platform can keep one database server yet stay independent: crea
 </panel>
 
 {% call example("L8 slide 11 — analytics over three flight services") %}
-Flight search, Reservations, and Flight tracking each own their own database. For cross-service analytics dashboards %%("delivery-time dashboards" is the FoC variant of this slide's Analytics service — see the Week 9 chapter)%%, all three stream their data-change events into one data sink (the data lake); the Analytics service queries that lake instead of joining three live databases.
+Flight search, Reservations, and Flight tracking each own their own database. For cross-service analytics dashboards %%("delivery-time dashboards" is the FoC variant of this slide's Analytics service — see the Week 9 chapter)%%, all three stream their data-change events into one data sink (the data lake); the Analytics service queries that lake instead of joining three live databases. The recording motivates the *copy* with a recommendation system: to train a model you need all the shipping, product, and user data in one place at once — fetching one data item at a time over APIs cannot do that (L8 recording, ~[45:00]).
 {% endcall %}
 
 #### The saga: transactions across services
@@ -253,16 +297,32 @@ Flight search, Reservations, and Flight tracking each own their own database. Fo
 <include src="../../se-book-adapted/common/defs-week-08.md#def-saga" trim />
 </box>
 
+{% call example("L8 recording, ~[55:00] — why the pattern is called a saga") %}
+A saga is a story: something happened, then something happened — everybody lived happily ever after. The pattern earns its keep when the story derails. You ordered during an 11.11 mega-sale; the item was in high demand and your order could not be fulfilled. Nothing can un-happen the purchase — but the shop refunds you, and that refund is *another event* whose effect cancels the first one's. You cannot undo an event; you can only add a new event that undoes its effect. That new event is the compensation.
+{% endcall %}
+
 **How it works:**
 
 * **Every step of the transaction defines a compensating action, registered on a routing slip passed along to the next step.** The routing slip is simply the running list that travels *with* the transaction from service to service — each step adds its undo entry to it — so if a later step fails, whoever holds the slip knows exactly which compensations to run %%("routing slip" in the Enterprise Integration Patterns sense — Hohpe & Woolf: the list of steps rides in the message itself)%%. (L8 slide 13.)
+* **Writing the compensation is the step author's job, done at write time.** When you develop the payment step, you write its compensation in the same sitting — you know best what undoing your step means (L8 recording, ~[55:00]).
 * **If a later step fails, the routing slip kicks off the compensating actions of all completed steps.** (L8 slide 13.)
-* **A saga does not promise to return to the initial state — only to a reasonably compensated one.** Saga ≠ ACID transaction (L8 slide 13).
-* **Order the steps so the hard-to-compensate ones go last.** If the business rule allows, put notification at the very end of the process to avoid sending lots of correction messages (L8 slide 15).
+* **A saga does not promise to return to the initial state — only to a reasonably compensated one.** Saga ≠ ACID transaction (L8 slide 13). The recording's everyday version: the cancellation email says "we have refunded you — it will reach your account in 3 to 14 days." Compensation is guaranteed *eventually*, never immediately (L8 recording, ~[55:00]).
+* **Order the steps so the hard-to-compensate ones go last.** If the business rule allows, put notification at the very end of the process to avoid sending lots of correction messages (L8 slide 15). Developers may not know which steps are hard to compensate or what a failure's downstream impact is — work with domain experts to identify them before fixing the order (L8 recording, ~[65:00]).
 
 {% call example("L8 slides 12–14 — booking a flight seat") %}
 The booking saga books payment, reserves the seat, and notifies the customer. If the seat reservation fails after payment succeeded, the compensation initiates a refund — which "completes in some time". If the failure happens after the notification was sent, the only compensation is to send a *new* message asking the customer to discard the previous one — which is why notifications move to the end of the saga.
 {% endcall %}
+
+<panel type="seamless" minimized header="%%Common question (asked in lecture): who runs the compensations?%%">
+
+Students first proposed that each service manages its own compensation action — rejected as incomplete: if the service is down, its compensation goes down with it (asked in lecture). The lecture worked through two mechanisms that survive a crash (L8 recording, ~[60:00]):
+
+* **A separate compensation worker.** A dedicated component watches the transaction's progress. Each step registers its compensation with the worker (`C1` for payment, `C2` for notification, `C3` for reservation); when the expected success event for a step never fires, the worker notices and triggers the compensations in reverse order.
+* **A task queue with a {{ term("time to live", "a deadline attached to a task or message; if it expires with no acknowledgment, a pending action fires — see also Week 11's messaging use of TTL %%Wikipedia: Time to live%%") }} (TTL).** Each event carries its compensation action, or a route to it — the lecture compares this to a REST payload that includes the link for cancelling the resource it just created (Week 6). The queue waits for each step's acknowledgment within the TTL; on expiry, it fires the route, which initiates the compensations. TTL and task queue go hand in hand — a deadline alone has nothing to initiate the action.
+
+The lecture then noted that these two mechanisms have names, taken up in W8.4: the compensation worker is effectively an *orchestrator*, and compensation actions firing from an event store is *choreography* (L8 recording, ~[60:00, 90:00]).
+
+</panel>
 
 {% call example("Tutorial 7 (Week 10) Q1 — reserving credits for an FoC errand") %}
 In the microservices design of the errand workflow, the Order service (errand `PENDING`) asks the Credit service to reserve credits, then tries to mark the errand `OPEN`. If that last local step fails, the compensation runs: the Credit service releases the reserved credits and the Order service marks the errand `CANCELLED`. (Source: Tutorial 7 solutions, Q1.)
@@ -306,6 +366,9 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
 **Q3.** In the flight-booking saga, why does notification go last?
 <panel type="seamless" minimized header="%%Answer%%">A sent message can only be "compensated" by another message asking the customer to ignore the first; moving the hard-to-compensate step to the end minimizes correction messages (L8 slide 15).</panel>
 
+**Q4.** "Each service manages its own compensation action" — why is that answer incomplete?
+<panel type="seamless" minimized header="%%Answer%%">If the service is down, its compensation is gone with it. Something must survive the crash and *initiate* the compensation: a separate compensation worker that monitors progress, or a task queue whose TTL expires when a step's acknowledgment never arrives (L8 recording, ~[60:00]).</panel>
+
 </panel>
 
 <span id="W8-c3"></span>
@@ -313,6 +376,8 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
 ### W8.3 Event sourcing and CQRS ★★
 
 **Once services stop sharing tables, "current state" needs a source of truth you can trust — and the log of what happened is that source.** Event sourcing makes the log the storage; CQRS splits the readers from the writers (L8 slides 17–28).
+
+**Event sourcing and CQRS are a twin pair with different jobs.** Event sourcing is a *data storage* pattern; CQRS is a *data access* pattern (L8 recording, ~[65:00]). The recording adds the adoption logic: teams rarely implement event sourcing for its own sake — the usual reason is that they want to take advantage of CQRS, which is why the two travel together. (What each pattern strictly *requires* is settled below — the deck keeps them decoupled.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-event-sourcing" trim />
@@ -324,10 +389,14 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
 A chess score sheet does not store a picture of the board after every move; it records the moves. The state of the board at any moment is the sum of all moves that have happened — replay the moves and you get the position back.
 {% endcall %}
 
-**Events are immutable, timestamped, and stored in creation order — so the log is a complete audit of exactly what the system did.** "Something that has happened" cannot be edited; you can rederive the current state by rewinding the log and replaying the events in order, which also gives you "undo" for free (L8 slide 18).
+**Events are immutable, timestamped, and stored in creation order — so the log is a complete audit of exactly what the system did.** "Something that has happened" cannot be edited; you can rederive the current state by rewinding the log and replaying the events in order, which also gives you "undo" for free (L8 slide 18). The auditability is not abstract: your e-commerce app already does this — once an order ships, it lists the logged events so you can track what happened (L8 recording, ~[70:00]) — and a question like "when was my company card added to this account?" is answered by reading the log, not by querying a state column (L8 recording, ~[75:00]).
 
 {% call example("L8 slides 19, 21 — an event-sourced order pipeline") %}
 In an event-sourced order processing system, `OrderPlaced`, `PaymentReceived`, and `OrderShipped` are appended as they happen. When a customer places an order, the order request is stored as an event in the log *before* validation happens; when the order is validated, that outcome is appended as an entirely new event rather than overwriting the existing order. To determine the current order status, all relevant events are played from the beginning, reconstructing the order state; a database attached to the resulting event stream derives an event-sourced view of current orders.
+{% endcall %}
+
+{% call example("L8 recording, ~[70:00–75:00] — replaying a flight-reservation log") %}
+The relational model of a flight-ticket reservation system stores the *resulting state* in rows: one customer, two accounts, two payment methods, two completed trips, three reservations, two recorded preferences. The event-sourced model stores the *path* there: customer info entered → personal account created → first payment method added → reservation booked → trip completed → business account created (the office's) → office credit card added → preference added ("window seat") → preference added ("non-low-cost airlines only") → reservation booked → trip completed → reservation removed → reservation booked → preference updated. Replay the events in order and you reconstruct exactly the relational state — and you keep, for free, the audit trail that answers "when was the company card added?"
 {% endcall %}
 
 The diagram shows the write path appending to the log and the read path replaying it into a view — the "command/write in (1) and query/read in (4)" note on slide 21.
@@ -356,7 +425,11 @@ How to read it: writes only ever append to the log on the left; the view on the 
 
 **The split buys two things: recoverability and independent optimization.** Should something go wrong, the internal state of the database can be recovered from the log; and writes and reads can be optimized independently, because nothing forces one model to serve both (L8 slide 22).
 
-**One write model can push data into many read models.** Writes go into Kafka on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24).
+{% call example("L8 recording, ~[80:00] — one sale, two different bottlenecks") %}
+During a 10.10 mega-sale, orders flood in: scale and optimize the *write* side, which is where the load is. Two days later the same customers all ask "where is my order?": reads spike while writes are quiet — so now scale and optimize the *read* side. Neither move is available if one model serves both.
+{% endcall %}
+
+**One write model can push data into many read models.** Writes go into Kafka on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source — renamed ksqlDB in 2019 %%Confluent docs%%) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24). The recording sharpens three details. KSQL is *not* a "select and get the answer" query — it processes the stream of events to generate the view (L8 recording, ~[75:00]). The views are updated by predefined queries as new events arrive, so they are not real-time (L8 recording, ~[80:00]). And one event stream feeds very different consumers — a system-monitoring view for administrators, an order-history view for customers (L8 recording, ~[80:00]); the recording compares the idea to MVC's many views over one model, with the caveat that the mechanism is entirely different.
 
 <panel type="seamless" minimized header="%%What is Kafka?%%">
 
@@ -367,6 +440,8 @@ How to read it: writes only ever append to the log on the left; the view on the 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-materialized-view" trim />
 </box>
+
+**Taken one step further, the write and read models can be different databases, kept in sync.** The write side is a centralized, high-reliability, high-availability database; read copies are distributed — even globally, so reads answer locally instead of crossing the world to the central store. A read-heavy, analytics-shaped workload can go further still and use a {{ term("column store", "a database that stores data by column rather than by row, making aggregate reads over a few columns fast %%Wikipedia: Column-oriented DBMS%%") }}, which is optimized for exactly that (L8 recording, ~[80:00]).
 
 <box type="important" seamless>
 
@@ -408,6 +483,9 @@ An order is accepted in the *orders* service (write path: the order event is rec
 **Q3.** True or false: adopting CQRS forces you to adopt event sourcing.
 <panel type="seamless" minimized header="%%Answer%%">False. CQRS doesn't always need events/event sourcing — they are just mostly used together (L9 slide 2).</panel>
 
+**Q4.** A 10.10 sale is tomorrow. Which side of a CQRS system do you scale, and which side two days later?
+<panel type="seamless" minimized header="%%Answer%%">Tomorrow: the write side — orders flood in. Two days later: the read side — everyone asks "where is my order?" while writes are quiet. Separating the models is what makes each move possible (L8 recording, ~[80:00]).</panel>
+
 </panel>
 
 <span id="W8-c4"></span>
@@ -433,8 +511,8 @@ An order is accepted in the *orders* service (write path: the order event is rec
 </box>
 
 * **Request/sync response** — the client makes a request to a service and waits for the response. E.g., *Get passenger info*: TripManagement calls PassengerManagement and waits.
-* **Notification (one-way request)** — the client sends a request; no reply is expected or sent. E.g., *Notify passenger*: DriverManagement tells PassengerManagement, and that is the whole conversation.
-* **Request/async response** — the client sends a request and the service replies asynchronously. E.g., *Trip created*: TripManagement asks Dispatcher, and the answer comes back later.
+* **Notification (one-way request)** — the client sends a request; no reply is expected or sent. The recording's phrasing: your job is to send the information — you don't know and don't care what the recipient does with it (L8 recording, ~[82:00]). E.g., *Notify passenger*: DriverManagement tells PassengerManagement, and that is the whole conversation.
+* **Request/async response** — the client sends a request and the service replies asynchronously. E.g., *Trip created*: TripManagement asks Dispatcher, and the answer comes back later. The recording's everyday version: booking a taxi — you don't stare at the screen asking "where's my taxi?"; you go about your business, and a notification later delivers the driver's name and taxi number (L8 recording, ~[82:00]).
 
 %%"Notification" is doing double duty in this chapter — don't conflate the two uses. In the style list above, **notification is a one-way request from one service to another**: DriverManagement tells PassengerManagement something, and the *services* are both ends of the conversation. In the flight-booking saga (W8.2), "notifications" are the *customer-facing messages* a notification service eventually sends — a downstream job that the one-way style might trigger, not the style itself.%%
 
@@ -451,6 +529,8 @@ An order is accepted in the *orders* service (write path: the order event is rec
 {% call example("Tutorial 5 Q1 — the supplier repository SPA") %}
 Tutorial 5 asks you to architect a single-page application performing CRUD operations on campus suppliers, vendors, and landmarks. A natural shape is the SPA calling one API gateway, which routes to the supplier service (and authentication, monitoring, etc. handled at the door) — the tutorial's hint, "understand the different ways a user can interact with the system", is precisely the gateway's job of tailoring the API to each client interaction. Many valid diagrams exist; the solution notes the important parts are the supplier service and the CRUD operations. (Source: Tutorial 5 sheet and solutions, Q1.)
 {% endcall %}
+
+%%The recording adds two deployment notes (L8 recording, ~[85:00]). A gateway can sit *inside* the system too: services may talk to each other through a second, internal gateway instead of calling each other point-to-point. And modern gateway products carry extra responsibilities — authentication management, monitoring, load balancing, caching. If you deploy on {{ term("Kubernetes", "a container-orchestration platform that deploys, scales, and manages containerized services") }}, you get a gateway for free: the cluster's single entry point plays that role.%%
 
 #### Orchestration vs choreography
 
@@ -492,9 +572,15 @@ flowchart TB
 
 How to read it: in the orchestration half, the workflow lives in one place — the orchestrator calls A, then B, then C and collects their acknowledgments. In the choreography half, no one holds the workflow: A reacts to stream 1 and publishes to stream 2, B reacts to stream 2 and publishes to stream 3, C reacts to stream 3. Reordering B and C in the choreographed version means rewiring who publishes to which stream — the concern Tutorial 7 (Week 10) Q3(b) asks you to spot (L8 slide 32; Tutorial 7 sheet, Q3).
 
+{% call example("L8 recording, ~[85:00–90:00] — enrolling a customer in a loyalty program") %}
+The workflow: create the customer record, create the loyalty record and assign the starting balance, dispatch a welcome pack by post, send a welcome email. **Orchestrated:** the customer service is the brain — it invokes the loyalty, post, and email services itself and drives them in order. **Choreographed:** the customer service publishes a `CustomerCreated` event (with the customer's details), and that is its whole job — the loyalty service knows it must allocate the balance when a customer is created, the post service knows it must send the welcome pack, and the email service knows it must send the welcome email. Nobody calls them; they react.
+{% endcall %}
+
+**The saga connection is direct.** The compensation worker of W8.2 is effectively an orchestrator: every transaction logs its compensation action with it, and it knows which service to call when something fails. In a choreographed saga, the compensation actions live in the event store itself, where the TTL mechanism fires them when a step's acknowledgment never arrives (L8 recording, ~[90:00]).
+
 #### Service discovery
 
-**Services are deployed, scaled, and replaced dynamically, so callers need the current location of instances — the IP address and port — before any call can happen.** The API gateway (or any client) faces this on every request (L8 slide 33).
+**Services are deployed, scaled, and replaced dynamically, so callers need the current location of instances — the IP address and port — before any call can happen.** The API gateway (or any client) faces this on every request (L8 slide 33). The recording deflates the mystique: this is not magic — the locations are simply recorded in the registry, which is nothing but a database, one entry per service *instance*, so a service behind a load balancer has every instance listed (L8 recording, ~[90:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-08.md#def-service-registry" trim />
@@ -513,7 +599,7 @@ How to read it: in the orchestration half, the workflow lives in one place — t
 * **Client-side discovery** — the client queries the service registry, determines the network locations of the available instances, and uses a load-balancing algorithm %%load balancing: spreading requests across multiple instances so no single one is overwhelmed; Week 12 develops it in full%% to pick one (L8 slide 34).
 * **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus (a commercial version of the widely used NGINX web server, sold with load-balancing features) or an AWS Elastic Load Balancer (ELB — Amazon's managed service that automatically distributes incoming traffic across multiple targets such as EC2 instances and containers) (L8 slide 35).
 
-**Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. Registries in practice include Apache Zookeeper, Consul, and Etcd %%all distributed infrastructure tools commonly repurposed as registries: Zookeeper is a distributed coordination service, while Consul and Etcd are distributed key–value stores that keep one entry per service instance%% — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in %%they track the instances they deploy themselves, so no separate registry product is needed%% (L8 slides 36–37).
+**Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. The recording spells out both mechanically (L8 recording, ~[90:00]): in self-registration the registry's address is part of the service's configuration, and on startup the instance tells the registry "I am up — this is my service name, my IP address, my port; please make a note." In third-party registration, the registrar is configured with a range of addresses and health-checks it — "are you alive?" — registering whichever instance answers. Registries in practice include Apache Zookeeper, Consul, and Etcd %%all distributed infrastructure tools commonly repurposed as registries: Zookeeper is a distributed coordination service, while Consul and Etcd are distributed key–value stores that keep one entry per service instance%% — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in %%they track the instances they deploy themselves, so no separate registry product is needed%% (L8 slides 36–37).
 
 <box type="warning" seamless>
 
@@ -545,10 +631,10 @@ How to read it: in the orchestration half, the workflow lives in one place — t
   * Bounded contexts are the solution-space designs that become services.
   * Event storming finds both via events → commands → aggregates → policies.
 * **Data independence is the line in the sand:**
-  * Own your data (per-service database or weaker variants).
+  * Own your data (per-service database or weaker variants) — co-ownership of data is the threat to independent deployment.
   * Never share a database.
   * Answer cross-service queries from a data lake.
-  * Coordinate cross-service writes with sagas of local transactions and compensations.
+  * Coordinate cross-service writes with sagas of local transactions and compensations — initiated by a compensation worker or a TTL-fired task queue.
 * **Event sourcing stores facts, CQRS splits readers from writers** — and CQRS does not require event sourcing; they are just mostly used together.
 * **The supporting patterns wire it up:** three interprocess styles, an API gateway as the single tailored entry point, orchestration vs choreography for process control, and service discovery via a registry.
 </box>

@@ -62,6 +62,21 @@ flowchart TB
 
 %%Notation: each box names one architectural style and the axis positions are carried in the box labels; the two subgraphs are the deployment axis (single vs distributed), and within each, the labels carry the code-division axis (technical vs domain).%% To read it: a layered web app kept in one deployable sits top-left (technical division, single unit); the Smart Kitchen app from Quiz 2 (one of the four past quizzes — see [Past quizzes]({{baseUrl}}/se-book-adapted/index.html#quizzes)), split into recipes and inventory modules inside one artifact, sits bottom-left (domain division, single unit); a microservices system sits bottom-right (domain division, many deployables) — which is where Week 7 goes.
 
+{% call example("L6 recording, ~21:00 — purpose-built architecture, borrowed from buildings") %}
+The professor motivates "styles exist because software is built for a purpose" with building architecture: in earthquake-prone regions (he names Japan), houses are deliberately lightweight — on bamboo stilts — so that a topple causes minimal damage. In Mediterranean places with little rain, facades are plain with no window sills — no material is wasted on protection that is never needed. Where it rains heavily, roofs are built to carry water away. And in dense Singapore, the adaptation is apartments. The need defines the structure. Software follows the same philosophy: a controller that must be latency-efficient is built as a monolith (an in-process call is instantaneous — no network involved), while processing huge amounts of data pushes you to a distributed architecture such as Hadoop MapReduce, purpose-built for parallel processing. (Source: L6 recording, ~20:00–24:00.)
+{% endcall %}
+
+**Two vocabulary refinements from the recording sharpen how you talk about styles.** (Source: L6 recording, ~5:00–14:00.)
+
+- **Configuration — the third element of the architecture triad — is how the components and connectors are arranged.** The same code can *look* linear in a diagram while its call arrows reveal a triangular configuration: the direction of the method/API calls, not the page layout, defines the flow and hence the configuration.
+- **A reference architecture represents a whole class of applications in one diagram.** You customize it by replacing its generic slots (logic, storage) with your actual components, and you get the architecture for your specific application.
+
+<panel type="seamless" minimized header=":glyphicon-question-sign: **Common question — how do events and messages differ? (asked in lecture)**">
+
+**A message has a designated recipient; an event has none.** In message-based communication, the recipient is always known — an IP address, a port, or a service API endpoint. In event-based communication, you publish and whoever is interested reacts — broadcast or multicast, with no dedicated recipient. Both support asynchronous communication. The professor's example: your ride request goes to the Grab, Gojek, or ComfortDelGro endpoint your app already knows — that is a *message*. But once the service receives it, notifying drivers that an order was created is an *event* — "an order was created, here are the details", let out on the system, with any interested party responding (you are not sending to taxi 1, taxi 2, taxi 3). Often a middleman — message-oriented middleware — sits between the two sides: the publisher only sends as far as the middleware, and subscribers are notified or poll for new data. Week 9 develops event-driven and message-based communication in full. (Source: L6 recording, ~14:00–19:00; raised through D1 presentations and discussed in lecture.)
+
+</panel>
+
 <box type="tip" seamless>
 
 **Tip:** when you meet an unfamiliar style, locate it on the two axes first. "Is this a way of dividing code, a way of deploying, or both?" — the question almost always sharpens the comparison the exam asks for.
@@ -116,7 +131,18 @@ Team 1: technical division, single deployed unit (layered). Team 2: domain divis
 - **No feature ownership** — teams are organized by layers, not features.
 - **Change amplification** — one feature change impacts all layers.
 
-The lecture's slide also lists what layering *doesn't* impact — usability, for instance: choosing to layer reshapes the code's structure and packaging, not the user experience.
+**The recording gives each cost its mechanism.** (Source: L6 recording, ~34:00–37:00.)
+
+- **All-or-nothing means one process**: "if something fails, everything fails" — the application runs as a single process providing the service, so there is no "only make some parts of it work".
+- **No independent scaling means mindless scaling**: because all layers are tightly connected in the same code base, you scale the entire application or nothing — with the cost and wastage that implies.
+- **Change amplification has a structural cause**: the code is organized in horizontal layers while the business thinks in vertical features. A feature cuts across every layer, so any feature change reaches from the database all the way up to the UI — nothing is localized.
+- **"No feature ownership" is era-dependent**: for legacy systems it is a reasonable fit — a banking application needing extensive database security and consistency guarantees is better served by dedicated database administrators than by full-stack generalists. For modern agile applications, where requirements change constantly, that same ownership-by-layer amplifies change across all layers. (Source: L6 recording, ~35:00.)
+
+The lecture's slide also lists what layering *doesn't* impact — usability, for instance: choosing to layer reshapes the code's structure and packaging, not the user experience. The professor makes the point general: **an architecture decision does not impact every quality attribute** — usability achieved before the change survives the change, even as scalability or throughput are being improved. (Source: L6 recording, ~36:00.)
+
+{% call example("L6 recording, ~25:00 — the CS2103 addressbook, repackaged as layers") %}
+The professor reuses the addressbook from CS2103/CS2113: no component makes a call directly to the UI, because the UI is at the top — the UI gets service from Logic and Model, Logic gets service from Storage and Model, Model from Storage. Reorganized as packages (`com.example.ui`, `com.example.data`, `com.example.logic`, `com.example.model`), the rule becomes checkable in the code: no file in the data package makes an outgoing call to logic or model — only downward, to file I/O or the database. He adds the discipline: Java will happily let you write any file into any package, but then the architecture is gone for a toss — packaging (the Week 4 compartmentalization work) is what enforces the layering. (Source: L6 recording, ~24:00–29:00.)
+{% endcall %}
 
 {% call example("Quiz 2 Q2 — bypassing the Business layer to speed up reports") %}
 In a closed-layered application, a developer proposes letting the Presentation layer query the Data layer directly for read-only reports, bypassing the Business layer (which performs authorization checks). This opens the layers for one shortcut: the Presentation layer now depends on the Data layer's schema, so the system **can no longer swap the database technology easily** — the modifiability buy of layering is traded away for one page's latency. (Source: Quiz 2, Q2.)
@@ -194,7 +220,20 @@ The system can no longer swap the database technology easily — upper layers no
 
 **A filter is independent and incremental.** It transforms the input streams, computes incrementally so output begins before the input is fully consumed, and shares no state with other filters. (Source: L6-Architecture slide 9.)
 
+**The invariant data format is the style's enabling idea — Unix pipes are its canonical proof.** In Unix or Linux, `ls | grep something | wc` composes arbitrary commands because *everything is a file*: your data is a file, your socket is a file, your input and output are files. The data format is consistent by construction, so any processing built on it composes with any other. (Source: L6 recording, ~40:00–42:00.)
+
 **The style fits batch and stream transformation, not rich user interaction.** Data flows in streams — good for images, audio, video, or batch data; good for limited user interaction like batch processing. (Source: L6-Architecture slide 10.)
+
+{% call example("L6 recording, ~42:00 — a Jenkins CI pipeline, and its reusable cousins") %}
+A CI/CD engine like Jenkins runs every build as a pipeline:
+
+- **The code is the data source.** Linting (e.g., Checkstyle — a filter that inspects rather than converts), compilation, bytecode interpretation, and the test run are filters, and the pass/fail verdict is the sink.
+- **Unlike Unix, the stages do not all share one format.** The invariant is each filter's declared input and output format, which does not change for that filter.
+- **The same Java build pipeline serves a Spring Boot application or a Kotlin one** (both JVM-based) — that is the reuse buy. A Node.js application has a different pipeline, yet still a pipeline.
+- **Machine-learning pipelines repeat the shape with CSV files as the invariant**: tabular data in, pre-processing and filtering, train/test split, training, then a model artifact (usually a binary format) used for inference.
+
+The professor adds that filters are self-contained — a filter with enough internal processing can even be a layered architecture by itself. (Source: L6 recording, ~42:00–48:00.)
+{% endcall %}
 
 **Its buys come from filter independence; its costs come from the pipeline's shape.** (Source: L6-Architecture slide 12):
 
@@ -209,7 +248,18 @@ The costs:
 - **Usability suffers** — no feedback until you check the sink.
 - **Partial failures are not handled natively.**
 
+**The recording names two reasons for the latency cost and two duties behind the partial-failure cost.** (Source: L6 recording, ~50:00–54:00.)
+
+- **Latency reason 1 — every filter is an explicit extra step**: the moment you introduce a filter, data has one more stage to traverse (other styles also pay per step — here it is very explicit).
+- **Latency reason 2 — data transformation**: if some filter needs a different format than the pipeline's common one, you add extra conversion filters or in-filter transformation — each adding delay.
+- **Partial-failure duty 1 — observability must be explicit**: "two stages worked, the filter died, gone" — nothing natively tells you; monitoring and observability need dedicated components in the architecture.
+- **Partial-failure duty 2 — filters must be idempotent**: after a partial failure you rerun the filter, and rerunning must produce the same output given the same input, any number of times.
+
 Choose it when the work involves batch/stream transformation and throughput matters more than latency.
+
+{% call example("L6 recording, ~54:00 — lecture recordings as a batch pipeline") %}
+NUS's Panopto processes each recorded lecture as a pipeline: the raw recording enters, processing stages run in batch after the lecture, and the viewable output emerges — which is why trying to view a lecture immediately says "under process", and why on days with many lectures the wait is noticeably longer: the shared processing pipeline behind the scenes is congested. (Source: L6 recording, ~54:00.)
+{% endcall %}
 
 {% call example("L6-Architecture slide 11 — an image-processing pipeline on Azure Functions") %}
 An image-processing pipeline: an uploaded photo (data source) flows through Azure storage **queues** (pipes) into Azure **functions** (filters — Azure Functions is Microsoft's serverless functions service, the mechanism Week 5 introduced) for content moderation, resizing, reorientation, and watermarking, ending at content delivery network (CDN) publication (data sink). Each function reads a defined format and produces a defined format, so the watermarking filter can be replaced or replicated without touching the others.
@@ -237,6 +287,25 @@ flowchart LR
 **Pitfall:** choosing pipe-and-filter for an interactive feature. A user editing a booking wants immediate feedback; a pipeline gives none until the data reaches the sink (the lecture's "usability — no feedback until we check the sink") and every stage adds latency. (Source: L6-Architecture slide 12.)
 
 </box>
+
+<panel type="seamless" minimized header=":glyphicon-question-sign: **Common question — isn't logging just another filter? (asked in lecture)**">
+
+**Almost, but the honest shape is shared data, not a pure pipeline.** A student asked whether logging fits pipe-and-filter. The professor's answer: you can treat each component's log output as a stream into a logging sink, but because *every* component writes into one central logger, the style that actually matches is a **shared-repository architecture** — a central store that components work around, with their individual processing still pipeline-like between writes. He first guessed "blackboard architecture" for this and then self-corrected: blackboard is the related style where specialized components (knowledge sources) work around a central structured store — his example was an IDE, with the source code at the center and the editor, linter, compiler, and interpreter working around it. Logging is the shared-repository variant of that idea. (Source: L6 recording, ~55:00–59:00, asked in lecture; the blackboard pattern's structure — central blackboard plus knowledge sources — per %%Wikipedia, "Blackboard design pattern"%%.)
+
+</panel>
+
+<panel type="seamless" minimized header=":glyphicon-question-sign: **Common question — layered vs pipe-and-filter with the same linear topology: what differs? (asked in lecture)**">
+
+**The invariant decides.** Draw three closed layers (1 talks to 2, 2 talks to 3, no 1 to 3) and three filters (1 feeds 2, 2 feeds 3): the topologies are nearly identical — "the philosophy changes, but the topology is almost linear". The defining difference is what is fixed:
+
+| | Pipe-and-filter | Layered architecture |
+|---|---|---|
+| What is invariant | The **data format**: all pipes transport it, all filters work with it | Nothing about format — the API between layers can be pretty much anything |
+| Worked example (course) | The Azure image pipeline — moderation, resizing, watermarking all speak one image format | The CS2103 addressbook — `ui` calls `logic`/`model` via whatever APIs they expose |
+
+So with only a linear diagram in front of you, you need information on both ends — what the connections actually carry — to decide which style it is. (Source: L6 recording, ~58:00 and ~69:00, asked in lecture.)
+
+</panel>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
@@ -268,9 +337,26 @@ Pipe-and-filter: data flows in streams through independent transformations, thro
 
 **Discipline is what keeps the modules modular: replace implicit access with explicit, narrow contracts.** Each domain exposes a small API and hides its implementation, so modules cannot reach into each other's internals. (Source: L6-Architecture slide 14.)
 
+**The recording's picture of that discipline is a thick box around each module that hides its database schema — the only door is the API.** "There is no way in which the order domain can say, I'll go fetch this thing from here" — the route has to be through the API: get the info, then work on it. That same separation is what *enforces* domain ownership: another team wants order data, they ask, and the order team develops the API for them — "you cannot get it from yourself". (Source: L6 recording, ~60:00–64:00.)
+
 **The buys are business alignment; the costs are reuse and scaling.** Buys: deployability due to domain partitioning, cross-functional teams specializing in domains, better alignment with the business problem, maintainability (domain-specific code is easier to maintain), testability (the team understands the domain — better testing of scenarios and edge cases), and performance (one process, no distributed communication). Costs: reusability suffers (hard to reuse across modules due to domain-level dependencies), scalability (one deployment, no independent scaling), and fragile boundaries — functionality may accidentally spawn across modules. (Source: L6-Architecture slide 15.)
 
-**The {{ term("modular monolith", "a single deployable unit organized internally into well-defined components, here packaged by business domain") }} is the springboard to microservices: Week 7 asks exactly when splitting it helps or hurts.** (Source: L7 slide 15.)
+**Two qualifications from the recording keep the buys honest.** (Source: L6 recording, ~58:00–66:00.)
+
+- **"Deployability" improves development, not deployment**: you still recompile the entire codebase and deploy one artifact — you cannot deploy the order part alone. What changes is that updating order functionality means touching only the code the order module encompasses and reassembling, as long as everyone adheres to the API contracts; the layered style's change amplification is now genuinely restricted to the domain.
+- **The cross-functional team is both the upside and the price**: the team that owns a domain knows everything in it and can self-sustain the feature — "more suitable for your full-stack kind of people"; the downside is that they *should* know everything.
+
+{% call example("L6 recording, ~65:00 — the analytics domain that breaks the boundaries") %}
+Add an analytics component to the restaurant-management modular monolith (order, recipe, inventory domains). Analytics legitimately needs data from *all* the domains — so it reaches into order, into inventory, into recipes. Nothing technical stops it: it is still one application with one database. The carefully drawn boundaries are gone — the "fragile boundaries" cost made concrete. (Source: L6 recording, ~64:00–66:00.)
+{% endcall %}
+
+**The {{ term("modular monolith", "a single deployable unit organized internally into well-defined components, here packaged by business domain") }} is the springboard to microservices — the split point is already drawn.** The layers do not disappear: each domain still contains its own persistence, logic, and UI code — you simply stop talking in terms of the layers and talk in terms of the functions (domains). Because the boundaries are already enforced, chopping a module out of the deployable into its own process needs only "a mechanism to reach you" — and that is how you get inventory service, recipe service, order service. The professor calls the modular monolith a stop gap between monolithic applications and microservices. (Source: L6 recording, ~58:00–64:00; L7 slide 15.)
+
+<box type="tip" seamless>
+
+**Tip (exam hint from the lecture):** the professor skipped the coupling/cohesion slides in class — "just because I skip a slide doesn't mean I didn't do it"; his standing rule is that **what is in the slide deck, assume covered**. Tutorial 4's coupling types are exactly this material. (Source: L6 recording, ~67:00.)
+
+</box>
 
 {% call example("Quiz 2 Q4–Q5 — Smart Kitchen's recipes and inventory modules") %}
 Smart Kitchen is a modular monolith. The **recipes module** stores dish instructions and ingredient requirements; the **inventory module** tracks available ingredients, their quantities, and expiration dates. They are separate modules because **they represent separate business domains with different responsibilities** — not because they need different languages or separate servers. When a user opens a pancake recipe, the app checks whether enough eggs and flour are available by calling the inventory module, and **inventory returns the result via its availability-check API** — explicit, narrow contracts between domains, never recipes reading inventory's tables directly. (Source: Quiz 2, Q4–Q5.)
@@ -318,6 +404,12 @@ In spirit: call inventory's availability-check API (explicit, narrow contract). 
 - **The controller** coordinates between the model and the view.
 - **The model** represents the business logic and the state of the system.
 
+**MVC predates the web: the original triangle translated between what the user knows and what the system knows.** In the initial version — not designed for client-server architectures — the model was *what the system knows*, the view was *what the user knows*, and the controller was the translator between the two. That era is gone, the professor notes — MVC "stood the test of time" by adapting, and most modern web applications use it in some form. (Source: L6 recording, ~74:00–76:00.)
+
+**Go by the strict architecture: mutation happens at the model, and the model is "lazy" about announcing it.** The user initiates an action at the view (a form submission, a button click), which invokes an action through the controller. The controller does not change the data itself — it passes the change request to the model, where all data mutation and business-logic implementation live. Once the model changes, it merely announces "hey, I made some updates" — it is then the view's responsibility to ask for and show the updates. The professor also flags the wasteful hop this can create: a form submit where the controller does nothing but package the fields into one packet and forward them to the model — the architecture dictated the hop, so it went to the controller. (Source: L6 recording, ~76:00–80:00.)
+
+**Only the view is independent of the model — the controller is, by design, tightly coupled to both.** The controller coordinates view and model, so it necessarily works with both; claiming a controller independent of the model is meaningless. That is exactly why you can change the model's backend (make it more efficient, more scalable) or add more views without worrying about the model — the APIs are defined — but the controller moves with both sides. (Source: L6 recording, ~80:00–81:00.)
+
 **The benefits are separation of concerns, extensibility, and testability.** (Source: L6-Architecture slide 19):
 
 - **SOC — separation of concerns** — between data storage, data handling, data visualization, and user interaction.
@@ -347,6 +439,10 @@ In spirit: call inventory's availability-check API (explicit, narrow contract). 
 
 **The style's costs are hops and fat controllers.** Performance: multiple hops for a single view update; the "fat controller" anti-pattern — because requests flow through the controller, new logic tends to accumulate there. The buys: usability (the model never calls back the view, so any number of views can serve one model) and modifiability (replace view or model independently). (Source: L6-Architecture slide 22.)
 
+{% call example("L6 recording, ~81:00 — Canvas: same model, different views") %}
+Instructor and student see Canvas differently — two views over the same underlying data. That is MVC's separation of concerns paying off live: add views for new audiences without touching the model (extensibility), and mock components for testing (test the UI against mocked model calls, or test the model's functionality without any UI). (Source: L6 recording, ~80:00–82:00.)
+{% endcall %}
+
 {% call example("L6-Architecture slides 17 and 20 — the search form, MVC-style") %}
 A client submits `<form action="search" method="post">`. The web server's controller receives the POST, asks the model (business logic + persistence) to run the search, selects a view template, and the view renders the HTML result page returned to the browser. Quiz 2 Q6 shows a diagram of exactly this shape — client request handled by a coordinating controller over a model and returned through a view — and asks which style it represents: the answer is **MVC**.
 {% endcall %}
@@ -365,7 +461,7 @@ flowchart LR
 
 <box type="warning" seamless>
 
-**Pitfall:** the fat controller. Because every request flows through the controller, it is tempting to put validation, business rules, and persistence calls there; the lecture names this as the style's characteristic cost, and the fix is to keep the controller coordinating — logic belongs in the model.
+**Pitfall:** the fat controller. Because every request flows through the controller, new logic accumulates there — the professor's quip: "it doesn't do any diet". His project-flavored example: a query to filter the supplier list is temptingly implemented in the controller, when the filtering belongs in a model/database call. Adding "one additional small thing" to the controller, over and over, is how it becomes fat — the fix is to keep the controller coordinating; logic belongs in the model. (Source: L6-Architecture slide 22; L6 recording, ~88:00.)
 
 </box>
 
@@ -435,7 +531,14 @@ How to read it: this is the rightmost column of L4 slide 5 ("client-side MV* web
 The costs:
 
 - **Security** — XSS vulnerability and reduced client-side trust (tokens held client-side can be attacked), so every authorization rule must be re-enforced on the server side.
-- **Initial performance** — a larger initial download.
+- **Needs JavaScript** — if the browser policy blocks all JavaScript, the SPA simply does not work.
+- **Initial performance** — a larger initial download (the professor calls this almost negligible with modern systems).
+
+{% call example("L6 recording, ~91:00 — doom-scrolling is an SPA in your hand") %}
+Feed apps (the professor names Instagram/Facebook-style infinite scrolling) work exactly this way: the first load brings the program — the rendering logic lives in your browser from then on. Scrolling only triggers background requests that return JSON data, which the program renders into the page; nothing about the page structure changes, only the data. Pagination works the same way: fetch a few entries first, then keep getting more data as you approach the end — and the perceived latency drops because you *prefetch*: the latency still exists, but pre-loading the data and having it ready hides it from the user. (Source: L6 recording, ~91:00–95:00.)
+{% endcall %}
+
+**The security cost is the one to take seriously.** Cross-site scripting attacks and token capture are the SPA's characteristic risks, and they are why **enforcing authentication on the server side, every time, becomes a necessity** — client-held tokens can be attacked or compromised. (Source: L6 recording, ~94:00.)
 
 {% call example("L6-Architecture slide 23 — the same search, Ajax-style") %}
 The same search form now carries a `<script>` block that calls `ajax.post()` and handles the `.response()`. The initial GET returns the page (the SPA program); the search itself is an Ajax POST that returns JSON text, which the in-browser program renders — no page refresh. The server's work per interaction drops from "render a whole HTML result page" to "send JSON".
@@ -491,6 +594,10 @@ Client-side security exposure: XSS vulnerability and reduced client-side trust (
 
 **REST is a set of constraints, not an architecture by itself.** The lecture is explicit: it defines "a set of rules to be used for creating web services" — not an architecture by itself — with the intention of providing uniform interoperability between different applications on the internet. (Source: L6-REST slides 4 and 17.)
 
+{% call example("L6 recording (REST), ~3:00 — the Agile analogy") %}
+"REST is an architectural style, not a specific technology or a framework. If we want to draw a crude equivalence, think of it like Agile in software development: Agile isn't a process in itself, but following its principles gives you something like Scrum, which is a process. Similarly, following REST's principles gives you a RESTful application." The style constrains; the concrete process — or concrete architecture — is still yours to design within the constraints. (Source: L6 recording (REST), ~3:00.)
+{% endcall %}
+
 **REST targets five quality improvements.** Performance and scalability, simplicity of interaction, modifiability, reliability, and extensibility. (Source: L6-REST slide 3.)
 
 **The word "hypermedia" in the definition is doing real work.**
@@ -529,6 +636,12 @@ A style choice. REST is a set of constraints for creating web services, not an a
 
 **The six constraints are REST's whole content — each buys specific qualities, and each has a cost you can name.** The lecture's overview slide lists them around the word REST: client-server, stateless, cacheable, layered system, uniform interface, and code-on-demand. (Source: L6-REST slide 6.)
 
+<box type="important" seamless>
+
+**The constraints are additive, and two of them are the defining ones.** Apply them one at a time, not selectively — a system is RESTful only when it satisfies all the required constraints. Among the six, **stateless and uniform interface are the most important**: an application that fails either one cannot be considered RESTful, whatever its other characteristics. The remaining constraints address different aspects — client-server and layered system concern the overall structure, cacheable concerns how responses are handled, and code-on-demand is the one optional constraint. (Source: L6 recording (REST), ~6:00.)
+
+</box>
+
 **How it works — constraint by constraint:**
 
 **Client-server: separate the concerns of storing data and presenting it.** REST applications should have a client-server architecture: the client requests resources, the server holds them; the client is not concerned with data storage, the server not with user interface or user state — improving the portability of the UI and the scalability of server components, so both evolve independently. (Source: L6-REST slide 7.)
@@ -543,6 +656,8 @@ A style choice. REST is a set of constraints for creating web services, not an a
 <include src="../../se-book-adapted/common/defs-week-06.md#def-statelessness" trim />
 </box>
 
+**The mechanism behind the scalability buy is thread (resource) reuse.** In the stateful version, the server must keep the conversation's context across requests — a thread or other resources stay allocated while the client supplies the missing information. In the stateless version, a thread processes the request, returns a response, and is freed — so the server is limited by the number of concurrent *requests*, not the number of connected *clients*. Reliability has the same shape: each request is complete, so a dropped packet or a server failure during processing is recovered by resending the same request — no lost context to reconstruct, no incomplete session to clean up. Monitoring is what you would expect: to understand what happened to a request, examine that request alone — no session logs, no replaying earlier interactions. (Source: L6 recording (REST), ~8:00–10:00.)
+
 {% call example("L6-REST slide 8 — the professor who does not remember you") %}
 A student messages: "Prof, I'm John, Team 3, I need to change the presentation slot." The server-side professor — stateless — replies "Errm! Who are you? Which course?" because nothing from earlier messages is remembered. The stateless client must resend the full context every time: "Prof, to SDA course, I'm John from Team 3, I need to change the presentation slot." Every request carries its whole world; that is the stateless constraint, with its cost — repetitive data sent in a series of queries.
 {% endcall %}
@@ -553,18 +668,31 @@ A student messages: "Prof, I'm John, Team 3, I need to change the presentation s
 <include src="../../se-book-adapted/common/defs-week-06.md#def-cacheable" trim />
 </box>
 
+{% call example("L6 recording (REST), ~11:00 — a Wikipedia article cached for a week") %}
+A rarely changing Wikipedia article can be declared cacheable for, say, a week: subsequent requests are served from a cache — an external layer such as a content delivery network or an ISP cache, or the client's own browser — so the server never repeats its (slow, costly) database reads. The flip side is the freshness contract: the server must state *how long* the data can be trusted — without clear expiration instructions, caches cannot determine when to trust the stored copy and when to fetch updates, which is exactly where the stale-data risk comes from. (Source: L6 recording (REST), ~10:00–13:00.)
+{% endcall %}
+
 **Layered system: each layer sees only its immediate neighbor.** The application is organized as a (network) layered system; intermediaries may improve availability and performance ({{ term("load balancing", "distributing requests across multiple server instances — Week 12 develops it in full") }}, caching) and provide data transformation and filtering — at the cost of overall system complexity. (Source: L6-REST slide 10.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-rest-layered-system" trim />
 </box>
 
+**Statelessness is what makes layering work — and layering is how old systems hide inside new ones.** Because each request is fully self-contained, any intermediary can read, process, and pass it along — or answer it directly from cache — with no prior context, and the client never knows (and should not know) whether it is talking to the server or to an intermediary. The recording calls out three benefits:
+
+- **Reduced component complexity** — each layer only manages its own part and talks to its immediate neighbors, so layers can be managed and evolved independently.
+- **Availability and performance from intermediaries** — load balancers, caches, and data-transformation layers improve both **without changing the client or server**.
+- **Legacy encapsulation** — an older server can be wrapped in a translation layer that offers a modern interface while clients stay unaware.
+
+The cost is system-level complexity: routing requests, cache-retention policies, and transformations all need careful decisions. (Source: L6 recording (REST), ~12:00–15:00.)
+
 **Uniform interface: one way in, for every client.** There should be a uniform way of interacting with a given server irrespective of device or application type — generality applied to the component interface. Implementations are decoupled from the services they provide; interactions exploit HTTP requests (GET, PUT, POST, DELETE) and responses (status codes like 200 OK, 404 NOT FOUND), with the HTTP body transferring the resource representation. (Source: L6-REST slide 11.)
 
+<box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-uniform-interface" trim />
 </box>
 
-**Code-on-demand (optional): extend the client by downloading executable code.** Applets and JavaScript code are the lecture's examples — it simplifies the client from having to pre-implement all functionality and allows extensibility. It is the one constraint REST marks optional. (Source: L6-REST slide 15.)
+**Code-on-demand (optional): extend the client by downloading executable code.** Applets and JavaScript code are the lecture's examples — it simplifies the client from having to pre-implement all functionality and allows extensibility. It is the one constraint REST marks optional. The recording adds the historical why: REST was conceived in the late 1990s, when clients (early browsers such as Netscape Navigator) had limited capabilities and no advanced JavaScript runtimes — servers sent small executable pieces, often Java applets, to insert capabilities the client had not pre-implemented. Today, browsers downloading and executing JavaScript from servers is the everyday example of the same constraint. (Source: L6-REST slide 15; L6 recording (REST), ~26:00–27:00.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-code-on-demand" trim />
@@ -640,14 +768,17 @@ Statelessness — no session is kept on the server, so any replica (or a restart
 <include src="../../se-book-adapted/common/defs-week-06.md#def-representation" trim />
 </box>
 
+**A uniform interface does not mean uniform data — keep the two concepts apart.** What is uniform, regardless of the resource: how resources are identified (via URI), how you interact with them (via HTTP verbs), that messages are self-describing, and that interactions are stateless. What varies: the representation format, media type, serialization, and payload size — the interface itself does not care about the data content, and the client is responsible for interpreting what it receives. Confusing the two, the recording warns, is a common point of misunderstanding. (Source: L6 recording (REST), ~19:00–20:00.)
+
 <box type="tip" seamless>
 
 **Tip:** content negotiation (defined in the box just below) answers the natural follow-up — how does one uniform interface carry text, images, video, and PDFs?
-- The Content-Type header, carrying a MIME type (the standard media-type label — e.g., `application/pdf`, `video/mp4` — that names a representation format), specifies the representation format
+
+- The Content-Type header carries a **MIME type** (Multipurpose Internet Mail Extensions — the standard media-type label that names a representation format, e.g., `application/pdf`, `video/mp4`, `application/json`, `image/jpeg`; originally defined in RFC 2045 for email and carried into HTTP by the Content-Type header per %%RFC 9110%%)
 - Clients request preferred formats via `Accept:`
 - Binary media travel as binary streams over HTTP
 
-Example from the lecture: `GET /document/lecture5` with `Accept: application/pdf`. (Source: L6-REST slide 13.)
+Walk-through from the lecture: `GET /videos/lecture5` → the response carries `Content-Type: video/mp4` and a `Content-Length`, followed by the file itself as a binary stream — the client reads the header and plays it as a video. `GET /documents/lecture5` with `Accept: application/pdf` → the server checks it can honor the format and responds with the PDF. The recording even negotiates chunking: a client limited to 10 MB streams the video in 10 MB chunks and reassembles them progressively — the uniform interface standardizes *how to request and identify resources*, not their shape or size. (Source: L6-REST slide 13; L6 recording (REST), ~20:00–22:00.)
 
 </box>
 
@@ -655,7 +786,7 @@ Example from the lecture: `GET /document/lecture5` with `Accept: application/pdf
 <include src="../../se-book-adapted/common/defs-week-06.md#def-content-negotiation" trim />
 </box>
 
-**Messages must be self-describing.** Each message includes enough information to describe how to process it, so the server can easily analyze the request; components can fully understand resources or relevant states just by inspecting representations. (Source: L6-REST slide 14.)
+**Messages must be self-describing — concretely: "here is data" is not; "here is mp4 video data, 10 MB long, as a binary stream" is.** Each message includes enough information to describe how to process it: the method (what action), the URI (which resource), the headers (how to read the body — the Content-Type of content negotiation), the status code, and the serialized representation. No private agreements with the client, no reliance on earlier requests — any component, whether the server, a proxy, or a cache, can understand the resource and its current state just by inspecting the representation. (Source: L6-REST slide 14; L6 recording (REST), ~23:00–25:00.)
 
 **Hypermedia drives application state: representations carry links.** The representations exchanged should be linked — clients discover and obtain resources from the links, and the links expose new resources and application state transitions. (Source: L6-REST slide 14.)
 
@@ -717,7 +848,7 @@ Self-describing: the message carries its own processing information — `id`, `s
 
 **The disadvantages are the constraints' costs restated.** (Source: L6-REST slide 16):
 
-- **Weak contract enforcement** — no built-in typing, runtime errors.
+- **Weak contract enforcement** — no built-in typing: when a client requests a PDF there is no guarantee the body actually *is* a PDF; the server might return something unexpected, and it is solely the client's responsibility to check — errors surface at runtime that stricter systems would catch earlier. Alternatives such as GraphQL address this by enforcing strict typing on requests and responses (and enabling more targeted data fetching).
 - **Statelessness can decrease network performance** by re-sending data in series of queries.
 - **Using URIs can degrade efficiency** — information travels in a standardized form rather than one tuned to a specific application's needs.
 
@@ -777,7 +908,7 @@ REST enforces synchronous request–response coupling: Booking would need to cal
 
 ### W6.11 Communicating the architecture: diagrams and the model-code gap ★★
 
-**An architecture that lives only in code cannot be argued about — the lecture closes with how to draw the big picture and why a diagram is never the code itself.** Architecture diagrams are free-form diagrams: the big picture of what is being built, a shared vision of the team, a focus for technical conversations, a map for navigating the source code, a communication tool for people outside the team, and an onboarding accelerator. (Source: L6-Architecture slide 27.)
+**An architecture that lives only in code cannot be argued about — the lecture closes with how to draw the big picture and why a diagram is never the code itself.** The professor's framing of the diagram's purpose: it should contain the big picture and tell how your software is organized — "some people come with very low-level class diagrams... you leave that behind in 2103, 2113 — we graduate from that." Architecture diagrams are free-form diagrams: the big picture of what is being built, a shared vision of the team, a focus for technical conversations, a map for navigating the source code, a communication tool for people outside the team, and an onboarding accelerator. (Source: L6-Architecture slide 27; L6 recording, ~97:00.)
 
 **How it works:**
 
@@ -786,6 +917,12 @@ REST enforces synchronous request–response coupling: Booking would need to cal
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-model-code-gap" trim />
 </box>
+
+**Reduce the gap "as much as possible without compromising on comprehensibility" — and know which tools reduce it.** The recording's balance: if you specify the architecture so precisely that it is almost code, you have lost the model's power to reason; so minimize the gap actively when designing from design to implementation, but accept it never fully closes. The professor points forward for *how*: domain-driven design and event storming (Weeks 7–8) shrink the gap by letting you talk in terms of what the system should do — and implement exactly that. (Source: L6 recording, ~95:00–97:00.)
+
+%%Exam note (L6 recording, ~97:00): the professor framed the diagram guidelines as mattering for the final presentation — "these are not otherwise examined"; the model-code gap concept itself is examined (Quiz 2 Q3).%%
+
+**Label every arrow with what it carries — control flow or data flow — and use a legend when the diagram gets busy.** The recording's advice: use distinct arrow kinds for control flow versus data flow, put what the arrow means on top of the arrow where the diagram can take it, and otherwise declare it once in a legend ("all my dashed arrows are control flows, all my solid arrows are data flows") — architecture diagrams have no mandated format, so consistency is the only binding rule. The direction also encodes dependency: if C2 executes because data is available in C1, the arrow is a data flow; if C2 functions because C1 made an API call, it is a control flow. (Source: L6 recording, ~5:00–9:00.)
 
 **Diagrams fail in predictable ways.** (Source: L6-Architecture slide 30):
 
@@ -805,6 +942,12 @@ REST enforces synchronous request–response coupling: Booking would need to cal
 - Make acronyms understandable or explained.
 - Make elements explicit, described in 1–2 lines.
 - Label lines and keep them consistent with directional and relationship intent (unidirectional, dependency, dataflow or control flow, technology protocol).
+
+**Consistency of notation gets a rule of its own in the recording: one box shape must mean one kind of thing across the whole diagram.** If a box stands for a process in one place, every box should stand for a process. The lecture's wrong example is four boxes all labeled "container" — meaning, in the different places, a database, a mobile app, and a web browser: the same word carrying different meanings. Either label each element properly or use consistent notation. (Source: L6 recording, ~98:00–100:00.)
+
+{% call example("L6 recording, ~98:00 — the four 'container' boxes") %}
+An architecture diagram shows four boxes, each labeled **container** — but in this context the word means something different each time: one box is a database, another a mobile app, another a web browser. The diagram fails the consistency check even though every element is "labeled": the label is ambiguous. The fix is one of the two the professor names — label the elements properly (what kind of container, what runs in it) or use consistent notation with a legend. (Source: L6 recording, ~98:00–100:00.)
+{% endcall %}
 
 {% call example("Quiz 2 Q6 — reading someone else's diagram") %}
 Quiz 2 shows an architecture diagram for an image-sharing application and asks what it "can potentially be representing". The diagram's shape — a coordinating component between user input, data/state, and rendered output — matches **MVC**. The exercise is model-reading: the diagram does not name MVC anywhere; you classify it by structure, the same skill the guidelines assume on the drawing side. (Source: Quiz 2, Q6.)

@@ -33,33 +33,44 @@ Two decks:
 
 **The building blocks are component, connector, and configuration.** (slide 6) → [W4.2]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c2):
 
-- **Components** model application-specific responsibilities.
-- **Connectors** model interactions for transfer of control and/or data.
-- **Configuration** is the topology.
+- **Components** model application-specific responsibilities — including units the user never sees: a message broker is also a component, a functional unit between the visible ones (L4 recording, ~[50:00]).
+- **Connectors** model interactions for transfer of control and/or data — at the granular level, which component may make which API call on which (L4 recording, ~[51:00]).
+- **Configuration** is the topology — the MVC triangle, a layered stack with no reverse calls, a linear pipe-and-filter chain (L4 recording, ~[51:00]).
 
 **Architectural design decisions are a question list.** Decomposition, templates, styles, the component organization that best delivers the NFR, and the deployment shape (slide 7) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
 
-**Develop the architecture in a refineable loop.** Drivers (FRs, quality attributes, constraints) → choose a capability → propose a structure → define boundaries and contracts → verify with requirements → document via the architecture diagram; repeat as the software evolves (slide 8) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
+**Develop the architecture in a refineable loop.** Drivers (FRs, quality attributes, constraints) → choose a capability → propose a structure → define boundaries and contracts → verify with requirements → document via the architecture diagram; repeat as the software evolves (slide 8) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1). **A boundary defined early buys independent development:** once the credit service's scope is "the wallet, nothing else", anyone interacting with it works independently as long as the interface is honored (L4 recording, ~[53:00]–[55:00]).
 
-**Reference architectures lead to architectural patterns.** Common frameworks for numerous applications (web apps; the address-book guide) (slide 9) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1).
+**Reference architectures lead to architectural patterns.** Common frameworks for numerous applications (web apps; the address-book guide) (slide 9) → [W4.1]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1). %%In lecture this ran as a story: the web-application reference architecture changed three times — whole pages from a web server, then an AJAX engine fetching only data, then a client-side MVC/MV* engine for customization — because technologies enabled it and demands differed (L4 recording, ~[46:00]–[50:00]). And in your project documentation, instantiate the framework with your actual services: "Node.js, MongoDB, Kafka — end of story" is not an architecture (L4 recording, ~[57:00]–[58:00]).%%
 
 **One arrow, two meanings: control flow and data flow.** Control flow reasons about computation order — how the focus of control moves; data flow reasons about data availability, transformation, and latency — and as data moves, control is activated (slide 10) → [W4.3]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c3).
 
 **Call-and-return moves control out and back;** hierarchical (master control) or non-hierarchical (objects via an {{ term("ADT", "abstract data type: a data type defined by the operations it supports, not by its internal representation") }} manager) — with the pointed question: can you trace an NFR to code? (slide 11) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
 
-**Messages go to a specific address; events are emitted for anyone listening.** Messages: unique addresses, recipients await and react. Events: emitted on state change, immutable, ordered, sent to publishing infrastructure (slide 12) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
+**Messages go to a specific address; events are emitted for anyone listening.** Messages: unique addresses, recipients await and react. Events: emitted on state change, immutable, ordered, sent to publishing infrastructure (slide 12) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4). %%The lecturer's concretization: a message's "specific address" is an IP-and-port combination (or a mailbox behind one), while an event is data anyone interested consumes and anyone uninterested ignores — both ideas build loosely coupled, scalable systems (L4 recording, ~[62:00]).%%
 
-**The Grab-like taxi-booking exercise maps operations to events/messages — quality attribute satisfied: reliability** (slide 13; the slide provides the instruction and the tag — the mapping is the exercise) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4).
+**The Grab-like taxi-booking exercise maps operations to events/messages — quality attribute satisfied: reliability** (slide 13; the slide provides the instruction and the tag — the mapping is the exercise) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4). **The lecture debrief then classified the taxi-booking operations** (L4 recording, ~[65:00]–[75:00]) → [W4.4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c4):
+
+- **Broadcasting a booking to all drivers is an event** — routed through an event broker, because a moving fleet cannot be notified one by one.
+- **A driver accepting, and the "driver is on the way" notification, are messages** — one intended recipient each.
+- **GPS position updates are events** — broadcast for the rider's screen and the map service.
+- **The reliability comes from the broker** holding each item safely until consumed — which is also what makes the communication asynchronous.
 
 **Decompose with guidelines: divide and conquer, high abstraction, more cohesion, less coupling, reuse, flexibility** (slide 14) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
 **{{ term("Modularity", "decomposing a big chunk into smaller chunks with well-defined interfaces (APIs) — Parnas's way to manage complexity") }} (Parnas): decompose into smaller chunks with well-defined interfaces** — shorter development time, better flexibility, better comprehensibility (slide 15) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
 
-**Slice horizontally (by technical layer — one layer, every domain) or vertically (by business domain — one capability, top to bottom).** The deck's grid is the errand platform: users, vendors, orders, credits × presentation, API, business logic, persistence (slide 16) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5).
+**Slice horizontally (by technical layer — one layer, every domain) or vertically (by business domain — one capability, top to bottom).** The deck's grid is the errand platform: users, vendors, orders, credits × presentation, API, business logic, persistence (slide 16) → [W4.5]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c5). **The slicing only counts if the code is packaged to match:** package by layer (`org.foc.persistence`, `org.foc.logic`) for horizontal slicing, or by domain (`org.foc.user`, `org.foc.supplier`, each holding that domain's UI, logic, and DB code) for vertical — "you write everything in one single file, gone case" (L4 recording, ~[81:00]–[83:00]).
 
-**{{ term("Cohesion", "how strongly a module's facilities belong together — higher is better") }} types (functional → utility) and {{ term("coupling", "how strongly modules depend on each other — lower is better") }} types (content → import) grade the decomposition** (slides 17–18) → [W4.6]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c6).
+**{{ term("Cohesion", "how strongly a module's facilities belong together — higher is better") }} types (functional → utility) and {{ term("coupling", "how strongly modules depend on each other — lower is better") }} types (content → import) grade the decomposition** (slides 17–18) → [W4.6]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c6). %%Lecture exam hint: "reduces coupling, increases cohesion" is never the wrong answer — and never the full-marks answer; you must say specifically how the coupling is reduced or why the cohesion is increased (L4 recording, ~[77:00]).%%
 
 **Styles follow philosophies, categorized by two questions: how is the code divided (technical vs domain) and how is it deployed (monolith vs distributed)?** The 2×2 names {{ term("layered", "monolithic × technical style: layers with downward-only dependencies (Week 6)") }}, {{ term("modular monolith", "monolithic × domain style: one deployed unit, domain-partitioned modules") }}, {{ term("event-driven", "distributed × technical style: components react to events (Week 9)") }}, and {{ term("microservices", "distributed × domain style: independently deployable domain services (Weeks 7–8)") }} (slides 19–22) → [W4.7]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c7).
+
+<panel type="seamless" minimized header=":glyphicon-comment: %%Common question (asked in lecture): 'must-have 1 is a responsive UI — that is not functional, so how can it be a must-have?'%%">
+
+**A must-have does not have to be a functionality.** Responsive UI is a must-have because the application must work seamlessly with it — it is the usability NFR (W3.2) — and delivering it still takes code, CSS included (L4 recording, ~[42:00]).
+
+</panel>
 
 </panel>
 
@@ -71,6 +82,18 @@ Two decks:
 - **Supplier service:** display every usable vendor and handover point when a requester starts an errand, with label and type; secure supplier administration (proper permissions, no confidential details on failed requests, extra protection on staff-only URLs).
 - **Credit service:** wallet rewards (bonus credits after email verification, never double-loaded; reward changes while an errand waits; charge the difference; transfer on delivery confirmation; refund on removal, abandonment, or a missed pickup) and exactly-once wallet events (replay tags in Kafka headers, Redis-checked before wallet operations).
 - **Order service:** replacement couriers (one outstanding errand per student; races rejected; a 10-minute freeze on the replacement screen with a stand-by queue) plus dependability and capacity NFRs (nothing inconsistent on restarts, late messages, or retries; the whole campus supported — three Docker containers per microservice behind {{ term("Nginx", "an open-source web server also used as a reverse proxy and load balancer") }} with Kubernetes auto-scaling).
+
+<panel type="seamless" minimized header=":glyphicon-comment: **From the lecture discussion of these examples** %%*(L4 recording, ~[5:00]–[38:00])*%%">
+
+The lecturer critiqued representative variants of these requirements in the lecture's first half. The recurring lessons:
+
+- **Requirements are a contract — keep implementation choices out of them.** Naming JWT (user service), Kafka and Redis (credit service), or "three Docker containers behind Nginx with Kubernetes auto-scaling" (order service) restricts the developer to that choice; replace them with the intent — "a unique identifier" instead of "replay tag", or "containerize and enable auto-scaling behind a gateway" (L4 recording, ~[10:00], ~[30:00], ~[37:00]).
+- **NFRs must be testable.** "Strongly protected" and "proper permissions" cannot be picked up and turned into a test case; "encrypted with a specific algorithm" can — name the algorithm, not the library (L4 recording, ~[15:00], ~[22:00]).
+- **Don't make users — or browsers — responsible.** The 10-minute freeze delegates de-conflicting to whoever left the screen open and walks away, freezing the errand for everyone; "web browser shall generate the replay tag" puts a security-sensitive job in the least trustworthy component (L4 recording, ~[35:00], ~[30:00]).
+- **Watch for scope creep across services.** The user-service workflow mixed supplier-service work (editing a pickup place) with order-service work (withdrawing an errand, confirming delivery); the credit-service reward change included order-service's job of changing the order — "you are unnecessarily coupling it otherwise" (L4 recording, ~[10:00], ~[26:00]).
+- **Word constraints in the direction you mean.** The one-errand requirement "somehow gives the impression that the courier should have only one order, which is not a requirement" — the rule is that one errand is fulfilled by one person, not that one person fulfills only one errand (L4 recording, ~[35:00]).
+
+</panel>
 
 %%This deck grounds Week 3's running example and Tutorial 2's milestone work; every quoted requirement in the [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c3) and [Week 4]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c1) chapters cites it by service.%%
 

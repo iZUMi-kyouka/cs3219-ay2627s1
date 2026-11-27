@@ -12,8 +12,9 @@
 
 <span id="def-initiating-event">
 
-**Initiating event** — an event that originates from an end user and typically kicks off a business process.
-%%(Source: L9 slide 7.)%%
+**Initiating event** — an event that originates from an end user and kicks off a business process: it starts, interrupts, or redirects a process. Because only user actions originate them, initiating events are typically few in number compared with the derived events they trigger.
+
+%%(Source: L9 slide 7; L9 recording, ~[20:00].)%%
 
 </span>
 
@@ -68,8 +69,8 @@
 
 <span id="def-event-broker">
 
-**Event broker** (aka event bus) — an intermediary that receives events from producers, holds them (in queues, or in partitions — the ordered substreams defined under def-partition below), and provides them to consumers that subscribe to topics of interest. It facilitates loose coupling: producers and consumers need not know each other's identity or location.
-%%(Source: L9 slides 21–23.)%%
+**Event broker** (aka event bus) — an intermediary that receives events from producers, holds them (in queues, or in partitions — the ordered substreams defined under def-partition below), and provides them to consumers that subscribe to topics of interest. It facilitates loose coupling: producers and consumers need not know each other's identity or location. It also buffers traffic spikes — producers keep publishing while consumers are temporarily slow or unavailable — which is how an event broker supports the reliability quality attribute.
+%%(Source: L9 slides 21–23; L9 recorded videos, ~[10:30], ~[14:30].)%%
 
 </span>
 
@@ -96,8 +97,8 @@
 
 <span id="def-event-sourcing">
 
-**Event sourcing** — a storage approach in which events are the source of truth: the current state is not stored as a mutable value but derived by replaying the stored events in order — from the beginning, or from a snapshot to save time (W8.3).
-%%(Source: L9 slide 5; L8 slides 17–19.)%%
+**Event sourcing** — a storage approach in which events are the source of truth: the current state is not stored as a mutable value but derived by replaying the stored events in order — from the beginning, or from a snapshot to save time (W8.3). A recorded happening cannot be made to un-happen: it can only be counteracted by another event, which is what makes the log a source of truth.
+%%(Source: L9 slide 5; L8 slides 17–19; L9 recording, ~[15:00].)%%
 
 </span>
 
@@ -139,8 +140,8 @@
 
 <span id="def-offset">
 
-**Offset** — the auto-incrementing index-ID of the last event a consumer has read in a partition. To consume, a service seeks to its offset, scans sequentially in publication order, and periodically records its new offset in the partition.
-%%(Source: L9 slides 35–37; Quiz 4 Q8–Q9.)%%
+**Offset** — the auto-incrementing index-ID of the last event a consumer has read in a partition. To consume, a service seeks to its offset, scans sequentially in publication order, and periodically records its new offset in the partition; a consumer that stops resumes from that offset, and a consumer joining fresh may start from the last processed offset or from the beginning of the partition.
+%%(Source: L9 slides 35–37; Quiz 4 Q8–Q9; L9 recorded videos, ~[13:00].)%%
 
 </span>
 
@@ -153,8 +154,8 @@
 
 <span id="def-consumer-group">
 
-**Consumer group** — a set of load-balanced consumers that share the partitions of a stream between them, so the group's consumption capacity scales with its members; rate limits — the broker's caps on how many events each producer or consumer may write or read per time window — are applied to producers, consumers, and groups.
-%%(Source: L9 slides 39–40.)%%
+**Consumer group** — a set of load-balanced consumers that share the partitions of a stream between them, so the group's consumption capacity scales with its members. The offset is maintained at the group level: within a group, that shared bookkeeping prevents two members from processing the same event, while a separate group can still read the same events from its own position. Rate limits — the broker's caps on how many events each producer or consumer may write or read per time window — are applied to producers, consumers, and groups.
+%%(Source: L9 slides 39–40; L9 recorded videos, ~[13:00].)%%
 
 </span>
 

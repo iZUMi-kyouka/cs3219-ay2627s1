@@ -27,7 +27,7 @@
 
 <box type="info" seamless>
 
-This chapter is based on the **Week 5 guest lecture — "The Cloud Native Paradigm Shift" — delivered by a practitioner from Dell Technologies** (AI Innovation Hub, 20+ years across software development, DevOps, and operations). Slide citations below refer to that deck, shortened to "L5".
+This chapter is based on the **Week 5 guest lecture — "The Cloud Native Paradigm Shift" — delivered by Eugene Swee, solution architect at Dell Technologies** (AI Innovation Hub; ~25 years in the industry, from Java development through project management and operations). Slide citations below refer to that deck, shortened to "L5"; color from the spoken lecture is cited as "L5 recording" with approximate timestamps.
 
 </box>
 
@@ -47,6 +47,8 @@ This chapter is based on the **Week 5 guest lecture — "The Cloud Native Paradi
 
 **A cloud is a shared pool of resources exposed as self-service, elastic, metered services.** Because the provider pools and measures the resources, you can get more capacity on demand and pay only for what you use — the six characteristics in the definition. (Source: L5 slides 4–5, Dell guest lecture.)
 
+**The delivery model also changed the cost model: capital expenditure became operational expenditure.** In the guest's telling, the hyperscalers (AWS, Azure, GCP) buy hardware at an economy of scale and rent it out: you sign up, enter your card details, and your application is live within minutes. Before, hosting an application meant paying for servers up front — a capital expenditure (CapEx) locked in even when the machines sat idle; now capacity scales up and down with consumption and you pay for what you used, like a mobile phone bill, with an itemized cost report to prove it. (Source: L5 recording, ~[5:00], Dell guest lecture.)
+
 **Distributed systems are not new; what the cloud changed is who manages the infrastructure.** The earliest distributed apps already separated three tiers of logic on different machines: presentation logic on the client, application logic on an app server, and data access logic plus data storage on a database server. (Source: L5 slides 11–12, Dell guest lecture.)
 
 {% call example("L5 slide 12 — the early-days three-tier distributed app") %}
@@ -62,6 +64,12 @@ A retail company runs a desktop client that talks to an application server, whic
 * An app should still be accessible as its workload increases.
 * There should not be any downtime when rolling out new updates to the app.
 
+%%The guest's yardstick for when these considerations apply: most applications today are distributed in nature — he estimates around 80% of what we build (roughly 100+ concurrent users and above), from SingPass to internet banking (L5 recording, ~[17:00], Dell guest lecture).%%
+
+{% call example("L5 recording, ~[18:00] — the maintenance window vs the rolling update") %}
+The guest contrasts two eras of releasing a change. In the traditional era, the team stops the application and puts up a maintenance page: "our website will be back up in two hours' time because we are doing maintenance." Today that is no longer acceptable: imagine Netflix freezing or restarting mid-movie because the platform rolled out an update. Users expect changes to go out live, while the application keeps serving — the lecture calls this a **rolling update**. It is the fourth design consideration above, in its most concrete form. (Source: L5 recording, ~[18:00–20:00], Dell guest lecture.)
+{% endcall %}
+
 **The four considerations are met by hiding layers, and the stack makes the hiding literal.** Each layer of the cloud-native stack exists to abstract the one beneath it — which is why an app written against the top layers is "not tied to a specific host" without anyone rewriting it (Source: L1 slide 20 stack; L5 slides 3–5, 16, 41, Dell guest lecture).
 
 <mermaid>
@@ -75,7 +83,7 @@ flowchart TB
 
 %%Notation: each box is one layer of the cloud-native application stack (L1 slide 20); a solid arrow means "runs on top of / abstracts away the layer below". Read bottom-up: physical infrastructure, provisioned by code, given a container runtime, orchestrated, observed, and finally hosting your applications.%%
 
-How to read it: the guest lecture opens with "a cloud is an abstraction" (L5 slide 3) — and the joke in the "There is no cloud, it's just someone else's computer" comic is that somewhere the bottom layer is still real hardware. Walk it with the lecture's own example (L5 slides 41 and 54): your Payment, Product, Inventory and Cart services live at the top; Kubernetes hides which compute/network/storage they run on — so "not tied to a specific host" (slide 16, design consideration 1) is the top layers being free to move because the bottom layers are abstracted.
+How to read it: the guest lecture opens with "a cloud is an abstraction" (L5 slide 3) — and the joke in the "There is no cloud, it's just someone else's computer" comic is that somewhere the bottom layer is still real hardware. The guest makes the same point from experience: many young engineers have never seen a data center, so the cloud feels "magically up in the air" — but "in reality, what the cloud really is, is just a data center… a bunch of servers in the racks… maintained by someone else" (L5 recording, ~[3:00], Dell guest lecture). Walk it with the lecture's own example (L5 slides 41 and 54): your Payment, Product, Inventory and Cart services live at the top; Kubernetes hides which compute/network/storage they run on — so "not tied to a specific host" (slide 16, design consideration 1) is the top layers being free to move because the bottom layers are abstracted.
 
 <box type="warning" seamless>
 
@@ -110,7 +118,7 @@ The last consideration is the one no-downtime deployment addresses.
 
 ### W5.2 Cloud computing vs cloud native ★
 
-**Cloud computing and cloud native answer two different questions — where versus how — and confusing them is the most common conceptual error in this topic.** Cloud computing is a delivery model for resources. Cloud native is an approach to building and running applications that exploits that delivery model.
+**Cloud computing and cloud native answer two different questions — where versus how — and confusing them is the most common conceptual error in this topic.** Cloud computing is a delivery model for resources. Cloud native is an approach to building and running applications that exploits that delivery model. The guest calls them "two sides of the same coin": cloud computing addresses where you host the resources and applications; cloud native looks deeper into how you leverage that model to reap its benefits. (Source: L5 recording, ~[8:00], Dell guest lecture.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-05.md#def-cloud-native" trim />
@@ -165,6 +173,8 @@ Scalability and loose coupling are defined at their home units:
 * **Microservices** split the system into independently deployable services modeled around business domains — the structural basis for loose coupling and resilience (W5.3, and Week 7 in depth).
 * **Immutable infrastructure** replaces servers from a fixed image instead of patching them — making every change repeatable (manageability) and every replica identical (resilience) (W5.6).
 * **Declarative APIs** state the desired end state and let the platform reconcile reality toward it — what makes self-healing and scale-by-declaration possible (W5.6).
+
+%%The guest's team teaches this material as four key areas — microservices, containers, DevOps, and continuous delivery — with this lecture focusing on the first two; DevOps supplies the build–iterate–improve workflow, and continuous delivery is the endpoint where changes reach end users quickly (L5 recording, ~[10:00] and ~[55:00], Dell guest lecture).%%
 
 Four of the five are defined at the units that teach them in depth:
 
@@ -233,7 +243,7 @@ Service meshes primarily support manageability and observability (traffic manage
 
 ### W5.3 From monolith to microservices ★
 
-**The monolith's limitations are the strongest motivation for the cloud-native style, and the lecture builds microservices as their direct answer.** Understanding what a monolith cannot do tells you exactly what problem microservices solve — and what new problems they create.
+**The monolith's limitations are the strongest motivation for the cloud-native style, and the lecture builds microservices as their direct answer.** Understanding what a monolith cannot do tells you exactly what problem microservices solve — and what new problems they create. The guest's warning to students lands close to home: when you enter the workforce you may not get a brand-new project — you will open an editor on an application maintained for 15–20 years, "millions of lines of code… maintained by developers across different eras", where nobody can say what each line does anymore. (Source: L5 recording, ~[13:00], Dell guest lecture.)
 
 **How it works:**
 
@@ -253,21 +263,34 @@ Service meshes primarily support manageability and observability (traffic manage
 - Low fault tolerance.
 - Scaling limitations.
 
+The recording adds the texture behind two of these limitations:
+
+- **A monolith is dangerous to change.** The guest describes it as "a huge ball of code that has been maintained over a long period of time that nobody can make sense of anymore" — so much rigorous testing is needed to ensure that even a single-line change does not break the entire application. (Source: L5 recording, ~[15:00], Dell guest lecture.)
+- **Scaling a monolith means replicating the whole ball.** You scale by running multiple full instances of the monolith — "a lot of redundant ones running and consuming all these unnecessary resources" — even when only one capability is the hot spot. (Source: L5 recording, ~[24:00], Dell guest lecture.)
+
+{% call example("L5 recording, ~[22:00] — technology lock-in in practice") %}
+An e-commerce monolith built on Java ten years ago. Today the team wants a customer-behavior analytics module — Python fits better — and a mobile-facing web tier — Node.js fits better. But the legacy structure locks the whole application into the Java stack, so the team pays the framework's costs even where another tool would serve. Microservices turn the stack into a per-service decision: the payment backend can stay on enterprise Java while analytics runs Python, integrating over APIs. (Source: L5 recording, ~[22:00] and ~[24:00], Dell guest lecture.)
+{% endcall %}
+
 **A {{ term("microservice", "an independently deployable service modeled around a business domain") }} is the unit that fixes deployability, coupling, and scaling.** The lecture defines microservices as independently deployable services modeled around a business domain — small and lightweight, communicating with one another via APIs over standard network protocols (HTTP, and AMQP — the Advanced Message Queuing Protocol, an asynchronous messaging standard spoken by message brokers, the middleware that routes messages between services; Weeks 9–11 cover messaging in full), and technology-agnostic. (Source: L5 slide 21, Dell guest lecture.) %%The microservice style is developed in depth in the Week 7 chapter.%%
 
-**Why microservices: the lecture's list of buys is a point-by-point inversion of the monolith's limits.** (Source: L5 slide 22, Dell guest lecture):
+**Why microservices: the lecture's list of buys is a point-by-point inversion of the monolith's limits.** (Source: L5 slide 22; L5 recording, ~[25:00], Dell guest lecture):
 
-- **Faster startup time and better testability** — small units.
-- **Independent deployability** — no all-or-nothing releases.
+- **Faster startup time and better testability** — small units; the guest expects a microservice to start within milliseconds, against 10–15 minutes (or an hour) for a monolith laden with interdependencies.
+- **Independent deployability** — no all-or-nothing releases; each team gets its own release window instead of waiting for every module to be ready, avoiding the risk of many simultaneous code changes landing at once.
 - **Independent scalability** — scale one service, not the whole app.
-- **Improved fault isolation** — one service failing does not take down the rest.
+- **Improved fault isolation** — one service failing does not take down the rest; the root cause is easier to pinpoint when the failing capability is its own unit.
 - **Technology-agnostic** — no stack lock-in.
 
 **Structurally, monoliths and microservices differ in coupling and cohesion.** Monoliths: tight coupling, low {{ term("cohesion", "cohesion measures how strongly related the functionality inside one part is; low cohesion means unrelated duties share one part") }}. Microservices: loose coupling, high cohesion. (Source: L5 slides 23–24, Dell guest lecture.)
 
+**The guest's analogy: a monolith is a Rubik's cube; microservices are Lego blocks.** In the cube everything is tightly interlocked — you must figure out how the whole thing works and test heavily before you can change anything. Lego blocks are reusable and loosely coupled: build the payment service once and reuse it in other applications instead of reinventing the wheel, exposing it as an API for its team to maintain. (Source: L5 recording, ~[27:00], Dell guest lecture.)
+
 {% call example("L5 slides 18–19 vs 25 — the shopping app, before and after") %}
 The lecture uses one running example. **Before:** a monolith containing User Login, Registration, Product Catalog, User Reviews, Shopping Cart, and Payment in a single deployable unit over a single database. **After:** a microservice architecture where each capability becomes its own service — login, registration, catalog, reviews, cart, payment — and each service gets **its own database**. The lecture then immediately warns: "We have created a new problem here" — six services and six databases are harder to host, connect, and operate than one unit, which is exactly the problem W5.4 and W5.5 address. (Source: L5 slides 25–26, Dell guest lecture.)
 {% endcall %}
+
+%%Nuance from the recording (~[27:00]): one service per database is the default, not a law — "sometimes it makes sense" for closely related services to share one, the guest's example being user login and registration.%%
 
 The diagram below contrasts the two structures and shows why hosting becomes the new problem: one unit over one database becomes six services over six databases, each needing to be deployed and run somewhere.
 
@@ -298,6 +321,8 @@ flowchart LR
 
 </box>
 
+%%The professor's closing pointer (L5 recording, ~[59:00]): from this point the course takes up microservices in earnest — "how we try to do microservices, what are the considerations" — in the Week 7–8 chapters.%%
+
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** The monolith is "one unit of deployment". Why does that make scaling limited?
@@ -321,6 +346,8 @@ Loose coupling and high cohesion — each service keeps strongly related functio
 ### W5.4 Containers ★
 
 **Once an application is split into many small services, you need a standard way to package and run each one anywhere — that is exactly what a container is.** The lecture poses the question "where do we host them?" for a monolith (on an OS, in a VM) and answers it for microservices with containers. (Source: L5 slides 27–29, Dell guest lecture.)
+
+**The split creates a hosting dilemma, and the guest works through both wrong answers.** Imagine the e-commerce monolith broken into 50–100 microservices. Host them all on one VM and the whole exercise defeats its purpose: when the VM goes down, every microservice goes down with it — "the whole intent is for us to diversify our risk." Host each microservice on its own VM and it is overkill: a full-blown operating system per lightweight microservice, with per-OS enterprise support multiplying the bill — the guest's figure is 50 to 100 times the licensing and maintenance cost. Either way the monolith's operations story (one administrator maintaining one VM, day in, day out) is gone. (Source: L5 recording, ~[29:00–30:00], Dell guest lecture.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-05.md#def-container" trim />
@@ -348,7 +375,11 @@ A team writes a Spring Boot payment service — Spring Boot being a widely used 
 - **Greater resource efficiency.**
 - **Improved developer productivity.**
 
-**Tutorial 4 develops the same idea with the shipping-container analogy.** Just as the intermodal container let 1960s shipping move almost any cargo between ship, train, and truck without unpacking — because transport infrastructure only needed to know how to handle the container, not what was inside — a software container lets any application move between laptop, datacenter, and cloud because the host only needs to know how to run containers. The tutorial also separates **container image** (the blueprint: what goes in the container), **container** (a running instance of that image), and **container engine** (the runtime that builds and manages containers — Docker is one), then walks through deploying a web app with them. See the [Week 6 tutorial]({{baseUrl}}/schedule/week6/tutorial.html) and its model solution. (Source: Tutorial 4 Q2 and model solution.)
+**Separation of responsibility is the benefit with the deepest operational consequence.** In the guest's telling: developers build and containerize the application, and the system administrator no longer needs to know what is inside. In the past, operators configured environments, managed system libraries, and had to understand how the application worked in order to deploy it; with a containerized app, operations simply unpacks the container and it runs — whatever you tested on your local environment runs in any environment. (Source: L5 recording, ~[35:00], Dell guest lecture.)
+
+**Containers ride on ordinary VM fleets.** In the guest's deployment picture, each microservice runs in a container, and the containers spread across a fleet of VMs — spin up five instances, distribute the containers over them, and scale out when the resource requirements demand it. %%Other vendors' container technologies comply with the same specifications, so what you learn in Docker transfers (L5 recording, ~[34:00]).%% (Source: L5 recording, ~[37:00], Dell guest lecture.)
+
+**Tutorial 4 develops the same idea with the shipping-container analogy — which the guest also tells in the recording.** His version: physical shipping containers are standardized — fixed length, width, and height by international standard — yet nobody knows or cares what is inside; it could be bulky furniture or something as small as a water bottle. The goods ship across the world inside the container, and when it is unloaded, the goods are there. In software it does not matter whether the app is Java, C++, or Node.js and what dependencies and libraries it needs — from the operations point of view it is a container: unload it onto a target platform and the application runs. Just as the intermodal container let 1960s shipping move almost any cargo between ship, train, and truck without unpacking, a software container lets any application move between laptop, datacenter, and cloud because the host only needs to know how to run containers. The tutorial also separates **container image** (the blueprint: what goes in the container), **container** (a running instance of that image), and **container engine** (the runtime that builds and manages containers — Docker is one), then walks through deploying a web app with them. See the [Week 6 tutorial]({{baseUrl}}/schedule/week6/tutorial.html) and its model solution. (Sources: L5 recording, ~[30:00], Dell guest lecture; Tutorial 4 Q2 and model solution.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-05.md#def-container-image" trim />
@@ -398,11 +429,19 @@ Isolation plus a standard interface: the container seals its contents off from t
 
 **How it works:**
 
-**{{ term("Kubernetes", "a container orchestration platform: an environment for running distributed apps on containers at scale") }} is the orchestration platform the lecture centers on.** Kubernetes was originally developed by Google, open-sourced in 2014, is the flagship project of the Cloud Native Computing Foundation, and defines a common set of resources and an API for manipulating them. (Source: L5 slide 39, Dell guest lecture.)
+**The sprawl is worse than it looks, because containers are not VMs.** The guest walks the operations desk through the shift: an administrator who used to manage, say, 20 VMs now faces those same 20 VMs plus a few thousand containers — spun up very fast, sometimes left unattended, sometimes part of someone else's application that yours must integrate with. And container lifetimes are not permanent: five containers run today, two tomorrow, ten to twenty of the same application the day after, possibly across different regions. Tracking them the way VMs were tracked is hopeless — so the paradigm shift is to stop trying, and automate instead. (Source: L5 recording, ~[38:00–40:00], Dell guest lecture.)
+
+**{{ term("Kubernetes", "a container orchestration platform: an environment for running distributed apps on containers at scale") }} is the orchestration platform the lecture centers on.** Kubernetes was originally developed by Google, open-sourced in 2014, is the flagship project of the Cloud Native Computing Foundation, and defines a common set of resources and an API for manipulating them. The recording adds the provenance: Google developed Kubernetes and then donated it to the CNCF — the same organization behind the cloud-native definition quoted in W5.2 — and much of today's AI application wave runs on containers managed by it. (Source: L5 slide 39; L5 recording, ~[40:00], Dell guest lecture.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-05.md#def-kubernetes" trim />
 </box>
+
+<panel type="seamless" minimized header=":glyphicon-question-sign: Common question — do we always need Kubernetes?">
+
+No. The guest's rule of thumb from the lecture: a small application running 15–20 containers is fine without an orchestrator; once an application runs hundreds or even thousands of containers, Kubernetes earns its keep as the platform for managing containers at scale. (Source: L5 recording, ~[40:00], Dell guest lecture.)
+
+</panel>
 
 **Kubernetes does not manage containers directly; it manages {{ term("pods", "the smallest deployable unit in Kubernetes; a container resides inside a pod, which has a unique IP address in the cluster") }}.** The lecture's app becomes a Payment Pod, a Product Pod, an Inventory Pod, and a Shopping Cart Pod. (Source: L5 slides 50–54, Dell guest lecture.)
 
@@ -428,11 +467,13 @@ Isolation plus a standard interface: the container seals its contents off from t
 
 **Scaling is changing the declared replica count.** Under high traffic, the Payment Deployment goes from replicas = 1 to replicas = 3, and three Payment Pods run: {{ term("horizontal scaling", "scaling by adding more instances (replicas) of the service, rather than a bigger machine — Week 12 develops scaling in full") }}, declared rather than manual. (Source: L5 slides 60–64, Dell guest lecture.)
 
-{% call example("L5 slides 54–64 — the payment service through one afternoon") %}
-The lecture's app has four pods: Payment, Product, Inventory, Shopping Cart. During the lunch-hour rush, payment requests queue up. The team raises the Payment Deployment's `replicas` from 1 to 3; the reconcile loop schedules two more Payment Pods, and traffic spreads across three replicas. Shortly after, one Payment Pod crashes; the loop notices actual state (2 pods) ≠ desired state (3 pods) and starts a replacement within seconds — users notice nothing. This one scenario exercises horizontal scaling, self-healing, and the reconcile loop at once.
+{% call example("L5 slides 54–64 + recording ~[50:00] — the payment service through a 9 September sale") %}
+The lecture's app has four pods: Payment, Product, Inventory, Shopping Cart — payment being the most critical, because when it goes down, customers cannot pay. On ordinary days, around 100 concurrent users, one Payment Pod is enough. Then comes the big sale event — the guest: "I think yesterday was 9/9" — and 1,000 or 10,000 concurrent users push the single pod past its limit; in the worst case a customer submits credit-card details and the page just goes blank. The fix is declaration, not heroics: the Payment Deployment's `replicas` go from 1 to 3 — set manually or automated on traffic criteria — two more Payment Pods spin up to load-balance the traffic, and no human intervention is needed. And when a pod crashes outright, self-healing replaces it: the reconcile loop sees actual state (2 pods) ≠ desired state (3 pods) and schedules a replacement within seconds, 24×7, with no administrator watching day in, day out. One scenario exercises horizontal scaling, self-healing, and the reconcile loop at once. (Source: L5 slides 54–64; L5 recording, ~[50:00–52:00], Dell guest lecture.)
 {% endcall %}
 
 **The deepest payoff: Kubernetes abstracts away the infrastructure itself.** Apps sit on Kubernetes, and Kubernetes sits on pools of compute, network, and storage — so applications stop being tied to specific hosts, which is the first design consideration from W5.1. Kubernetes runs on data centers, cloud, {{ term("bare metal", "directly on physical hardware, with only a host OS — no virtualization layer (Week 1)") }}, VMs, even PCs and laptops: "Kubernetes everywhere". (Source: L5 slides 41 and 65–66, Dell guest lecture.)
+
+%%The guest has practiced what this preaches: his team bought a bunch of Raspberry Pi devices, hooked them up, and ran experimental use cases on the cluster — Kubernetes is small enough for a credit-card-sized board (L5 recording, ~[56:00], Dell guest lecture). An alumnus of the course (YY, L5 recording, ~[59:00]) vouches for the payoff of learning these industry tools early: "it was through this course that I learned about Docker, Kubernetes" — exposure worth carrying into your own project.%%
 
 The diagram below shows the two-layer abstraction the lecture builds: you declare services to Kubernetes; Kubernetes borrows whatever compute, network, and storage it needs.
 
@@ -457,6 +498,12 @@ flowchart TB
 </mermaid>
 
 %%Notation: boxes are services or platform components; a solid arrow is a dependency (the upper layer runs on the lower one); the plain link between Kubernetes and infrastructure marks the boundary the abstraction hides.%% To read it: the four pods are what the team **declares** ("payment, replicas = 3"), not what the team places. Kubernetes owns the middle layer — deployments, the reconcile loop, scheduling (deciding which machine each pod runs on) — so when a pod dies or traffic spikes, the fix happens below the line where services are declared, on whatever compute, network, and storage the cluster borrows at that moment. In the lecture's example, the crashed Payment Pod is simply rescheduled onto different infrastructure with no change to what the team declared.
+
+**Kubernetes inherits Google's commoditized-hardware philosophy: assume failure instead of buying against it.** The traditional answer to failure was expensive hardware — cheap hardware fails more often, so buy the high-end machine. But no matter how expensive the hardware is, it eventually fails, and when it does the failure is disastrous for a critical application. Google's approach, which shaped Kubernetes: run on cheap, commoditized compute, storage, and network, and accept that things fail — "the network could fail, someone could accidentally trip over a wire" and bring down an entire data center; an earthquake can happen — then build the redundancy, high availability, and disaster recovery into the platform instead of the hardware. Kubernetes is that platform: developers focus on building and deploying the app, and the platform manages where it actually runs. (Source: L5 recording, ~[42:00–44:00], Dell guest lecture.)
+
+{% call example("L5 recording, ~[44:00] — geo-diversifying the payment service by declaration") %}
+Payment is the service that cannot fail. The team does not pick machines; it tells Kubernetes the requirement — multiple replicas of the payment service, spread across different parts of the world, say one in North America, one in Singapore, one in London. Kubernetes places and manages them; if compute fails in one location, it redirects or recreates the service somewhere else. The operator's job shrinks to building the best app and deploying it; the hardware and network become a black box that the container orchestration platform manages. (Source: L5 recording, ~[44:00–45:00], Dell guest lecture.)
+{% endcall %}
 
 <box type="warning" seamless>
 
@@ -500,7 +547,7 @@ Because you no longer bind apps to hosts: layer one is Kubernetes (deployments, 
 <include src="../../se-book-adapted/common/defs-week-05.md#def-mutable-infrastructure" trim />
 </box>
 
-**{{ term("pets vs cattle", "the operations metaphor: unique, nursed servers (pets) vs identical, numbered instances that are replaced when sick (cattle)") }} names the two operation styles.** Pets are unique (Max, Milo, Lucky…), cared for, and nursed back to health when sick. Cattle are similar (Cow-1, Cow-2, Cow-3…), assigned ID numbers, and replaced with another when one gets sick. Immutable infrastructure is the cattle model: do not patch a sick server — replace it. (Source: L5 slide 43, Dell guest lecture.)
+**{{ term("pets vs cattle", "the operations metaphor: unique, nursed servers (pets) vs identical, numbered instances that are replaced when sick (cattle)") }} names the two operation styles.** Pets are unique (Max, Milo, Lucky…), cared for, and nursed back to health when sick. Cattle are similar (Cow-1, Cow-2, Cow-3…), assigned ID numbers, and replaced with another when one gets sick. Immutable infrastructure is the cattle model: do not patch a sick server — replace it. The recording adds the payoff: the swap is "totally transparent" from the end-user perspective, which is how the cattle model delivers high availability. (Source: L5 slide 43; L5 recording, ~[46:00], Dell guest lecture.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-05.md#def-pets-vs-cattle" trim />
@@ -532,7 +579,7 @@ Under the pets model, the team's production app server "Hermes" has been patched
 <include src="../../se-book-adapted/common/defs-week-05.md#def-infrastructure-as-code" trim />
 </box>
 
-**IaC turns the cattle model into a repeatable process.** Managing and provisioning infrastructure is automated using configuration files that are codified and documented — human readable, machine consumable, and reproducible. (Source: L5 slide 45, Dell guest lecture.)
+**IaC turns the cattle model into a repeatable process.** Managing and provisioning infrastructure is automated using configuration files that are codified and documented — human readable, machine consumable, and reproducible. (Source: L5 slide 45, Dell guest lecture.) %%Pressed for time, the guest still named one example: AWS CloudFormation — you write templates that list your environment, and the tool automates its provisioning (L5 recording, ~[46:00]).%%
 
 **The lecture's IaC benefits read like a quality-attribute list for infrastructure.** (Source: L5 slide 46, Dell guest lecture):
 
@@ -580,6 +627,7 @@ Because CI/CD automates building, testing, and releasing software; IaC extends t
 * **Microservices answer the monolith's limits** — one deployment unit, tight coupling, low fault tolerance, scaling limits — with independently deployable, technology-agnostic services, at the price of many deployables and data stores (W5.3).
 * **Containers standardize what runs; Kubernetes standardizes where and how many** — pods, deployments, reconcile loops, horizontal scaling, infrastructure abstracted away (W5.4–W5.5).
 * **Immutable infrastructure + IaC make operations repeatable** — replace, don't patch; declare, don't script (W5.6).
+* **The guest's closing recap draws the arc in one breath** — monolith to microservices, containers to run them, Kubernetes to manage them at scale — "and then ultimately, it's really delivering this value to our end customers via this continuous delivery mechanism" (L5 recording, ~[55:00], Dell guest lecture).
 
 </box>
 

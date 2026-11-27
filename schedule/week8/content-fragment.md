@@ -27,9 +27,9 @@ Slides 2–3 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservic
 
 **Event storming is the lightweight practice that turns that vocabulary into microservice candidates.** Identify domain events (`ErrandPosted`, `CreditReserved`, `ErrandCompleted`), the commands that cause them (`PostErrand`, `SettleCredits`), the aggregates commands act on (`Errand`, `Wallet`), and the policies that react ("when `ErrandCompleted` then `SettleCredits`"). Slides 4 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c1).
 
-**The core guideline of the patterns half: microservices must own their data — that is what makes independent deployment possible.** Database-server-per-service is the strongest form; data independence also admits weaker forms (RBAC database users, private tables, private schemas), and the shared database is named as an antipattern for the coupling it creates at development time and runtime. Slides 6–10 → [W8.2]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c2).
+**The core guideline of the patterns half: microservices must own their data — that is what makes independent deployment possible.** The lecture gets there by elimination: agreed interfaces are a prerequisite, communication mechanisms merely carry data — the real threat is *co-ownership of data* (data written by one service and updated by another). Database-server-per-service is the strongest form; data independence also admits weaker forms (RBAC database users, private tables, private schemas), and the shared database is named as an antipattern for the coupling it creates at development time and runtime. Slides 6–10 → [W8.2]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c2).
 
-**Cross-service needs get purpose-built patterns.** Queries that must join several services' data are served by a *data lake* — a read-only, queryable sink fed by data-change events from the owners (slide 11). Business processes that must modify several services' data become a *saga*: local transactions with registered compensating actions — each step's undo entry recorded on a routing slip, the running list that travels with the transaction — so if a later step fails, the compensations on the slip run, bringing the system to a reasonably compensated state, not the original one. Slides 12–15 → [W8.2]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c2).
+**Cross-service needs get purpose-built patterns.** Queries that must join several services' data are served by a *data lake* — a read-only, queryable sink fed by data-change events from the owners, buffered by a message broker because the lake is read-optimized while the data changes fast (slide 11). Business processes that must modify several services' data become a *saga*: local transactions with registered compensating actions — each step's undo entry recorded on a routing slip, the running list that travels with the transaction — so if a later step fails, the compensations on the slip run, bringing the system to a reasonably compensated state, not the original one. Compensations must be *initiated* even when a service dies: the lecture works through a separate compensation worker, and a task queue whose time-to-live fires the compensation route when a step's acknowledgment never arrives. Slides 12–15 → [W8.2]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c2).
 
 **Event sourcing replaces stored state with stored facts.** Events are immutable, timestamped, and appended in order; the current state is derived by replaying them (chess moves; `OrderPlaced` → `PaymentReceived` → `OrderShipped`). Slides 17–21 → [W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3).
 
@@ -37,10 +37,10 @@ Slides 2–3 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservic
 
 **The closing set wires services together.**
 
-* Three interprocess styles — request/sync response, notification, request/async response (the TripManagement / PassengerManagement / Dispatcher examples).
-* The API gateway as the single, client-tailored entry point.
-* Orchestration (central brain) vs choreography (each part works out its own details).
-* Service discovery — client-side or server-side — against a service registry with self- or third-party registration.
+* Three interprocess styles — request/sync response, notification (send and don't care what the recipient does), request/async response (the TripManagement / PassengerManagement / Dispatcher examples, plus the lecture's taxi-booking story).
+* The API gateway as the single, client-tailored entry point — with modern gateways adding authentication, monitoring, load balancing, and caching, and Kubernetes providing one automatically.
+* Orchestration (central brain) vs choreography (each part reacts to events) — worked in the lecture on a loyalty-program enrollment, and connected back to the saga: the compensation worker is an orchestrator, TTL-fired compensation actions from an event store are choreography.
+* Service discovery — client-side or server-side — against a service registry ("nothing but a database" of instances and ip:port locations) with self- or third-party registration.
 
 Slides 30–37 → [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c4).
 
@@ -66,8 +66,10 @@ Slides 30–37 → [W8.4]({{baseUrl}}/se-book-adapted/chapters/week-08-microserv
 **Q2 — Sudoku as MVC.** (Rules as per sudokuonline.io; pre-loaded games plus player-built games that can be saved and reloaded.)
 **a.** What constitutes the *Model*?
 <panel type="seamless" minimized header="%%Answer%%">The Model manages the data, database interactions, and business rules: the core Sudoku grid (blocks/nonets — "nonet" is another name for a 3×3 block, cells, rows, columns), grid logic (rules, validation, completion checking, optional hint generation), user-created puzzles, saved games — plus other data such as player data and statistics.</panel>
+
 **b.** What actions does the *Controller* provide?
 <panel type="seamless" minimized header="%%Answer%%">The Controller is the middleman: it receives user input (note-taking, selecting a cell), updates the Model, and chooses the view — input handling plus game state management (creating, pausing, saving, loading, playing, resetting, finishing a game).</panel>
+
 **c.** What *views* can the application provide?
 <panel type="seamless" minimized header="%%Answer%%">The View displays the Model's data through views such as: puzzle editor, game board, game over/win, statistics, and player page (student solutions add main menu, puzzle library, saved games, puzzle builder, completion, settings, and rules views).</panel>
 

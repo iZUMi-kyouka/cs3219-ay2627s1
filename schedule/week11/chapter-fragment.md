@@ -28,6 +28,8 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 **Revision priority:** ★ = core; ★★ = supporting detail; ★★★ = extension; ★★★★ = optional context.
 </box>
 
+%%A standing disclaimer from the lecture (L11 recording, ~[5:00]): this deck says "messaging", "channel", and "event" loosely, but Week 10's truth holds — a topic is publish–subscribe reaching every subscriber, a message has a designated recipient. The patterns are collectively called *messaging* patterns, hence the loose usage.%%
+
 ## Core concepts
 
 <span id="W11-c1"></span>
@@ -40,7 +42,13 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 <include src="../../se-book-adapted/common/defs-week-11.md#def-message-broker" trim />
 </box>
 
+**An event *store* and an event *broker* optimize for different things — one system can be both.** A store's goal is retention: it keeps messages until configured otherwise (retain-forever is a legitimate setting). A broker's goal is throughput: passing information on to consumers as efficiently as possible. Kafka deliberately does both — receive an event, broadcast it, and store it (L11 recording, ~[13:00]).
+
 **Applications that must integrate rarely speak the same language.** They run on different platforms, use different programming languages and data formats, and the network between them is unreliable. They also change at different times, so the integration must cope with change in an application, its protocol, or its data format. (Source: L11 slide 5 — the Modreg ↔ Canvas example.)
+
+{% call example("L11 recording ~[23:00] — three faces of heterogeneity in one ride-hailing app") %}
+The backend is Spring Boot, the front end React Native — different platforms, languages, and data formats. Even a coordinate pair must be agreed: `lat,long` or `long,lat` — swap the two and a "one degree" value puts the car in the wrong city. The *protocol* evolves too: ride-hailing started with a flat flag-down fare, then introduced surge pricing when demand spikes — same entity (money), different charging rules. And every participant needs a common understanding: an ETA query returning `5` means five *minutes* only because both sides agreed it does (L11 recording, ~[23:00]–[26:00]).
+{% endcall %}
 
 **Enterprise integration has three classic topologies, and only one of them ages well** (Source: L11 slide 7):
 
@@ -54,7 +62,7 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 <include src="../../se-book-adapted/common/defs-week-11.md#def-enterprise-integration-patterns" trim />
 </box>
 
-%%Many messaging products implement EIP under their own feature names — e.g. JMS (the Java Message Service, Java's messaging standard — defined in W10.3) providers such as Apache ActiveMQ, and Amazon MQ, SQS (Simple Queue Service) and SNS (Simple Notification Service). The deck marks the vendor-specific slides optional/not examinable: SQS message lifecycle (slide 13), JMS message types (slide 18), the JMS request/reply example (slide 21), SQS dead-letter mechanics (slide 28), RabbitMQ's direct exchange (slide 30), and SNS message filtering (slides 41–45).%%
+%%Many messaging products implement EIP under their own feature names — e.g. JMS (the Java Message Service, Java's messaging standard — defined in W10.3) providers such as Apache ActiveMQ, and Amazon MQ, SQS (Simple Queue Service) and SNS (Simple Notification Service). The deck marks the vendor-specific slides optional/not examinable: SQS message lifecycle (slide 13), JMS message types (slide 18), the JMS request/reply example (slide 21), SQS dead-letter mechanics (slide 28), RabbitMQ's direct exchange (slide 30), and SNS message filtering (slides 41–45). The recording's naming table makes the pattern/vendor split vivid (L11 recording, ~[40:00]): the *publish–subscribe channel* pattern is called a topic by JMS and RabbitMQ, a subject by TIBCO — the pattern is the stable thing; vendor names come and go.%%
 
 **A message broker buffers messages and hides the network from both sides.** It passes information between software components while minimising how much they need to know about each other, buffers incoming messages, and shields applications from many operating-system and network complexities. (Source: L11 slides 11, 64.)
 
@@ -83,12 +91,17 @@ flowchart LR
 How to read it: with three applications, point-to-point already needs every pair wired together, and adding a fourth application means touching all of them. In the broker version each application only knows the broker — exactly the loosely coupled setup the deck recommends for integrations like Modreg ↔ Canvas.
 
 {% call example("Modreg ↔ Canvas (L11 slides 5–7)") %}
-Modreg (course registration) and Canvas (learning management) are separate systems with different platforms, programming languages and data formats, yet grades and enrolment data must flow between them. A messaging broker between them takes care of seamless communication: each side speaks to the broker in an agreed message format instead of calling the other system directly over an unreliable network.
+Modreg (course registration) and Canvas (learning management) are separate systems with different platforms, programming languages and data formats, yet grades and enrolment data must flow between them. A messaging broker between them takes care of seamless communication: each side speaks to the broker in an agreed message format instead of calling the other system directly over an unreliable network. The recording makes the format clash concrete: Modreg exports enrolment data as XML while Canvas works with CSV — something in between must translate (L11 recording, ~[19:00]). It also lists the pre-messaging integration media: a file drop (one side converts to a format the other reads) and a shared database — an anti-pattern *within* microservices, where it reintroduces coupling, but still a legitimate mechanism between two independent applications (L11 recording, ~[20:00]).
 {% endcall %}
+
+The professor's analogy for what the middleware buys you (L11 recording, ~[30:00]): mailing a parcel abroad, you package it, affix a stamp, and drop it in a post box — how the destination country routes, addresses, and delivers it, down to the last mile, is none of your concern. The postal system is the middleware: it abstracts the delivery machinery away behind a simple drop-off contract.
 
 <box type="warning" seamless>
 
 **Pitfall:** hub-and-spoke looks like a broker, but the hub is a *mediator* — every integration between applications passes through it, making it a central point of failure and a bottleneck (L11 slide 7). A messaging broker differs: it buffers messages, so a temporarily unavailable receiver does not block the sender.
+
+**The recording sharpens the hub-vs-bus line.** In hub-and-spoke, the *application* is responsible for producing a data format the other side understands (L11 recording, ~[33:00]); an enterprise service bus takes over transformation itself, alongside routing, orchestration, message passing, and security — which is why the ESB is "a more formidable solution" than a plain hub (L11 recording, ~[34:00]).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -101,6 +114,11 @@ The number of integrations grows with every pair of applications, and each new a
 **Q2.** Why does the deck call EIP "vendor independent", and why does that matter?
 <panel type="seamless" minimized header="%%Answer%%">
 EIP are technology-independent solutions with agreed names, so many vendors implement them as product features (e.g. Amazon MQ, SQS, SNS). Because the *patterns* stay fixed, you can swap the messaging product behind them with minimal code change (L11 slides 8–10).
+</panel>
+
+**Q3.** "If the broker eliminates coupling, where does the coupling go?" *(Asked in lecture.)*
+<panel type="seamless" minimized header="%%Answer%%">
+You remove the *direct* coupling between the two parties and add coupling to the messaging system instead — the applications now depend on the broker. The payoff (L11 recording, ~[42:00]): because every broker implements the same patterns, swapping one vendor for another needs minimal changes — the API surface is small and stable ("get is get", whether the broker is RabbitMQ or Kafka).
 </panel>
 
 </panel>
@@ -194,9 +212,13 @@ The filter's criteria are applied to the message content — the EIP definition 
 <include src="../../se-book-adapted/common/defs-week-11.md#def-message-channel" trim />
 </box>
 
-**A channel transmits messages in one direction, so a two-way exchange needs two channels.** In the request/reply setup, the requestor sends a request message on the request channel and the replier answers on a separate reply channel. (Source: L11 slide 20.)
+**A channel transmits messages in one direction, so a two-way exchange needs two channels.** In the request/reply setup, the requestor sends a request message on the request channel and the replier answers on a separate reply channel. (Source: L11 slide 20.) %%The recording flags this as a fix over the uploaded deck (L11 recording, ~[49:00]): the slide said "two-way channel"; the corrected statement is *two one-way channels*.%%
 
 **Point-to-point and publish-subscribe channels differ in who receives a message.** On a point-to-point channel, exactly one consumer consumes each message. On a publish-subscribe channel, any message published to a topic is immediately received by all subscribers of the topic — used when multiple parties are interested in the same messages. A pub-sub *request-response* variant uses a pub-sub channel for the requests but a point-to-point channel for the responses, so one requester can collect and aggregate replies from many parallel workers. (Source: L11 slides 19, 31–32, and 39 — the single-consumer property is in the slide-39 comparison table.)
+
+{% call example("L11 recording ~[72:00] — pub-sub request–response in a ride-hailing app") %}
+A drop-off request is *published* to all nearby drivers — pub-sub, with no direct reply mechanism. The drivers' acceptances flow back over a point-to-point response channel into an aggregator, which picks the winning driver and notifies the customer. The losers' stale responses carry a deliberately short time to live — not the hours-scale TTL of batch systems — and end in the dead letter channel. The request vanishing from a driver's screen a few moments later is the system saying "no longer available" (L11 recording, ~[72:00]–[74:00]).
+{% endcall %}
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-point-to-point-channel" trim />
@@ -237,6 +259,10 @@ The delivery difference is drawn side by side in [W10.2 — Events vs messages](
 
 **The request carries a return address; the reply carries a correlation identifier.** The return address tells the replier *where* to send the reply. To match a reply to its request when many requests are outstanding, the request carries a unique request ID and the replier copies it into the reply as the correlation ID; the requestor matches each reply to the request that caused it. (Source: L11 slides 23–25.)
 
+The recording's return-address scenario shows the reply need not come back to the requestor (L11 recording, ~[53:00]): a payment-processing component sets `ReplyTo` to the *warehouse* channel, so its "payment received" acknowledgement doubles as the trigger for "pack this item". The address is a logical abstraction — in JMS, a `Destination` object, not an IP address — and when several requesters share one request channel, each supplies its own reply channel, so the replier answers each on the channel it named.
+
+Two responsibilities make the correlation match work (L11 recording, ~[58:00]): the *replier* copies the request's message ID into the reply's correlation ID, and the *requestor* matches each arriving reply to its outstanding request — the same bookkeeping W10.1 assigned to the sender of asynchronous notifications. Because replies can arrive out of order, a sequence number works well as the identifier: send requests 1, 2, 3 and each reply carries its number back, however shuffled. One request can even fan into several replies — the recording's media example: one request answered by both the video stream and the recommendation list, each routed to the right part of the application by the shared correlation ID (L11 recording, ~[56:00]).
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-return-address" trim />
 </box>
@@ -255,9 +281,13 @@ In the deck's request/reply log, the sent request has `Message ID: ...6.2.1.1`, 
 <include src="../../se-book-adapted/common/defs-week-11.md#def-invalid-message-channel" trim />
 </box>
 
+Why park an unusable message instead of discarding it (L11 recording, ~[64:00])? Two reasons: administrators can later debug *why* it failed, and a downstream consumer that simply finds nothing may crash — a message routed to the invalid channel degrades the flow gracefully instead. The recording's instance: a translation step expecting to turn Modreg's XML into JSON fails, the XML lands in the invalid channel, and everything downstream of the failure keeps running.
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-dead-letter-channel" trim />
 </box>
+
+The recording fills in the dead-letter mechanics (L11 recording, ~[65:00]): every message carries a *time to live* (TTL) — how long the system keeps trying before giving up (say, six hours). If delivery is still failing when the TTL expires — network down, receiver crashed — the message moves to the dead letter channel. From there, the messaging system can be configured to revive and retry it after a set interval, and to give up entirely after a maximum lifetime. Because every expired message lands in the DLQ, counting them doubles as a downtime statistic.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-redrive" trim />
@@ -267,7 +297,11 @@ In the deck's request/reply log, the sent request has `Message ID: ...6.2.1.1`, 
 <include src="../../se-book-adapted/common/defs-week-11.md#def-data-type-channel" trim />
 </box>
 
+The recording's data type channel (L11 recording, ~[68:00]): a media application moves video on a video channel and advertisement data on an advertisement channel — an ad arriving on the video channel would be an *invalid* message. One type per channel lets each consumer optimize entirely for its data type; RabbitMQ's direct exchange (W10.3) is the concrete manifestation.
+
 **When a request causes a reply that is itself another request, the chain can be retraced.** Request-reply chaining keeps the correlation of replies back to the original request — e.g. for auditing. (Source: L11 slide 26.)
+
+The recording shows why chaining earns its keep (L11 recording, ~[61:00]): an order flows through payment, warehouse, fulfilment, and shipping, every reply correlated back to the original order ID — so a missing reply *localizes* the failure ("nothing came back after this hop"), the whole chain is auditable, and when an order fails, the compensation pathway is traceable — the bookkeeping a saga's compensating actions (W8.2) sit on top of. The recording places correlation IDs at "slightly below the saga pattern, far above TCP" on the abstraction ladder (L11 recording, ~[62:00]).
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-request-reply-chaining" trim />
@@ -276,6 +310,7 @@ In the deck's request/reply log, the sent request has `Message ID: ...6.2.1.1`, 
 <box type="warning" seamless>
 
 **Pitfall:** trying to send the reply back on the request channel. A channel is one-directional; without a separate reply channel — plus return address and correlation ID — the reply either never arrives or cannot be matched to the right request when several are outstanding (L11 slides 20–25).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -307,6 +342,8 @@ The message becomes visible again after the visibility timeout — the period du
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-content-based-router" trim />
 </box>
+
+The recording's routing scenario (L11 recording, ~[84:00]): an online order for gadgets *and* widgets arrives, but the widget processor handles only widgets and the gadget processor only gadgets — so the router inspects the order content and sends widget lines to the widget inventory's channel and gadget lines to the gadget inventory's channel. The price of that convenience (L11 recording, ~[85:00]): the router must know every recipient and its capabilities. RabbitMQ's direct exchange from W10.3 — routing a `pdf_process` key to the PDF-processing queue — is the same shape at vendor scale.
 
 **A message filter is a content-based router with a single output channel.** Messages matching its criteria are routed on; the rest are discarded. (Source: L11 slide 37.)
 
@@ -344,11 +381,15 @@ An order-processing system runs a November promotion — all widgets are 10 % of
 
 %%The deck's shorthand: *predictive* because the router decides ahead of time, from its central knowledge of recipients, which channel each kind of message goes to; *reactive* because nothing upstream decides — subscribers react to whatever arrives and filter it themselves.%%
 
+The recording builds the pub-sub-plus-filter alternative out explicitly (L11 recording, ~[89:00]): duplicate every incoming message onto all the channels, and put a filter in front of each queue — the widget filter passes widgets and drops gadgets, the gadget filter does the reverse. To the messaging system it is duplication and broadcast; to each recipient it is filtering and acceptance.
+
 **Some routing decisions do not look at content at all.** A context-based router chooses the destination from the *context* — commonly for load balancing, testing or failover, e.g. re-routing messages to another processing component when one fails. (Source: L11 slide 40.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-context-based-router" trim />
 </box>
+
+The recording's load-balancing instance (L11 recording, ~[91:00]): the router watches the *outbound queue's* fullness — system context, not message content — and detours traffic to another recipient when pushing further would drop messages.
 
 **Splitter, aggregator and scatter-gather reshape message streams** (Source: L11 slides 47–48, 52):
 
@@ -364,9 +405,15 @@ An order-processing system runs a November promotion — all widgets are 10 % of
 <include src="../../se-book-adapted/common/defs-week-11.md#def-aggregator" trim />
 </box>
 
+Concretely (L11 recording, ~[95:00]): three quotation replies arrive carrying correlation ID 100, and one carries 101; the aggregator groups by the ID, and once the set for 100 is complete, publishes the reconstructed message — say, the combined order status — downstream.
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-scatter-gather" trim />
 </box>
+
+{% call example("L11 recording ~[100:00] — the insurance agent as scatter-gather") %}
+You ask an agent for the best combination of investment, health, and life cover. The agent scatters the request to several insurers in parallel, and each replies with a full package of quotes, which a first aggregator reassembles. Comparing the packages, the agent picks the best provider *per category* and hands you one recommendation — a second aggregator combining the winners ("for investment, provider A; for health and life, provider B"). Two gathers, two aggregators (L11 recording, ~[100:00]–[104:00]).
+{% endcall %}
 
 <box type="info" seamless>
 
@@ -456,6 +503,8 @@ Treat the two facts as **correlated messages**: store the first one by booking I
 <include src="../../se-book-adapted/common/defs-week-11.md#def-message-translator" trim />
 </box>
 
+%%The recording adds the operational argument for putting the translator in the middleware (L11 recording, ~[26:00]): when one application changes its data format, the translation is updated at the middleware — the application on the other side never notices.%%
+
 {% call example("EDI 850 → XML order (L11 slide 56)") %}
 An EDI 850 purchase-order record must reach an order-management system that speaks XML over HTTP and uses its own Order object definition. %%EDI stands for *Electronic Data Interchange*, and 850 is the purchase-order document of ANSI X12, the US standard family for electronic business documents — as the slide's own "850-to-PurchaseOrder" label says. (The deck's footnote expands EDI as "Electronic Data Invoice", but the 850 is a purchase order, not an invoice.)%% A message translator (EDI-to-XML, 850-to-PurchaseOrder) — with a channel adapter handling the transport-layer difference — converts the incoming EDI record into the XML document the order system expects, without changing either system.
 {% endcall %}
@@ -471,6 +520,8 @@ An EDI 850 purchase-order record must reach an order-management system that spea
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-canonical-data-model" trim />
 </box>
+
+The recording's deliberately plain canonical format (L11 recording, ~[105:00]): CSV. Senders translate whatever they have — XML, JSON, raw text — into CSV; the broker knows only CSV and converts it onward, say to a Python dictionary for one consumer and back to XML for another. Each side learns exactly one format instead of every other side's.
 
 <mermaid>
 flowchart LR
@@ -539,6 +590,8 @@ A content filter strips the unneeded data items before the message is passed on;
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-polling-consumer" trim />
 </box>
+
+The recording plays out the polling loop (L11 recording, ~[108:00]): the application asks "any message?" — the broker answers "no" — again "no" — until finally "yes", and only then does processing begin. The event-driven consumer inverts this: register readiness once, and each message is handed over as it lands.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-11.md#def-event-driven-consumer" trim />

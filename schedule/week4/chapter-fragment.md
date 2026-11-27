@@ -88,6 +88,12 @@ Step 1 on the errand platform — the drivers are:
 Steps 3–4 then propose a structure and contracts per capability — which is what Tutorial 2 rehearses (Source: L4-AlternativeExamplesForProductBacklog, order service F7, NFR; user service F2; L4-Architecture slide 8).
 {% endcall %}
 
+**A boundary defined early buys independent development.** Fixing a service's scope — "the credit service is only responsible for managing the wallet, nothing else" — immediately tells you its interfaces and endpoints. Once those are concretized, anything that interacts with the credit service can be built independently as long as the interface is honored: the logic inside is your business, and how someone else deals with their components is theirs (L4 recording, ~[53:00]–[55:00]).
+
+{% call example("L4 recording — you already do this; do it knowingly (~[54:00])") %}
+The six-step loop is something you run unknowingly anyway: you write the backlog, get feedback, adjust it, start implementing — then at the first demo the tutor asks "hey, how are you doing this? why are you doing this?" and you go back and check whether this is what you wanted and whether it is still the best approach — maybe you conclude "we need to provide an API so we can get the data without having to worry about how to query it." That is the verify-and-refine loop run reactively. The lecturer's ask: be deliberate about it instead (L4 recording, ~[54:00]).
+{% endcall %}
+
 **Reference architectures and architectural patterns are the templates behind "numerous applications, same framework".** A reference architecture explains high-level structures of similar applications (e.g., web applications; the developer guide of AddressBook-Level3 — se-education.org's sample address-book application — and its Logic/Storage/UI/Model organization) and leads to architectural patterns (Source: L4 slide 9).
 
 <box type="definition" seamless>
@@ -96,6 +102,20 @@ Steps 3–4 then propose a structure and contracts per capability — which is w
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-architectural-pattern" trim />
+</box>
+
+**Reference architectures are not frozen — the same one can change three times as technology and demand pull it.** The lecturer traced the web-application reference architecture through three eras, each responding to a different pain (L4 recording, ~[46:00]–[50:00]).
+
+{% call example("L4 recording — the web-application reference architecture, three eras (~[46:00]–[50:00])") %}
+In the 1990s the browser was the view and the web server the provider: the browser fetched whole pages, and the architecture served that purpose well. As traffic grew, transferring entire pages on every click wasted bandwidth and made systems slow — so the AJAX era put a small engine in the client that fetched only data and rendered locally, focusing on fluid experiences. When users then wanted personalization, the client engine grew into an entire MVC or MV* engine so each user could organize how pages look. Same application purpose throughout — making computation or data residing elsewhere available to a user over the web — but the serving strategy changed each era: first focus on serving the data, then on the experience, then on customization (L4 recording, ~[46:00]–[50:00]). The takeaway the lecturer drew: whatever you build today thinking it is the most awesome thing may be obsolete in a year or so, because technology advances and demands differ (L4 recording, ~[50:00]).
+{% endcall %}
+
+**Reference architectures can be vendor-specific, not only conceptual.** MVC is a common framework anyone can instantiate; SAP's software suite carries its own architecture for managing business records. Instantiating it with courses, students, and enrollment yields an academic system, while instantiating the same underlying framework with staff information and salaries yields an HR system — same reference, minor tweaks (L4 recording, ~[56:00]).
+
+<box type="warning" seamless>
+
+**Pitfall / trade-off:** when you draw architecture diagrams for your project documentation and presentations, instantiate the reference architecture with *your* services — user service, order service, supplier service, credit service — instead of the generic UI/logic/storage slots. An architecture diagram that reads "Node.js, MongoDB, Kafka — end of story" is not an architecture for your application: anything can be plugged into those slots. Naming your actual services is the minimum required customization; you can refine further from there (L4 recording, ~[57:00]–[58:00]).
+
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -156,6 +176,18 @@ flowchart LR
 
 How to read it for the running example: the browser calls the edge proxy, which verifies the JWT (JSON Web Token — the signed credential that proves who the caller is; W3.5) before anything else runs ("for every private screen/API call, the edge proxy shall decode the JWT and answer with an error code when the credential is absent, expired or wrong"); the order service calls the credit service synchronously to reserve credits, while wallet-change confirmations travel as Kafka messages (Kafka being the message-streaming platform the course introduces properly in Week 10 — read it here as "the channel the wallet update travels on") carrying a replay tag — the dashed arrows — and each service keeps its own data store (Source: L4-AlternativeExamplesForProductBacklog, user service F2.2; credit service NFR6.1.1–6.1.2).
 
+**Components include functional units the user never sees.** User management, order management, and supplier-record maintenance are obviously components of the errand platform — but anything that provides functionality is one, including the infrastructure sitting between the visible ones. A message broker that stores and forwards wallet events is itself a functional component; it is simply one no user ever sees (L4 recording, ~[50:00]).
+
+**Connectors answer "who may call whom, and why."** At the most granular level, a connector is the kind of API call one component can make on another — it tells you which component may call which, and it exists to transfer control or data between them (L4 recording, ~[51:00]). In the diagram above, "the order service may call the credit service" and "the credit service publishes wallet events" are both connector facts.
+
+**The configuration is the shape the pieces form — and shapes have names.** The lecturer's examples (L4 recording, ~[51:00]):
+
+- **MVC's triangle** — model, view, controller, each connected to the other two.
+- **Layered stack** — one layer talks to the next, and "there is no reverse call".
+- **Pipe-and-filter** — a linear chain, each stage feeding the next.
+
+Why the vocabulary matters: components, connectors, and configurations are what let you think in terms of architectural styles and argue about architectures from prior knowledge — without them, "component" and "connector" would be empty words (L4 recording, ~[52:00]).
+
 <box type="warning" seamless>
 
 **Pitfall / trade-off:** A component is not a special programming construct — it is whatever unit the team agrees to treat as one part with one responsibility, and a connector arrow describes reliance, not necessarily a method call. Always say (in a legend or caption) what your arrows mean (Source: L4 slide 6; cf. the se-book's component discussion).
@@ -192,6 +224,8 @@ Component: the credit service. Synchronous connector: order service → credit s
 <include src="../../se-book-adapted/common/defs-week-04.md#def-data-flow" trim />
 </box>
 
+**One connection can carry both flows at once — which is why diagrams must say which is which.** In the deck's language-processing example, the abstract machine instructions can only run once the syntax and semantics checks have finished (control flow: reasoning about computation order) *and* they operate on the intermediate representation those checks generate (data flow: reasoning about data availability) — the same arrow represents both, and nothing on the diagram itself tells you that (L4 recording, ~[60:00]). The lecturer's prescription: state it explicitly — either annotate the arrow as control flow, or split your notation ("all my solid lines are data flows, all my dashed lines are control flows"), put that in a legend, and leave the reader a diagram they can interpret without guessing (L4 recording, ~[60:00]).
+
 The deck's example is a language-processing system %%— the classic KWIC ("key word in context") index builder: for each input title it generates every circular shift (each word of the title brought to the front in turn, the rest of the title rotated after it), alphabetizes the shifts, and outputs an index in which any word of any title can be looked up%%; the diagram below reads it both ways so you can see the difference on one picture.
 
 %%The deck's example — input → circular shift → alphabetizer → output — is the classic KWIC (Key Word In Context) index system: it builds an alphabetized index in which every word of every line appears in every cyclic rotation of that line. It is the same example Parnas's 1972 modularity paper (cited in W4.5) decomposes, and the deck uses it for both the data-flow and the call-and-return sketches.%%
@@ -212,6 +246,14 @@ How to read it for the running example: "accept an errand" is control flow — t
 <panel type="seamless" minimized header="%%Answer%%">
 
 (a) Data flow — data availability and latency. (b) Control flow — computation order (Source: L4 slide 10).
+
+</panel>
+
+**Q2.** In the language-processing example, why does the single arrow into the abstract-machine-instructions step mean *both* control flow and data flow — and name one way to disambiguate such an arrow in your own diagrams.
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+The instruction generation depends on the earlier computations having finished (control flow — computation order) and consumes the intermediate representation those computations produce (data flow — data availability). Disambiguate by legend: split the notation (solid = data flow, dashed = control flow) or annotate the arrow, so the reader never has to guess (L4 recording, ~[60:00]).
 
 </panel>
 
@@ -239,6 +281,8 @@ How to read it for the running example: "accept an errand" is control flow — t
 
 **Events are data emitted for anyone listening.** An event is emitted by a component when its state changes — a record of something that has happened; events are immutable (cannot be changed or deleted), are ordered in their creation sequence, and are sent to publishing infrastructure — the middleman service (a broker or event log; Week 9's event broker) that receives and stores events so consumers may later retrieve them (Source: L4 slide 12).
 
+**"Specific address" is a concrete idea, and the contrast with events is everyday.** In software, an intended recipient means an identified endpoint — an IP-and-port combination, or a mailbox, which is itself identified by IP and port (L4 recording, ~[62:00]). An event is data put out for anyone interested to take and anyone uninterested to ignore — "basically what happens in this lecture" is how the lecturer put it (L4 recording, ~[62:00]). Both ideas are powerful for the same reason: they let you build loosely coupled, scalable systems (L4 recording, ~[62:00]).
+
 The diagram below contrasts the three interaction shapes on one canvas — who initiates, and who must be listening.
 
 <mermaid>
@@ -260,6 +304,27 @@ flowchart LR
 %%Notation: boxes are components; solid arrows are interactions initiated now; dashed arrows are later, possibly-never consumption; in the event shape the sender does not know how many consumers exist.%%
 
 How to read it for the course example: the deck's Grab-like taxi-booking application is where you map booking operations onto events and messages %%— the slide gives the instruction and the tag "Quality attribute satisfied: Reliability" only; the mapping is the exercise%% — and that tag names the quality attribute this interaction shape buys: **reliability**, because a booking event recorded in the publishing infrastructure survives the momentary absence of any one consumer (Source: L4 slide 13). FoC's wallet uses the same logic: wallet-changing messages between the order and credit services carry a replay tag, and on duplicates the credit service shall "also acknowledge it as successful by sending the previous transfer result without updating balances" — exactly-once wallet effects over unreliable message delivery (Source: L4-AlternativeExamplesForProductBacklog, credit service NFR6).
+
+The lecture did not leave the mapping as an exercise — the class worked it on a whiteboard, and the debrief is the worked example for this unit (L4 recording, ~[65:00]–[73:00]).
+
+{% call example("L4 recording — the taxi-booking debrief (~[65:00]–[73:00])") %}
+Classifying each operation of the Grab-like booking app:
+
+- **Broadcasting a booking to all available drivers is an event** — but with a large, moving fleet you cannot notify drivers one by one, and you cannot follow each driver around; so an **event broker** sits in between: drivers subscribe, the booking is published once, and the broker notifies every subscriber (L4 recording, ~[65:00]).
+- **A driver accepting the ride is a message** — there is exactly one intended recipient (the taxi service); the driver cannot broadcast "I'll take it" to everyone, because only one service is interested (L4 recording, ~[70:00]).
+- **The rider notification ("a driver is on the way") is a message** — again one named recipient (L4 recording, ~[70:00]).
+- **Vehicle position changes are events** — the vehicle broadcasts its coordinates ("you're not flying — XY only") and subscribers such as the rider's screen and the map service update as needed, the way Grab shows the car moving (L4 recording, ~[70:00]).
+
+The slide's reliability tag comes from the middleman: until a message or event is consumed, the broker holds it safely. That safe holding is what makes the communication asynchronous — you don't have to be there to receive — and the data transfer reliable (L4 recording, ~[73:00]).
+{% endcall %}
+
+**The exercise leaves a three-step habit for your own project.** Identify the operation, classify the interaction (synchronous or asynchronous, one-to-one or one-to-many), and work out what infrastructure is necessary — then model the interaction as a message or an event (L4 recording, ~[75:00]).
+
+<panel type="seamless" minimized header=":glyphicon-question-sign: %%Common question (asked in lecture): is the reliability from the infrastructure, the code, or the design?%%">
+
+All three, combined (L4 recording, ~[74:00]): the broker — the infrastructure — enables safe storage and delivery; you write code that uses the broker correctly; and the deployment plus the design of how messages move from one place to another (pull vs push — deferred to the event-driven lecture, Week 9) make the whole thing work. No single layer owns the quality attribute.
+
+</panel>
 
 <box type="warning" seamless>
 
@@ -303,6 +368,12 @@ Immutability (a recorded event cannot be silently altered) and ordering (creatio
 - Design for flexibility.
 - Others: testability, defensive design, portability.
 
+<box type="tip" seamless>
+
+**Keeping abstraction high means deferring the mechanisms.** When dividing the system, think about which components exist and what interactions should be supported — not which variables, message formats, or mechanisms you will use; those decisions come later (L4 recording, ~[76:00]).
+
+</box>
+
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-modularity" trim />
 </box>
@@ -328,6 +399,12 @@ How to read it: every benefit arrow names the same cause — an interface others
 (Sources: L4 slide 15; L4-AlternativeExamplesForProductBacklog credit service 5.2–5.4; Tutorial 2)
 
 **Modularity is the precondition the rest of the course builds on.** Slicing decides *where* the module boundaries go (below), coupling and cohesion grade *how good* they are (W4.6), and every distributed style from W7 onward assumes you can draw them.
+
+**"Design for reuse" and "design for flexibility" are the same interface discipline pointed outward and inward.** The lecturer's test for reuse: when you build the user service, don't design it as "the thing CS3219 requires" — ask whether any other application involving users could plug it in with little or no modification. And the test for flexibility: when your own module gives trouble, you should be able to swap it out without tearing the system apart (L4 recording, ~[78:00]–[79:00]).
+
+{% call example("L4 recording — the reusable user service (~[78:00]–[79:00])") %}
+A user service built narrow — authentication, login, user records — can be plugged into a chat board that needs login, a forum, or a social media application. That only works while the service stays about *users*: if it also contains your order history and your credits, it becomes useless to the next application, which needs neither — and that is a coupling failure, not a feature list (L4 recording, ~[78:00]). Flexibility is the mirror image: if the user service gives trouble, you can "chuck it" and swap in Firebase — plug and play, because the rest of the system depended only on the interface (L4 recording, ~[79:00]).
+{% endcall %}
 
 **Horizontal slicing cuts by technical layer: one slice = one layer, spanning every domain.** In the deck's errand-platform grid, the horizontal slice is a layer — presentation (Profile UI, Vendor list UI, Errand board UI, Wallet UI), API and controllers (the request-handling code behind each endpoint: /users, /vendors, /orders, /credits), business logic (auth & roles, catalog rules, lifecycle & expiry, reserve & transfer), persistence (users, vendors, orders, credit ledger tables) — the boundary follows the technology (Source: L4 slide 16).
 
@@ -362,6 +439,14 @@ How to read it for the running example: the deck's grid has four domains (users,
 The slide is titled "Decomposition, Componentizing & Packaging — e.g., your own project", and its grid is the errand platform: horizontal slicing is captioned "Boundary follows the technology. One slice = one layer, spanning every domain"; vertical slicing is captioned "Boundary follows the domain. One slice = one capability, top to bottom", with "Accept an errand" drawn as the vertical path (Source: L4 slide 16).
 {% endcall %}
 
+**Each slicing implies a team shape — and a different kind of person thrives in each.** Horizontal slicing lets experts own their layer: give all of persistence (users, vendors, orders, credits) to whoever is best at database administration, and all of presentation to the UI/UX people (L4 recording, ~[80:00]). Vertical slicing needs cross-functional people instead — someone who knows UI, logic, *and* data for their domain — which the lecturer suggested is why the industry runs on full-stack developers ("you want to know everything, only then you can be a superhero") (L4 recording, ~[81:00]).
+
+**A slicing is only real if the code organization supports it.** "You can talk about all of this in theory — you write everything in one single file, gone case" (L4 recording, ~[81:00]): the design is the model, the implementation is the code, and the two should match (L4 recording, ~[83:00]).
+
+{% call example("L4 recording — packaging the same project two ways in Java (~[82:00])") %}
+Horizontal slicing packaged by layer: `org.foc.design.persistence`, `org.foc.design.logic` — everything related to persistence in one package, everything related to logic in another, across every domain. Vertical slicing packaged by domain: `org.foc.user`, `org.foc.supplier` — each package containing that domain's UI, logic, and DB code. Same project, same code, two packagings — and each makes one slicing physically visible in the source tree (L4 recording, ~[82:00]).
+{% endcall %}
+
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** You want four teams to own the four domains end-to-end. Which slicing do you pick, and which guideline from the deck does that serve?
@@ -369,6 +454,14 @@ The slide is titled "Decomposition, Componentizing & Packaging — e.g., your ow
 <panel type="seamless" minimized header="%%Answer%%">
 
 Vertical slicing by business domain — each team owns one capability from UI to persistence; it serves "increase cohesion" (each module is one domain's facilities) and "reduce coupling" (domains interact through well-defined interfaces instead of shared layers) (Source: L4 slides 14, 16, 20).
+
+</panel>
+
+**Q2.** Your team sliced vertically, but the repository has `org.foc.ui`, `org.foc.logic`, and `org.foc.db` packages. What is the mismatch, and how would you rename the packages?
+
+<panel type="seamless" minimized header="%%Answer%%">
+
+The packages are organized by technical layer, so the implementation does not match the vertical (domain) design — the physical structure hides the domain boundaries. Rename to per-domain packages such as `org.foc.user` and `org.foc.supplier`, each containing that domain's UI, logic, and DB code, so design and implementation match (L4 recording, ~[82:00]–[83:00]).
 
 </panel>
 
@@ -386,6 +479,12 @@ Vertical slicing by business domain — each team owns one capability from UI to
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-coupling" trim />
+</box>
+
+<box type="tip" seamless>
+
+**Lecture exam hint (asked every year, in the lecturer's words):** "Any question I ask from here onwards — if you answer 'it reduces coupling, it increases cohesion', your answer is never wrong. But unfortunately you will not get full marks" — you must say *specifically how* the coupling is reduced or *why* the cohesion is increased, which is exactly what the two ladders below give you the vocabulary for (L4 recording, ~[77:00]).
+
 </box>
 
 **Cohesion types, best first — each step down the ladder is a weaker reason to call parts one module.** ("Facilities" — the word every type below leans on — means the operations and sub-functions a module provides; cohesion grades how well *they* belong together.) (Source: L4 slide 17, quoting Lethbridge & Laganière, *Object-Oriented Software Engineering*, ch. 9):
@@ -435,6 +534,12 @@ That ranking is also *why* the ladder orders the types as it does: each step dow
 The order service asks the credit service to reserve credits by passing errand and reward data through a documented API, and the credit service returns success or an error code. Cohesion: the credit service is functional — one computation (move held credits), no side effects beyond its ledger. Coupling: data coupling via parameters, not control coupling (the caller does not pass a flag dictating *how* to reserve). Contrast the anti-pattern: if the order service reached into the credit service's ledger tables directly, that would be content coupling — the worst kind (Source: L4-AlternativeExamplesForProductBacklog, credit service 5.2–5.4; L4 slides 17–18).
 {% endcall %}
 
+**Coupling can be inherited from a requirement's wording, not just from code.** Some coupling is unavoidable — "you cannot say I'm making it totally decoupled, otherwise the system doesn't work" — but the coupling should be chosen deliberately, and requirements written as end-to-end workflows choose it for you (L4 recording, ~[28:00]–[30:00]).
+
+{% call example("L4 recording — a requirement that couples three services (~[28:00])") %}
+One of the deck's user-service requirements described an entire workflow: "before a user edits a pickup place, withdraws an errand, or marks delivery confirmed, the backend should verify that the user is allowed and return an error code otherwise." Functionally complete — implemented exactly as written, it entangles the user, supplier, and order services into one tightly coupled workflow, "all or nothing" (L4 recording, ~[28:00]). The lecturer's warning about when this bites: under deadline pressure you look at the requirement, finish the functionality, and move on — or hand the requirement to an AI coding tool, which writes the whole entangled thing for you (L4 recording, ~[30:00]). If the requirement instead names only the boundary ("the user service verifies the user is allowed, and requests are routed through that check"), the services stay independently developable (L4 recording, ~[10:00]).
+{% endcall %}
+
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Name the coupling type: (a) five services read one shared global config object; (b) a request handler passes `mode: "urgent"` so the downstream module picks a branch; (c) two cleanup jobs are grouped because they both run at midnight.
@@ -474,6 +579,8 @@ The password-hashing module — functional cohesion: one computation, no side ef
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-04.md#def-domain-partitioning" trim />
 </box>
+
+**Team structure and code structure feed each other.** The lecturer's observation: if a team is organized along its members' expertise — database administrators taking persistence, UI/UX people taking presentation — "you can expect the code of the project to be following the structure also"; domain partitioning instead aligns the code with what the business does and the problem it addresses (L4 recording, ~[85:00]).
 
 **Deploying as one unit or as many is the second axis.** Monolithic: deploy all logical components as one unit; the application runs as one process. Distributed: the application consists of independent logical components running as individual processes that communicate over the network (Source: L4 slide 21).
 

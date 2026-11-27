@@ -26,6 +26,8 @@ The deck opens with the L0 course introduction — the course map (lecture topic
 
 ### Lecture
 
+%%Enrichments from the lecture recording — explanations, analogies, and Q&A — are woven into the linked chapter units, marked "(L1 recording, ~[MM:SS])". Course-administration content (attendance, quiz logistics, team formation, the feedback form, the textbook list) is not course content and is omitted. Note: the deck's delivery/CI-CD/DevOps slides (pp. 39–50) were taught at the start of the L2 recording — their enrichments live in the chapter's [W1.5 unit]({{baseUrl}}/se-book-adapted/chapters/week-01-software-development-processes.html#W1-c5).%%
+
 <panel type="seamless" minimized header=":glyphicon-facetime-video: **Part 0 — Course introduction** %%*(slides 1–10)*%%">
 
 **The teaching team and the course shape come first.** Lecture topics: applications/deployment/processes (1–2 lectures), requirements & quality attributes (1–2), software architecture (4–5), communication and messaging patterns (2), scalability (1) — with tutorials aligned to the lecture topics (slide 4).

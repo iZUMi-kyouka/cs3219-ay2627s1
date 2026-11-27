@@ -1,4 +1,4 @@
-{% from "schedule/macros-fragment.md" import term, icon_outcome with context %}
+{% from "schedule/macros-fragment.md" import term, example, icon_outcome with context %}
 <h2>Week 13 — Course Recap</h2>
 
 <span>
@@ -38,7 +38,15 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 <include src="../../se-book-adapted/common/defs-week-03.md#def-quality-attribute" trim />
 </box>
 
+{% call example("Two applications, two architectures (L13 recording, ~[15:00])") %}
+A device controller for medical needs wants minimal latency and a tiny footprint — a monolith, written in a language that optimizes for both (the lecture's example: C). A large e-commerce platform serves enormous, spiky traffic and many independent teams — distributed microservices. Same course, opposite conclusions: the application type decides the architecture, not fashion.
+{% endcall %}
+
 **Quality attributes buy their improvements with trade-offs.** Improving interoperability by opening data exchange and API access can weaken security; improving reliability with redundant checks, backups and recovery routines costs efficiency (Quiz 1 Q7). That is why measurable non-functional requirements — not vague adjectives — are what make architecture decidable (Week 3).
+
+{% call example("Security buys usability debt (L13 recording, ~[20:00])") %}
+Want a more secure application? Add multi-factor authentication. The application is now more secure — and the user needs four more steps (open the phone, find the code, approve, confirm) before reaching the same goal. Security and usability are *competing* attributes: improving one spends some of the other, which is why the trade-off table, not enthusiasm, picks the attributes to satisfy.
+{% endcall %}
 
 <panel type="seamless" minimized header="%%Recall: non-functional requirement (W3)%%">
 
@@ -48,6 +56,10 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 
 </panel>
 
+**Asked "what did you actually learn here?", the professor's answer that never fails: reduce coupling and increase cohesion.** And the payoff is concrete: independent development, independent deployment, independent scaling. (Source: L13 recording, ~[10:00].) ==Note his exam warning: that one-liner is "always 100% right — except in the exam," which looks for much more granularity per topic (see W13.6).==
+
+**The recap also re-told why the field looks the way it does: two software crises.** The first drove *processes* — the goal was to develop consistently, the same result every time. The second dealt with scale — many resources, lots of data — and drove the architectures and patterns this course studies. (Source: L13 recording, ~[15:00]–[20:00].)
+
 **The deck's practical tips are the thesis in imperative form** (L13 slide 13):
 
 - Use "sane" boundaries without overdoing it.
@@ -55,6 +67,14 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 - Keep things that belong together together, and apart if they belong apart.
 - Don't surprise the people who consume your design or code.
 - Document the decisions and the evolution.
+
+The lecture unpacks these as it recaps them (L13 recording, ~[75:00]–[80:00]):
+
+- **"Be sane" means read the room** — don't turn everything into a service just because you can: it may not be necessary for the application, or tolerated by the team you work with
+- **Follow KISS** — keep it simple
+- **Document the *why*** — the decisions and the paths of evolution, in simple terms and standard notations, not every function's behavior — undocumented-but-brilliant code becomes unmaintainable code
+
+%%The lecture's motivation for taking this seriously: a student once skipped his final lecture for a job interview, then emailed that every interview question was covered in the course — his framing for design questions applies here too: treat every "why did you choose this?" as interview practice. (L13 recording, ~[10:00]–[15:00].)%%
 
 <box type="tip" seamless>
 
@@ -116,6 +136,10 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 → [Week 4 — Architecture (I)]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#core-concepts), [Week 6 — Architecture (II) & REST]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#core-concepts).
 
+**REST has stood ~30 years of testing because it constrains rather than replaces what already works.** It adds constraints on ordinary HTTP requests — that is the whole move — and the constraints deliver reliability and loose coupling. Its known gap: no type safety, which is where successors such as GraphQL step in. (Source: L13 recording, ~[25:00]–[30:00].)
+
+**The recap re-stated the microservice rules in one breath: single responsibility, owned data.** Each microservice follows the single responsibility principle — expanded from objects to services: one service is responsible for one thing only. And each service owns the data it works with, which is what kills cross-service chatter: *you want something, you ask for it — you don't go grab it.* (Source: L13 recording, ~[30:00].)
+
 **Microservices are identified with domain-driven design and event storming.**
 
 - **Subdomains** are implemented by **bounded contexts** in the solution space — ideally one context per subdomain, but a context may split or merge subdomains (W8.1).
@@ -164,6 +188,10 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 → [Week 7 — Microservices (I)]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#core-concepts), [Week 8 — Microservices (II)]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#core-concepts).
 
+**How do you find the services in the first place? The recap ranked the course's methods by speed.** Domain-driven design is methodical and a bit theoretical — subdomains, core vs supporting — and needs design time. Event storming is the quicker, more practical route: list the domain events, find the commands and policies behind them, and group them into bounded contexts. A well-established product backlog works too — group related features (even with AI's help) and make one service per group. (Source: L13 recording, ~[40:00]–[45:00].)
+
+**The recap also re-ran the data and consistency patterns — each exists to undo a coupling that service ownership created.** Services that own their data still need each other's information, so cross-service reads go to a {{ term("data lake", "a queryable store fed by services' data-change events, so cross-service queries never touch the services' own databases — W8") }} instead of fanning out REST calls, and an operation that must be all-or-nothing across services becomes a {{ term("saga", "a sequence of local transactions, each registering a compensating action for when a later step fails — W8") }} — its compensation actions are initiated either by an orchestrator (one guide notices the failure) or by choreography (each service reacts to the trigger itself), and the end state is *compensated*, not original: "the event has happened; its *effect* can be undone" by raising further events. {{ term("Event sourcing", "state changes stored as immutable events in an append-only log, with current state derived by replay — W8") }} and {{ term("CQRS", "separating the write path (commands) from the read path (queries) — W8") }} are a twin pair: convenient together, but each works without the other — and CQRS is exactly the shape of Week 12's read-replica database. (Source: L13 recording, ~[30:00]–[40:00].)
+
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
 
 **Q1.** Classify by partitioning: (a) a layered app; (b) Smart Kitchen (recipes + inventory modules, one deployment); (c) TripBook's Guides/Payments/Notifications services.
@@ -211,6 +239,10 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 
 </panel>
 
+**Don't overcorrect: synchronous communication is not evil — some interactions demand it.** Login and authentication cannot wait for events to happen: you must proactively check *is this person authenticated and authorized?* before anything else proceeds. The through-line is about choosing per interaction, not abolishing synchrony. (Source: L13 recording, ~[45:00]–[50:00].)
+
+**Events buy decoupling at a price: you are coupled to the event's contents instead of to the service.** A *thick* event carries everything a consumer needs, so components depend only on the event — but every consumer is now coupled to its format and contents. A *thin* (notification-style) event carries the bare minimum, so consumers must call back the source at runtime — the coupling moves to runtime, the same hidden dependency Quiz 4's thin-events question targets. Which trade is better depends on the context. (Source: L13 recording, ~[45:00].)
+
 <box type="info" seamless>
 
 **Each step of the sync → async → events → messages through-line is separated from its neighbour by exactly one question:**
@@ -233,7 +265,9 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 
 </panel>
 
-**Fire-and-forget is the default posture of event-driven microservices — but request-reply survives, asynchronously.** When Research asks Archive to find a dataset that may take hours, the asynchronous query carries a request identifier so the reply can be matched — Week 11's return address and correlation identifier doing Week 10's asynchronous work (Quiz 4 Q7). → [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [Week 10 — Asynchronous Communication]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [Week 11 — Messaging]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts).
+**Fire-and-forget is the default posture of event-driven microservices — but request-reply survives, asynchronously.** When Research asks Archive to find a dataset that may take hours, the asynchronous query carries a request identifier so the reply can be matched — Week 11's return address and correlation identifier doing Week 10's asynchronous work (Quiz 4 Q7). The lecture's mechanism for the matching: a **status endpoint** — the caller gets an immediate response carrying one, the backend works at its own pace, and the caller polls the endpoint *when it chooses* (polling on demand is not busy-waiting) until the status says the result is ready to fetch. (Source: L13 recording, ~[50:00].) And the deck's closing advice on choosing between the styles: pick by intent — a **message** targets one specific recipient and asks for something specific, an **event** tells the world — but expect real designs to need a combination of both, architected around the business need. (Source: L13 recording, ~[50:00].)
+
+**The recap retold Week 11's premise as an adage: every DAD needs a MOM.** A distributed application (DAD) needs message-oriented middleware (MOM) between its senders and receivers — coupling to the middleware is the acceptable price, because the middleware repays it with services such as message transformation and translation. And because the enterprise integration patterns sit on protocols rather than products, the implementation is swappable: the lecture's project example had teams running RabbitMQ locally and Amazon MQ in the cloud, with the same code working on both after minimal — sometimes zero — changes. Routing even got a second axis: content-based routing inspects the message, while context-based routing inspects the system, e.g. rerouting through an alternative path when a channel is congested. (Source: L13 recording, ~[55:00].) → [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-book-adapted/chapters/week-09-event-driven-architecture.html#core-concepts), [Week 10 — Asynchronous Communication]({{baseUrl}}/se-book-adapted/chapters/week-10-asynchronous-communication.html#core-concepts), [Week 11 — Messaging]({{baseUrl}}/se-book-adapted/chapters/week-11-messaging.html#core-concepts).
 
 <panel type="seamless" minimized header="%%Recall: fire-and-forget (W9)%%">
 
@@ -291,6 +325,8 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 - **X — replicate:** run multiple copies behind a load balancer (needs the stateless design of Weeks 6 and 12).
 - **Y — decompose:** functional decomposition, the monolith → modular monolith → microservices move of Weeks 4 and 7.
 - **Z — partition data:** run the same code on a subset of the data, the partitioning of Week 12's data tier.
+
+**X is the easy axis, Z is the mindful one, and Y pays off only with both.** Modern tooling makes X nearly free: containerize the service, put it in a Kubernetes cluster, set the autoscaling policies — the platform handles the rest. Z buys fault tolerance and location-based services, but demands coordination — the shards still need an aggregated, load-balanced view on top. The lecture's bottom line: to get the *true* benefit of microservices (Y), combine it with X *and* Z — a carefully designed microservice system achieves all three axes at once. (Source: L13 recording, ~[60:00]–[65:00].)
 
 <panel type="seamless" minimized header="%%Recall: stateless service (W12)%%">
 
@@ -370,6 +406,13 @@ How to read it:
 
 </panel>
 
+**The professor's own synthesis of the semester ran through exactly this diagram.** In his telling (L13 recording, ~[65:00]):
+
+- **Loose coupling** lets components scale independently
+- **Dropping synchrony** — communicating as events — is how components become loosely coupled
+- **Event brokers** make the independent scaling safe, handling duplication, ordering and delivery
+- **"Put them all together, you get a scale cube"** — "roughly, this is basically what we have been talking about throughout the semester"
+
 **Retelling the course this way is the exam skill.** Given any scenario — a monolith under load, a modular monolith with a hot module, services that must not block each other — you can name the stage you are in, the axis that moves you forward, and the communication style each stage implies.
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -394,6 +437,7 @@ The domain partitioning that tells you *which* services to extract (stage 2, W4/
 - Mark which chapter each question came from.
 - Revise that chapter's core-concepts section for the ones you missed.
 - Only then re-attempt.
+- **Mine the confidence you recorded** — the quizzes were confidence-based assessment, and the professor's advice is to use your recorded confidence as a calibration mechanism: the topics where you were confident *and wrong* are exactly where to pay more attention, because there is no redo quiz (L13 recording, ~[80:00]).
 
 The notes below say what each paper examines and where to revise; the papers themselves are kept offline.
 </box>
@@ -447,6 +491,20 @@ Revise: [W8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#
 
 <box type="tip" seamless>
 
+**Answering technique, from the recap lecture (L13 recording, ~[65:00]–[70:00]):**
+
+- **Pace by the marks** — the exam is designed as 90 minutes for 40 marks, so a 2-mark reasoning question wants one or two lines, not three paragraphs — don't overthink
+- **Expect the question styles you already trained on** — MCQs like the quizzes, tutorial-style reasoning ("why…", "what should you do…"), and *some* drawing (many tutorial questions were extracted from previous exams)
+- **State your assumptions** — write them alongside written answers — for MCQs there is a mechanism to record a note with your reasoning
+- **Write legibly** on the pen-and-paper part — if it cannot be read, it cannot be marked
+- **Curate the cheat sheet** — one A4, both sides fine, no attachments; put on it what is genuinely hard to recollect
+
+%%On attachments, the professor's warning: "Don't bring attachments to the cheat sheet. Don't try to be smart. … A cheat sheet is a monolith. … I teach you microservices, but I don't allow you to use it in the exam."%%
+
+</box>
+
+<box type="tip" seamless>
+
 **Study guide — slides to focus on per deck (L13 slide 11).** Skim these first when time is short:
 
 | Deck | Slides to focus on |
@@ -466,6 +524,8 @@ Revise: [W8]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#
 | L12 Scalability | 3–24 |
 
 Each deck is listed under its week page in the [Schedule]({{baseUrl}}/schedule/index.html) (the PDFs are kept offline).
+
+Why the mapping exists: ~500 slides is unreasonable to revise whole, so the professor said he sets questions around the listed topics specifically — treat the table as the boundary of your deck revision (L13 recording, ~[75:00]).
 </box>
 
 <box type="info" seamless>
@@ -483,6 +543,12 @@ Each deck is listed under its week page in the [Schedule]({{baseUrl}}/schedule/i
 <panel type="seamless" minimized header="%%Answer%%">
 Quiz 4 for the command/event redesign (Weeks 9–11); Quiz 3 for the scale cube and the extract-and-scale decision (Weeks 7–10, 12).
 </panel>
+
+</panel>
+
+<panel type="seamless" minimized header="%%Common question (asked in lecture): is 'reduce coupling, increase cohesion' a full exam answer?%%">
+
+No — it is the professor's answer to "what did you learn in this course", and he immediately warns it is "always 100% right — except in the exam," because he grades for granularity. Name the specific style, pattern, constraint or axis the question targets, with the course's example for it, and keep the coupling/cohesion line as the frame, not the answer. (L13 recording, ~[10:00] and ~[70:00].)
 
 </panel>
 

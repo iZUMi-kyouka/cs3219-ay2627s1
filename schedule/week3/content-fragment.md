@@ -35,6 +35,8 @@ The lecture ("Software Requirements & Quality Attributes") covers:
 
 </panel>
 
+**A specification reads as capabilities and constraints — and the classification is exam material.** "The courier can pick up and drop off" states a capability; "all locations are confined to campus" states a constraint, which typically lands among the NFRs as the product's operating boundaries — with the lecturer's own warning that such classification items reappear in tests ("spoiler alert") (L3 recording, ~[25:00]) → [W3.1]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c1).
+
 **Requirements development loops: elicit, analyze, specify, validate.** Each phase has its verb, and validation feeds corrections back (slide 4) → [W3.1]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c1):
 
 * **Elicitation** — discover
@@ -80,10 +82,20 @@ The lecture ("Software Requirements & Quality Attributes") covers:
 
 </panel>
 
+**The external/internal split has gray areas — and safety is not correctness.** A student challenged the deck's classification of integrity as external; the verdict: it can be both, depending on who observes the corruption (a garbled page vs gibberish in queried records) (L3 recording, ~[46:00], asked in lecture). And "being bug-free is not necessarily safe" — safety is about harm to life or property, the lecture's example being a chemical-plant pressure controller (L3 recording, ~[55:00], asked in lecture) → [W3.4]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c4).
+
+<panel type="seamless" minimized header="%%What is safety (from the lecture discussion)?%%">
+
+<include src="../../se-book-adapted/common/defs-week-03.md#def-safety" trim />
+
+</panel>
+
 **Different applications emphasize different attributes, and deployment strategy is an attribute decision.** (slides 12–13) → [W3.4]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c4)
 
 * **Embedded, web, and desktop software** each carry a prescribed attribute list
 * **Blue-green deployment and Docker+Kubernetes** are the deck's attribute-supporting deployment choices
+
+**The lecture separated strategy from mechanism and mapped attributes to each.** Blue-green (a *strategy*) buys availability and reliability — instant switch-back; Docker + Kubernetes (a *mechanism*) buys scalability — nodes added *and removed* with load — and portability. The takeaway: quality attributes were satisfied without changing a line of code (L3 recording, ~[52:00]–~[59:00]) → [W3.4]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c4).
 
 <panel type="seamless" minimized header="%%What is blue-green deployment — and what is container orchestration?%%">
 
@@ -115,6 +127,16 @@ The lecture ("Software Requirements & Quality Attributes") covers:
 
 </panel>
 
+**Performance splits into latency and throughput, and should degrade gracefully.** Latency is the wait per request, throughput the work per unit time — gaming prioritizes latency (responsive characters), streaming throughput (frames per second); under overload a system should "fail gracefully" — queue and slow down rather than die (L3 recording, ~[72:00]–~[75:00]) → [W3.5]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c5).
+
+<panel type="seamless" minimized header="%%What are latency and throughput? (defined in Weeks 9 and 12)%%">
+
+<include src="../../se-book-adapted/common/defs-week-09.md#def-latency" trim />
+
+<include src="../../se-book-adapted/common/defs-week-12.md#def-throughput" trim />
+
+</panel>
+
 **Attributes trade off, and the trade-offs are directional.** The conflict table drives pairwise prioritization. The healthcare examples show the same NFR list weighted differently (slides 23–25) → [W3.6]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c6).
 
 <panel type="seamless" minimized header="%%What is a requirement trade-off — and pair-wise prioritization?%%">
@@ -122,6 +144,14 @@ The lecture ("Software Requirements & Quality Attributes") covers:
 <include src="../../se-book-adapted/common/defs-week-03.md#def-requirement-tradeoff" trim />
 
 <include src="../../se-book-adapted/common/defs-week-03.md#def-pairwise-prioritization" trim />
+
+</panel>
+
+**Prioritization has a second named framework: MoSCoW.** Beyond pair-wise comparison (the lecture's scoring: 1 point per favored comparison, 0.5 per indifference, 0 per loss — tally, then pick the top items), MoSCoW sorts requirements into must, should, could, and will not have, making the exclusions explicit (L3 recording, ~[87:00]–~[89:00]) → [W3.6]({{baseUrl}}/se-book-adapted/chapters/week-03-requirements.html#W3-c6).
+
+<panel type="seamless" minimized header="%%What is MoSCoW prioritization?%%">
+
+<include src="../../se-book-adapted/common/defs-week-03.md#def-moscow-prioritization" trim />
 
 </panel>
 

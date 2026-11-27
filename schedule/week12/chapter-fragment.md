@@ -44,13 +44,25 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 <include src="../../se-book-adapted/common/defs-week-12.md#def-scalability" trim />
 </box>
 
+**Why scalability, of all the quality attributes in Week 3's table? Because it is one of the attributes whose improvement lifts several others.** In the quality-attribute interaction table, a "+" says that improving one attribute improves another — and scalability's improvements propagate to availability, efficiency, integrity, performance and (through response times) usability. Modern systems are also rarely built to serve a tiny slice of the population, so scalability is the attribute most systems must eventually face. (Source: L12 recording, ~[45:00].)
+
+<panel type="seamless" minimized header="%%Common question (asked in lecture): so Kubernetes *is* scalability?%%">
+
+No — Kubernetes *supports* scalability. It is a technology that makes scaling easy: you put your services in a cluster, set up the scaling policies, and expose a gateway that handles the routing internally — the complexity cost of replication is hidden from you. Scalability itself remains the quality attribute of your system. (L12 recording, ~[45:00] and ~[55:00].)
+
+</panel>
+
 **A system can scale in several dimensions of operations, specific to the application.** The deck names three: the number of requests that can be processed in a given time window, the amount of data that can be managed and processed, and keeping response times stable and consistent as requests increase — which is where scalability meets performance. The added resources are CPU, memory, and servers. (Source: L12 slide 6.)
+
+**Every scaling claim needs a frame of reference — an invariant that fixes what "keeping up" means.** Can one checkout kiosk that serves 100 customers per hour serve 1,000 customers? Both yes and no are correct until you fix the invariant: yes, if you accept taking ten times as long, no, if the hour is the invariant. Transactions per unit time, gigabytes of data, data size per user — pick the invariant first, then ask whether the system still holds it as load grows. (Source: L12 recording, ~[55:00]–[60:00].)
 
 **Load is not constant, so scaling has a down direction too.** A streaming service at 9 pm faces far more load than at 5 am; autoscaling on a metric — CPU usage, queue length — grows and shrinks capacity with demand. (Source: L12 slide 6.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-autoscaling" trim />
 </box>
+
+**Data capacity, though, barely scales down.** Stored customers do not leave as fast as new ones arrive, so the rate of reduction is much lower than the rate of increase — autoscaling in its native form fits request-driven capacity (servers), not stored data, which keeps growing. (Source: L12 recording, ~[65:00].)
 
 **Growth is easiest to see with a physical analogy: add kiosks, or add stores.** A supermarket chain handles more shoppers by adding checkout kiosks (more capacity in one place) or more stores (more places); the software behind it faces exactly the same two levers. (Source: L12 slide 5.)
 
@@ -103,6 +115,8 @@ Because capacity added anywhere else is mostly wasted: 80% of the load comes fro
 <include src="../../se-book-adapted/common/defs-week-12.md#def-tail-latency" trim />
 </box>
 
+**"Normal load" is a judgment call, and an SLO is only as strict as its window.** In the lecture's ballpark, utilization up to ~80% of maximum capacity counts as normal load — not a scientific number, but enough to anchor the requirement. The percentile alone is not the whole promise either: letting 5% of requests be slow measured from deployment to sunset is far more stringent than the same 5% measured per 7-day chunk, which is why the window in the requirement below is part of the requirement. At enterprise scale this becomes contractual — a bank negotiating with its cloud provider specifies the P95/P99 it demands, and the provider then engineers infrastructure, software and monitoring to honor it. (Source: L12 recording, ~[70:00].)
+
 {% call example("Errand platform browse SLO (L12 slide 7)") %}
 The deck phrases a measurable requirement for the errand platform: "95% of successful browse errand requests complete in <200 ms; 99% complete in <500 ms, in a 7-day window." Two percentiles plus a window — that is a requirement you can measure, alert on, and use to plan scaling.
 {% endcall %}
@@ -112,6 +126,15 @@ The deck phrases a measurable requirement for the errand platform: "95% of succe
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-bottleneck" trim />
 </box>
+
+**Holding an SLO is a measurement problem — every tier of the deployment is a measurement point.** Where the lecture places the probes (L12 recording, ~[75:00]):
+
+- **Client app** — the best vantage point on what users actually experience, but only if the app was built to emit metrics
+- **Gateway** — requests in, served, and dropped are visible here — Nginx logs them natively, and tools such as Prometheus and Grafana turn those logs into dashboards
+- **Service** — transactions received, served, and completed, counted by the application itself
+- **Database** — most engines ship query and transaction monitoring built in
+
+Managed services often bundle this tooling, so monitoring is something you enable rather than engineer — and where the bottleneck shows up decides *which* scaling move you make (W12.8).
 
 <box type="warning" seamless>
 
@@ -131,7 +154,7 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 
 ### W12.3 Two strategies to scale — and why late scaling hurts ★★
 
-**There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries (an *index* is a data structure the database maintains so it can find rows without scanning the whole table), rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP — PHP is normally interpreted line by line, so compiling it ahead of time makes the same server execute the same code much faster). (Source: L12 slide 8; %%HipHop is deck-faithful; the interpreted-vs-compiled gloss is from Wikipedia.%%)
+**There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries (an *index* is a data structure the database maintains so it can find rows without scanning the whole table), rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP — PHP is normally interpreted line by line, so compiling it ahead of time makes the same server execute the same code much faster). (Source: L12 slide 8; %%HipHop is deck-faithful; the interpreted-vs-compiled gloss is from Wikipedia.%%) The lecture adds the business constraint behind that move: Facebook's entire stack was PHP, so a rewrite would have stopped the business from running — HipHop bought speed while the business kept going, and even that optimization proved costly enough to maintain that it was later abandoned. (Source: L12 recording, ~[80:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-replicating-resources" trim />
@@ -145,7 +168,15 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 <include src="../../se-book-adapted/common/defs-week-12.md#def-throughput" trim />
 </box>
 
+{% call example("The bridge that cannot be widened (L12 recording, ~[80:00])") %}
+Optimizing has a neat physical picture: a bridge congested at rush hour where widening it is not an option. The traffic authority reorganizes what it has — more lanes toward the central business district in the morning, the other way in the evening. No new infrastructure, the same road arranged for the dominant flow. The software analogues are a better algorithm, an extra database index, or HipHop-style compilation: get more out of what you already own.
+{% endcall %}
+
 **Scaling after deployment is expensive: downtime, hardware cost, and redesign.** The deck's hypothetical: a web server handling 100 requests/second must handle 100,000 — upgrading the database server takes 15 hours and a more powerful machine, schema updates to handle request hotspots — the parts of the data that receive a disproportionate share of the requests, e.g. one popular table or row — mean a DB redesign, and the rapid-development Ruby web server must be reimplemented in C++ to be efficient and scalable. (Source: L12 slide 9.)
+
+{% call example("The design-imposed-load placard (L12 recording, ~[80:00])") %}
+Buildings carry a placard: the design imposed load — this room holds at most this many people or this much equipment, beyond which structural integrity is questionable. A house designed as a duplex cannot be "upgraded" into an apartment block: the foundation, pillars and beams were never sized for it, so you tear it down and build anew. Software scaled post-hoc pays the same price — at minimum re-implementation and redeployment, often a full rewrite. That is why the scaling idea must be in the architecture from the beginning, like the foundation.
+{% endcall %}
 
 **Scalability is an architectural decision, incorporated from the beginning.** You must estimate the evolution of the software over time: resources and effort costs are tied to scalability from day one. (Source: L12 slide 9.)
 
@@ -184,11 +215,21 @@ Retain the current design until the proposed design demonstrates how atomicity i
 
 **Systems start small and monolithic, and that is fine — until it isn't.** A typical n-tiered web application hosted on a single server is a monolith, which grows in complexity as it becomes feature-rich; it is good enough while request loads stay relatively low. When the load grows, performance drops — latency increases because CPU and memory cannot handle concurrent requests — and the single server becomes the bottleneck. (Source: L12 slide 10.)
 
-**Scale up: pay money, keep the architecture.** Upgrading the service hardware — e.g. on AWS EC2, moving from one instance size to the next in the same family: t3.xlarge (4 CPU, 16 GB memory) to t3.2xlarge (8 CPU, 32 GB) — is simple, money is the only cost, and larger workloads are supported seamlessly; but there are hard limits on how many CPUs and how much memory one machine can have — and with everything on one machine, there is nothing left to take over when it fails. (Source: L12 slide 11; the failure point is the deck's scale-up-DB argument on slide 17.)
+<panel type="seamless" minimized header="%%Common question (asked in lecture): what kind of architecture is *not* scalable?%%">
+
+"Not scalable" is the wrong phrase — architectures have *limited* scalability. Even a monolith scales a long way vertically: one machine can grow many times over before you run out of headroom, at the price of some latency growth as data volume rises. Most modern software has some native scalability — the risk is hitting *its* limit without having thought about what comes next. (L12 recording, ~[85:00].)
+
+</panel>
+
+**Scale up: pay money, keep the architecture.** Upgrading the service hardware — e.g. on AWS EC2, moving from one instance size to the next in the same family: t3.xlarge (4 CPU, 16 GB memory) to t3.2xlarge (8 CPU, 32 GB) — is simple, money is the only cost, and larger workloads are supported seamlessly; but there are hard limits on how many CPUs and how much memory one machine can have — and with everything on one machine, there is nothing left to take over when it fails. (Source: L12 slide 11; the failure point is the deck's scale-up-DB argument on slide 17.) Cloud providers make it the cheapest move to operate: if the platform supports in-place expansion there is no downtime at all, otherwise the provider migrates the deployment with only a short downtime window. (Source: L12 recording, ~[50:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-single-point-of-failure" trim />
 </box>
+
+{% call example("A system that never needed to scale — until the assumption changed (L12 recording, ~[90:00])") %}
+The lecturer once ran an AI-planning course with an auto-grading system: 5 submissions per student per day, and no more than 200 students — a bounded load by design. That made "4 GB RAM, 2 vCPUs, 64 GB disk — end of story" a correct architecture: no scaling needed, service levels held indefinitely. One semester he removed the submission limit. Students adopted the system as their personal development platform, requests exploded, and the system crashed. The hardware never changed — the load assumption did. Scalability requirements live in that assumption, so know the load your system is sized for.
+{% endcall %}
 
 **Scale out: replicate the service and share the requests.** Run multiple copies on multiple nodes; with N replicas and R requests, each server processes ~R/N requests. This needs two more elements in the design: a load balancer and a session store. (Source: L12 slide 12.)
 
@@ -262,6 +303,10 @@ Horizontal scaling — there are limits on the CPU and memory you can add to one
 <include src="../../se-book-adapted/common/defs-week-12.md#def-session-store" trim />
 </box>
 
+{% call example("One shopping cart on 11.11 (L12 recording, ~[95:00])") %}
+During an 11.11 sale a shopper keeps adding items to a cart, then leaves the tab open. In the traditional design the cart is session state *inside the service*: the request runs in a thread that holds the cart's entries, and an idle tab leaves that thread blocked — and threads are a limited resource, so blocked threads cap how many requests the service can serve at all. Making the service stateless flips the lifecycle: a request arrives, a thread is spawned, something is found in the database and returned, the thread is destroyed. But now something else must remember the cart — that is the session store's job (e.g. Redis, an in-memory store). The chain is the design — a load balancer lets you replicate, replication is only cheap if replicas are stateless, and stateless replicas need a shared session store to hold the state. All of these elements work together.
+{% endcall %}
+
 <box type="info" seamless>
 
 **Stateless vs stateful — one question: if this request lands on a replica that has never seen this client, can it be served?**
@@ -322,17 +367,31 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 <include src="../../se-book-adapted/common/defs-week-12.md#def-caching" trim />
 </box>
 
+{% call example("Netflix's weekly Top 10 (L12 recording, ~[100:00])") %}
+"Top 10 this week" changes slowly and is read enormously often — exactly the profile for a cache: compute the list once, place it in caches close to the viewers (even at multiple levels — a regional cache and an in-country cache), and serve the reads without crossing the ocean to the origin database. The policy side of caching shows in the negative example: weather data changes too often to cache for days — cache it for hours at most, or not at all.
+{% endcall %}
+
 **Read replicas share the read load but not the write load.** Configure one or more nodes as read replicas of the main database: writes go only to the primary, and changes are asynchronously replicated to the secondaries — which may live in different regions to serve global clients. Scale-up alone eventually fails: the DB exceeds the processing capability of a single node, low-latency access is needed from clients spread around the globe, and a single node is a single point of failure. (Source: L12 slide 17.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-read-replica" trim />
 </box>
 
-**Partitioning splits one logical table across several physical stores.** Horizontal partitioning splits a logical table into multiple physical partitions, allocating rows by a partitioning strategy — e.g. value-based (rows with a value in a range go to the same partition, like the bookings-by-city split shown below) or a hash of the primary key. Vertical partitioning partitions by columns — e.g. storing static, read-only data apart from dynamic data. (Source: L12 slide 18.)
+<panel type="seamless" minimized header="%%Common question (asked in lecture): which Week 8 pattern is this read/write split an instance of?%%">
+
+{{ term("CQRS", "command–query responsibility segregation: separating the write path (commands) from the read path (queries) — W8") }} — the lecture connected them on the spot: writes are less frequent and must preserve integrity, so they go to one centralized primary optimized for writes; reads, which are far more frequent, are served from secondaries optimized for reads. The read-replica setup is CQRS thinking applied to a database tier. (L12 recording, ~[100:00]–[105:00].)
+
+</panel>
+
+**Partitioning splits one logical table across several physical stores.** Horizontal partitioning splits a logical table into multiple physical partitions, allocating rows by a partitioning strategy — e.g. value-based (rows with a value in a range go to the same partition, like the bookings-by-city split shown below) or a hash of the primary key. Vertical partitioning partitions by columns — e.g. storing static, read-only data apart from dynamic data. (Source: L12 slide 18.) The lecture's vertical split: SKU, description and color barely change, while price, availability and in-stock status change with every checkout — host the static columns in a store tuned for cheap long-term persistence and the dynamic columns in one tuned for fast writes. (Source: L12 recording, ~[110:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-partitioning" trim />
 </box>
+
+{% call example("Health records that must stay home (L12 recording, ~[105:00])") %}
+A vendor of electronic-health-records software serves institutions in many countries, and regulation requires health data collected in Singapore to be retained in Singapore. Horizontal partitioning turns that constraint into the scaling strategy: stripe the table so every write originating in Singapore goes to the Singapore partition (hosted in Singapore), US writes to the US partition, and so on. One compliance requirement and the single-primary bottleneck are addressed by the same split.
+{% endcall %}
 
 <box type="info" seamless>
 
@@ -347,7 +406,7 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 
 </box>
 
-**Distributed databases add storage nodes and put up a single logical front.** Data is stored across multiple disks and queried by multiple database engines that present a unified face to the application, which also improves availability. (Source: L12 slides 19–20.)
+**Distributed databases add storage nodes and put up a single logical front.** Data is stored across multiple disks and queried by multiple database engines that present a unified face to the application, which also improves availability. (Source: L12 slides 19–20.) The availability gain is graceful degradation — if one node fails, the requests that depend on the remaining nodes are still served (with a degraded response) — and the price is query complexity, which moves into the DB engine's job of maintaining that unified view. (Source: L12 recording, ~[110:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-distributed-database" trim />
@@ -378,7 +437,7 @@ The quiz notes that "search uses a separate indexing to make it efficient." That
 
 <box type="warning" seamless>
 
-**Pitfall:** stale caches and write bottlenecks. A cache of data that changes often serves stale results unless invalidated (slide 16), and read replicas do not add write capacity — all writes still funnel to the primary, which is why the deck moves on to partitioning and distributed databases (slide 17–19).
+**Pitfall:** stale caches and write bottlenecks. A cache of data that changes often serves stale results unless invalidated (slide 16), and read replicas do not add write capacity — all writes still funnel to the primary, which is why the deck moves on to partitioning and distributed databases (slide 17–19). Expect the see-saw to keep tilting: the read-replica primary is itself a single point of failure ("I say something nice, something bad is happening — that is life with architecture", L12 recording, ~[105:00]), so every scaling move surfaces the next component to harden.
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -399,7 +458,7 @@ Writes are only possible to the primary; secondaries receive changes by asynchro
 
 ### W12.7 Multi-tier scaling, responsiveness, and fault isolation ★★★
 
-**Replicate and cache at every tier, and the tiers can scale independently.** In a multi-tiered application, the service calls one or more dependent services that are each replicated and load-balanced — extending the stateless, load-balanced, cached architecture. Different tiers can serve different clients: e.g. separate replicas for web clients and mobile clients, each scaled independently depending on its load; all services use a core service that provides database access. A common variant is the backend-for-frontend (BFF) pattern — each frontend gets its own purpose-built backend tier (the web tier serving web clients, the mobile tier serving mobile clients), shaped for that client's needs and scaled on that client's load. (Source: L12 slides 20–21.)
+**Replicate and cache at every tier, and the tiers can scale independently.** In a multi-tiered application, the service calls one or more dependent services that are each replicated and load-balanced — extending the stateless, load-balanced, cached architecture. Different tiers can serve different clients: e.g. separate replicas for web clients and mobile clients, each scaled independently depending on its load; all services use a core service that provides database access. A common variant is the backend-for-frontend (BFF) pattern — each frontend gets its own purpose-built backend tier (the web tier serving web clients, the mobile tier serving mobile clients), shaped for that client's needs and scaled on that client's load. (Source: L12 slides 20–21.) The lecture's variant detail: the mobile tier's API has a smaller footprint than the web tier's — some operations are supported on the web but not on the phone — so each backend is shaped, not merely scaled, for its client. (Source: L12 recording, ~[115:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-backend-for-frontend" trim />
@@ -418,9 +477,9 @@ flowchart TB
 
 How to read it: the room-booking platform could serve web and mobile searchers through separate load-balanced tiers — mobile search bursts scale the mobile tier without touching reservation — while both tiers share one core service that owns database access (L12 slides 20–21).
 
-**Queues buy responsiveness: acknowledge fast, persist later.** Using caching or {{ term("message brokers", "software that passes and buffers messages between components so they need not know each other — W11") }}, a service can respond without fully persisting in the database — e.g. an address update at checkout time should be persisted, but checkout should not be stalled. Event data is sent to the service, which acknowledges receipt and concurrently stores the data in a remote queue for subsequent writing to the database — writing to the queue is faster than writing to the DB. (Source: L12 slide 22 — this is Week 11's messaging doing scalability work.)
+**Queues buy responsiveness: acknowledge fast, persist later.** Using caching or {{ term("message brokers", "software that passes and buffers messages between components so they need not know each other — W11") }}, a service can respond without fully persisting in the database — e.g. an address update at checkout time should be persisted, but checkout should not be stalled. Event data is sent to the service, which acknowledges receipt and concurrently stores the data in a remote queue for subsequent writing to the database — writing to the queue is faster than writing to the DB. (Source: L12 slide 22 — this is Week 11's messaging doing scalability work.) The lecture's framing: for the end user, responsiveness is what matters, so *fake* it — acknowledge the update immediately, hold it in a cache or queue, and let the persistence happen at the system's own pace (his example: updating the delivery address on a pizza order to a campus venue must not stall checking out). (Source: L12 recording, ~[115:00].)
 
-**Swim lanes contain failures the way partitions contain data.** A swim lane (or pod) architecture places a group of services within a boundary so that any failure within the boundary is contained and not propagated outside it. %%Here "pod" is the scalability literature's term (AKF, the slide's cited source) for such a fault-isolated grouping of services — often a customer segment, as in the scale cube's Z-axis shards; it is not the Kubernetes pod object.%% Advantages: easy fault detection within the lane, fault isolation, meeting region-specific requirements, and faster response times from a customer-specific perspective. (Source: L12 slide 23.)
+**Swim lanes contain failures the way partitions contain data.** A swim lane (or pod) architecture places a group of services within a boundary so that any failure within the boundary is contained and not propagated outside it. %%Here "pod" is the scalability literature's term (AKF, the slide's cited source) for such a fault-isolated grouping of services — often a customer segment, as in the scale cube's Z-axis shards; it is not the Kubernetes pod object.%% Advantages: easy fault detection within the lane, fault isolation, meeting region-specific requirements, and faster response times from a customer-specific perspective. (Source: L12 slide 23.) Lanes can be regional — all of a region's data, load balancer and servers inside one boundary — or service-level. The lecture's added advantages: data locality keeps region-specific confidentiality requirements satisfiable, each lane is small enough that faults are easy to localize and fix while other lanes continue working, and better response times can be promised as per-lane service-level objectives. (Source: L12 recording, ~[115:00]–[120:00].)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-swim-lane" trim />
@@ -454,6 +513,8 @@ Acknowledge the update immediately and store it in a remote queue for subsequent
 * **X-axis — horizontal scaling:** run multiple copies of the application behind a load balancer (W12.4–W12.5).
 * **Y-axis — functional decomposition:** split the application into multiple different functions/services (the modular monolith → microservices move of Weeks 4 and 7).
 * **Z-axis — data partitioning:** run the same code on a subset of the data, distributing data storage — e.g. segment by customer category or geography (W12.6).
+
+**The bottleneck's location picks the axis.** Too many requests arriving at the front door → add replicas behind the load balancer (X); the database taking the hit from reads or writes → split the data, e.g. by region (Z). Measuring where the bottleneck sits (W12.2) is therefore what tells you *which* scaling to implement. (Source: L12 recording, ~[75:00]; %%the recording's "database striping" is this partitioning move — the deck and standard usage say partitioning/sharding.%%)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-12.md#def-scale-cube" trim />
