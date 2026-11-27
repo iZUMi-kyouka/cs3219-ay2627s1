@@ -30,7 +30,9 @@ This chapter recaps the whole course, so every chapter is a prerequisite. If a t
 
 <span id="W13-c1"></span>
 
-<panel type="seamless" minimized header="**W13.1 The course in one line: architecture serves requirements ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.1 The course in one line: architecture serves requirements ★</markdown></span>
 
 
 **Every design decision in this course traces back to a requirement, and most of the consequential ones trace back to a quality attribute.** The recap deck begins where the course began — types of applications, requirements, quality attributes — because architecture choices, design decisions, deployment decisions, and processes and practices all "depend on the application, the audience, the resources available, the skill sets" (L13 slides 2, 12).
@@ -92,9 +94,12 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 </panel>
 
 </panel>
+
 <span id="W13-c2"></span>
 
-<panel type="seamless" minimized header="**W13.2 Through-line 1 — architecture: monolith → modular monolith → microservices ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.2 Through-line 1 — architecture: monolith → modular monolith → microservices ★</markdown></span>
 
 
 **The course's first through-line is how code gets partitioned and deployed: technical partitioning, domain partitioning, then distribution.** The recap deck sorts the styles you have studied by exactly this axis (L13 slide 2) — and the site already owns that map, so it is not redrawn here: the canonical 2×2 of deployment (single vs distributed) × partitioning (technical vs domain) is drawn once in [W4.7 — Architectural styles]({{baseUrl}}/se-book-adapted/chapters/week-04-architecture-i.html#W4-c7) and toured style by style from [W6.1 — Classifying architectural styles]({{baseUrl}}/se-book-adapted/chapters/week-06-architecture-ii-and-rest.html#W6-c1).
@@ -205,9 +210,12 @@ Requirements and quality attributes: the style must be chosen for the applicatio
 </panel>
 
 </panel>
+
 <span id="W13-c3"></span>
 
-<panel type="seamless" minimized header="**W13.3 Through-line 2 — communication: sync → async → events → messages ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.3 Through-line 2 — communication: sync → async → events → messages ★</markdown></span>
 
 
 **The second through-line is what happens between the pieces once you cut them apart.** Week 10's three-axis taxonomy (synchrony, persistence, cardinality — the tutorial's word for W10.3's single vs multiple receivers) and Week 9's events set up Week 11's engineering patterns. The recap deck compresses this into one slide (L13 slides 4–7):
@@ -308,9 +316,12 @@ Pub-sub is not a fourth style in this line — it is the *delivery mechanics* (W
 </panel>
 
 </panel>
+
 <span id="W13-c4"></span>
 
-<panel type="seamless" minimized header="**W13.4 Through-line 3 — scaling: the scale cube ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.4 Through-line 3 — scaling: the scale cube ★</markdown></span>
 
 
 **The third through-line asks what happens when any of the above works — and load arrives.** The recap deck's scalability lens is exactly Week 12: the {{ term("scale cube", "the three-axis summary of scaling: X replicate copies, Y decompose into services, Z partition data — defined in W12.8") }}, scaling databases, scale out, multi-tier scaling (L13 slide 8).
@@ -355,9 +366,12 @@ Y then X: extract search as an independent microservice (functional decompositio
 </panel>
 
 </panel>
+
 <span id="W13-c5"></span>
 
-<panel type="seamless" minimized header="**W13.5 The whole course in one picture ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.5 The whole course in one picture ★</markdown></span>
 
 
 **One system, evolved four times, touches every week of the course.** The diagram below evolves the room-booking platform — the running example of Quiz 3 — from a single-server monolith to an event-driven microservice system, annotating each stage with the course concept that justifies it and the communication style that era uses.
@@ -434,9 +448,12 @@ The domain partitioning that tells you *which* services to extract (stage 2, W4/
 </panel>
 
 </panel>
+
 <span id="W13-c6"></span>
 
-<panel type="seamless" minimized header="**W13.6 Exam preparation: the four quizzes and what each examines ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W13.6 Exam preparation: the four quizzes and what each examines ★</markdown></span>
 
 
 **The four past quizzes are the highest-yield revision material: each maps to a block of chapters, and each question style reappears.** The exam is closed-book with one A4 cheat sheet (no attachments); formats are MCQ, short answers and drawing — and the deck's answering advice is to keep short answers short and state your assumptions where applicable (L13 slide 10).
@@ -575,6 +592,7 @@ No — it is the professor's answer to "what did you learn in this course", and 
 </div>
 
 </panel>
+
 ## Key terms
 
 This is a recap chapter — the terms below are defined once, in their own weeks. The table maps each to its home chapter for revision.

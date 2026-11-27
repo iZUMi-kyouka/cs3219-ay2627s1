@@ -32,7 +32,9 @@ This chapter builds on [Week 3 — Requirements]({{baseUrl}}/se-book-adapted/cha
 
 <span id="W12-c1"></span>
 
-<panel type="seamless" minimized header="**W12.1 Scalability as a quality attribute ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.1 Scalability as a quality attribute ★</markdown></span>
 
 
 **Traffic is not a fixed property of a system — a design that works at launch can fail at peak, so scalability must be treated as a requirement, not an afterthought.** The lecture recaps Week 3: scalability as a quality attribute has both hardware and software consequences — scaling to accommodate increased incoming data may mean adding disk capacity, while scaling to accommodate more transactions could mean architecting the application for parallel and distributed computing. (Source: L12 slide 3.)
@@ -91,9 +93,12 @@ Because capacity added anywhere else is mostly wasted: 80% of the load comes fro
 </panel>
 
 </panel>
+
 <span id="W12-c2"></span>
 
-<panel type="seamless" minimized header="**W12.2 Measuring scale: percentiles and bottlenecks ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.2 Measuring scale: percentiles and bottlenecks ★★</markdown></span>
 
 
 **Response time is a distribution, not a number — and the users at the tail are the ones who notice.** An average response time of 2 s under normal load can still leave 1 in 100 users waiting 10 s. (Source: L12 slide 7.)
@@ -154,9 +159,12 @@ P50 = 1 s: the median request — a typical user's experience. P95 = 5 s: 95% of
 </panel>
 
 </panel>
+
 <span id="W12-c3"></span>
 
-<panel type="seamless" minimized header="**W12.3 Two strategies to scale — and why late scaling hurts ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.3 Two strategies to scale — and why late scaling hurts ★★</markdown></span>
 
 
 **There are only two levers: add copies of what you have, or make what you have work less.** Replicating resources provides more capacity to handle requests and increases throughput; optimizing the available resources gets more out of the same hardware — more efficient algorithms, extra indices to speed up queries (an *index* is a data structure the database maintains so it can find rows without scanning the whole table), rewriting a server in a faster programming language (e.g. Facebook developed HipHop, a compiler for PHP — PHP is normally interpreted line by line, so compiling it ahead of time makes the same server execute the same code much faster). (Source: L12 slide 8; %%HipHop is deck-faithful; the interpreted-vs-compiled gloss is from Wikipedia.%%) The lecture adds the business constraint behind that move: Facebook's entire stack was PHP, so a rewrite would have stopped the business from running — HipHop bought speed while the business kept going, and even that optimization proved costly enough to maintain that it was later abandoned. (Source: L12 recording, ~[80:00].)
@@ -205,9 +213,12 @@ Retain the current design until the proposed design demonstrates how atomicity i
 </panel>
 
 </panel>
+
 <span id="W12-c4"></span>
 
-<panel type="seamless" minimized header="**W12.4 Vertical vs horizontal scaling ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.4 Vertical vs horizontal scaling ★</markdown></span>
 
 
 **Scale up or scale out — the choice shapes everything that follows.** Vertical scaling adds capability to the machines a system is deployed on; horizontal scaling adds additional machines running copies of the service. (Source: L12 slide 3.)
@@ -287,9 +298,12 @@ Horizontal scaling — there are limits on the CPU and memory you can add to one
 </panel>
 
 </panel>
+
 <span id="W12-c5"></span>
 
-<panel type="seamless" minimized header="**W12.5 Load balancing and stateless design ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.5 Load balancing and stateless design ★</markdown></span>
 
 
 **Replicas are useless unless something spreads the work evenly — and services only share work if they carry no private state.** These two design elements are what make horizontal scaling actually work. (Source: L12 slides 12–14.)
@@ -365,9 +379,12 @@ To keep each replica equally busy — even distribution is what makes R/N reques
 </panel>
 
 </panel>
+
 <span id="W12-c6"></span>
 
-<panel type="seamless" minimized header="**W12.6 Scaling the data tier ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.6 Scaling the data tier ★★</markdown></span>
 
 
 **After you scale out the services, the shared database is the next bottleneck — a single database's capability limits response time.** Potential solutions: query the database infrequently by using caching, or scale out the database itself. (Source: L12 slide 15.)
@@ -466,9 +483,12 @@ Writes are only possible to the primary; secondaries receive changes by asynchro
 </panel>
 
 </panel>
+
 <span id="W12-c7"></span>
 
-<panel type="seamless" minimized header="**W12.7 Multi-tier scaling, responsiveness, and fault isolation ★★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.7 Multi-tier scaling, responsiveness, and fault isolation ★★★</markdown></span>
 
 
 **Replicate and cache at every tier, and the tiers can scale independently.** In a multi-tiered application, the service calls one or more dependent services that are each replicated and load-balanced — extending the stateless, load-balanced, cached architecture. Different tiers can serve different clients: e.g. separate replicas for web clients and mobile clients, each scaled independently depending on its load; all services use a core service that provides database access. A common variant is the backend-for-frontend (BFF) pattern — each frontend gets its own purpose-built backend tier (the web tier serving web clients, the mobile tier serving mobile clients), shaped for that client's needs and scaled on that client's load. (Source: L12 slides 20–21.) The lecture's variant detail: the mobile tier's API has a smaller footprint than the web tier's — some operations are supported on the web but not on the phone — so each backend is shaped, not merely scaled, for its client. (Source: L12 recording, ~[115:00].)
@@ -518,9 +538,12 @@ Acknowledge the update immediately and store it in a remote queue for subsequent
 </panel>
 
 </panel>
+
 <span id="W12-c8"></span>
 
-<panel type="seamless" minimized header="**W12.8 The scale cube ★★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W12.8 The scale cube ★★★</markdown></span>
 
 
 **Every strategy in this chapter is one move on a three-axis cube — and the axes compose.** Each axis is a specific strategy of scaling (Source: L12 slide 24):
@@ -607,6 +630,7 @@ Y then X: extract search as an independent microservice and increase its instanc
 </div>
 
 </panel>
+
 ## Key terms
 
 | Term | Definition | Unit |

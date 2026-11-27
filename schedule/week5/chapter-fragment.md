@@ -35,7 +35,9 @@ This chapter is based on the **Week 5 guest lecture — "The Cloud Native Paradi
 
 <span id="W5-c1"></span>
 
-<panel type="seamless" minimized header="**W5.1 The cloud is an abstraction ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.1 The cloud is an abstraction ★</markdown></span>
 
 
 **You cannot reason about {{ term("cloud native", "an approach to building and running applications that exploits the advantages of the cloud computing delivery model") }} software until you see the cloud as an abstraction, not a place.** "The cloud" hides pools of compute, storage, and networking behind interfaces you can program against. What the abstraction hides determines what your architecture must handle itself.
@@ -116,9 +118,12 @@ The last consideration is the one no-downtime deployment addresses.
 </panel>
 
 </panel>
+
 <span id="W5-c2"></span>
 
-<panel type="seamless" minimized header="**W5.2 Cloud computing vs cloud native ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.2 Cloud computing vs cloud native ★</markdown></span>
 
 
 **Cloud computing and cloud native answer two different questions — where versus how — and confusing them is the most common conceptual error in this topic.** Cloud computing is a delivery model for resources. Cloud native is an approach to building and running applications that exploits that delivery model. The guest calls them "two sides of the same coin": cloud computing addresses where you host the resources and applications; cloud native looks deeper into how you leverage that model to reap its benefits. (Source: L5 recording, ~[8:00], Dell guest lecture.)
@@ -243,9 +248,12 @@ Service meshes primarily support manageability and observability (traffic manage
 </panel>
 
 </panel>
+
 <span id="W5-c3"></span>
 
-<panel type="seamless" minimized header="**W5.3 From monolith to microservices ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.3 From monolith to microservices ★</markdown></span>
 
 
 **The monolith's limitations are the strongest motivation for the cloud-native style, and the lecture builds microservices as their direct answer.** Understanding what a monolith cannot do tells you exactly what problem microservices solve — and what new problems they create. The guest's warning to students lands close to home: when you enter the workforce you may not get a brand-new project — you will open an editor on an application maintained for 15–20 years, "millions of lines of code… maintained by developers across different eras", where nobody can say what each line does anymore. (Source: L5 recording, ~[13:00], Dell guest lecture.)
@@ -347,9 +355,12 @@ Loose coupling and high cohesion — each service keeps strongly related functio
 </panel>
 
 </panel>
+
 <span id="W5-c4"></span>
 
-<panel type="seamless" minimized header="**W5.4 Containers ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.4 Containers ★</markdown></span>
 
 
 **Once an application is split into many small services, you need a standard way to package and run each one anywhere — that is exactly what a container is.** The lecture poses the question "where do we host them?" for a monolith (on an OS, in a VM) and answers it for microservices with containers. (Source: L5 slides 27–29, Dell guest lecture.)
@@ -421,9 +432,12 @@ Isolation plus a standard interface: the container seals its contents off from t
 </panel>
 
 </panel>
+
 <span id="W5-c5"></span>
 
-<panel type="seamless" minimized header="**W5.5 Orchestrating containers with Kubernetes ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.5 Orchestrating containers with Kubernetes ★★</markdown></span>
 
 
 **Containers solve packaging, but dozens of containers create container sprawl — a new set of challenges that container orchestration exists to solve.** The lecture moves from "what is a container" to "who restarts, balances, and scales the many containers our services now need". (Source: L5 slides 34–37, Dell guest lecture.)
@@ -539,9 +553,12 @@ Because you no longer bind apps to hosts: layer one is Kubernetes (deployments, 
 </panel>
 
 </panel>
+
 <span id="W5-c6"></span>
 
-<panel type="seamless" minimized header="**W5.6 Immutable infrastructure and IaC ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W5.6 Immutable infrastructure and IaC ★★</markdown></span>
 
 
 **Cloud-native operations stop treating servers as pets to nurse and start treating them as cattle to replace — and infrastructure as code is what makes replacing them routine.** This is the last enabler pair in the lecture, and the one that connects hosting back to the automation ideas of modern software engineering. (Source: L5 slides 42–49, Dell guest lecture.)
@@ -643,6 +660,7 @@ Because CI/CD automates building, testing, and releasing software; IaC extends t
 </box>
 
 </panel>
+
 ## Connections
 
 | Concept | Lecture | Tutorial | Other weeks |

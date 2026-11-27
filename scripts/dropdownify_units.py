@@ -53,11 +53,15 @@ def transform(text):
             body.pop()
         anchor = pending_span or ""
         units.append((header, anchor))
-        out.append(f'<panel type="seamless" minimized header="**{header.replace(chr(34), "&quot;")}**">')
+        # CS2103(T) se-book unit panel: seamless + expanded, card-title header
+        out.append("")
+        out.append('<panel type="seamless" expanded>')
+        out.append(f'  <span slot="header" class="card-title"><markdown>### {header}</markdown></span>')
         out.append("")
         out.extend(body)
         out.append("")
         out.append("</panel>")
+        out.append("")
         pending_span = None
         changed = True
         i = j
@@ -74,7 +78,7 @@ def transform(text):
                 m2 = k + 1
                 while m2 < len(out) and not out[m2].strip():
                     m2 += 1
-                if m2 < len(out) and out[m2].startswith('<panel type="seamless" minimized header="**W'):
+                if m2 < len(out) and out[m2].startswith('<panel type="seamless" expanded>'):
                     final.append("")
                     for header, anchor in units:
                         title = re.sub(r"\*\*", "", header)
@@ -96,7 +100,7 @@ def main():
         if apply_to and apply_to != "all" and week != apply_to:
             continue
         text = path.read_text()
-        if '<panel type="seamless" minimized header="**W' in text:
+        if 'slot="header" class="card-title"><markdown>### W' in text:
             print(f"week{week}: already dropdownified — skipped")
             continue
         new, changed, units = transform(text)

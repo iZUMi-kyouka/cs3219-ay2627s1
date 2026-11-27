@@ -36,7 +36,9 @@
 
 <span id="W1-c1"></span>
 
-<panel type="seamless" minimized header="**W1.1 Software engineering and the software crisis ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W1.1 Software engineering and the software crisis ★</markdown></span>
 
 
 **Software engineering exists because building software outgrew what individual craftsmanship could handle.** By the 1960s, projects were routinely late, over budget, and unreliable — the "software crisis" in time, cost, and quality.
@@ -106,9 +108,12 @@ The mapping is many-to-many, not one-to-one — the professor endorsed arguing s
 </panel>
 
 </panel>
+
 <span id="W1-c2"></span>
 
-<panel type="seamless" minimized header="**W1.2 Types of software applications ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W1.2 Types of software applications ★</markdown></span>
 
 
 **"Different needs, different applications" — and different applications are not developed and deployed the same way.** Before choosing tools, processes, or architecture, characterize what kind of application you have (Source: L1 slides 15–16). %%The lecture's version of the tagline: you cannot have one application that does everything — the old "kitchen sink app" (L1 recording, ~[45:00]).%%
@@ -207,9 +212,12 @@ Cloud (or cloud-enabled), concurrent and distributed (many transactions and regi
 </panel>
 
 </panel>
+
 <span id="W1-c3"></span>
 
-<panel type="seamless" minimized header="**W1.3 Software processes and the product backlog ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W1.3 Software processes and the product backlog ★</markdown></span>
 
 
 **A process turns "writing code" into repeatable engineering.** Which process fits depends on the problem — the deck names six factors that shape the choice (Source: L1 slides 21–22).
@@ -308,9 +316,12 @@ Criticality (and consequences): strict timing constraints and the risk of physic
 </panel>
 
 </panel>
+
 <span id="W1-c4"></span>
 
-<panel type="seamless" minimized header="**W1.4 Deployment mechanisms: bare metal, VMs, containers, serverless ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W1.4 Deployment mechanisms: bare metal, VMs, containers, serverless ★</markdown></span>
 
 
 **Deployment decisions directly shape the quality attributes your users feel.** Deployment is the process between acquiring software and executing it; the deck lists {{ term("availability", "the proportion of time the system is up and able to serve requests — a quality attribute, distinct from reliability (defined in Week 3)") }}, performance, security, usability, interoperability, reusability, scalability, portability, and maintainability as the {{ term("quality attributes", "properties of the system — performance, security, usability… — whose combination defines software quality; usually stated as NFRs — non-functional requirements — (formally defined in Week 3)") }} it touches (Source: L1 slide 26).
@@ -471,9 +482,12 @@ The real-time multiplayer game server — serverless functions are stateless and
 </panel>
 
 </panel>
+
 <span id="W1-c5"></span>
 
-<panel type="seamless" minimized header="**W1.5 Software delivery: CI/CD pipelines, release strategies, DevOps ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W1.5 Software delivery: CI/CD pipelines, release strategies, DevOps ★</markdown></span>
 
 
 **Between "it works on my machine" and "users have the new version" sits a pipeline you design on purpose.** A {{ term("deployment pipeline", "an automated implementation of the application build, deploy, test, and release process") }} is an automated implementation of the application build, deploy, test, and release process; a CI/CD pipeline is the automated workflow that enables teams to build, test, and deploy code efficiently and reliably (Source: L1 slides 39–40).
@@ -658,6 +672,7 @@ Canary deployment — it incrementally exposes a small subset of users and can d
 </box>
 
 </panel>
+
 ## Connections
 
 * Software crisis and its responses ↔ L1 slides 12–14 ↔ Quiz 1 Q3 ↔ motivates every later week.

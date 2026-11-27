@@ -33,7 +33,9 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 
 <span id="W3-c1"></span>
 
-<panel type="seamless" minimized header="**W3.1 Requirements and their development ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.1 Requirements and their development ★</markdown></span>
 
 
 **Everything the team builds traces back to requirements — get them wrong and the best architecture delivers the wrong product.** A requirement is defined broadly enough to cover users' needs, system obligations, and the documents that record them.
@@ -144,9 +146,12 @@ Observation (watch users do their jobs; "day in the life" studies, workflow diag
 </panel>
 
 </panel>
+
 <span id="W3-c2"></span>
 
-<panel type="seamless" minimized header="**W3.2 Functional vs non-functional requirements ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.2 Functional vs non-functional requirements ★</markdown></span>
 
 
 **The FR/NFR split answers two different questions: what must the system do, and how well must it do it.** Mixing them up is how teams ship complete-but-unusable systems.
@@ -222,9 +227,12 @@ I, III, and V — they state the capability from the user's point of view. II an
 </panel>
 
 </panel>
+
 <span id="W3-c3"></span>
 
-<panel type="seamless" minimized header="**W3.3 Specifying requirements: usage-centric vs product-centric, and the product backlog ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.3 Specifying requirements: usage-centric vs product-centric, and the product backlog ★★</markdown></span>
 
 
 **There are two legitimate ways to state the same capability — and the product backlog is where both live, organized for planning.** Choose the view per requirement deliberately.
@@ -325,9 +333,12 @@ It restates the user story from the user's side — the "the user can do X" trap
 </panel>
 
 </panel>
+
 <span id="W3-c4"></span>
 
-<panel type="seamless" minimized header="**W3.4 Quality attributes: external vs internal ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.4 Quality attributes: external vs internal ★</markdown></span>
 
 
 **Quality attributes are how NFRs get named, measured, and traded — and the external/internal split decides who feels them.**
@@ -425,9 +436,12 @@ Blue-green is a deployment *strategy*; Docker + Kubernetes is a deployment *mech
 </panel>
 
 </panel>
+
 <span id="W3-c5"></span>
 
-<panel type="seamless" minimized header="**W3.5 Key quality attributes in depth ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.5 Key quality attributes in depth ★★</markdown></span>
 
 
 **Five attributes do most of the work in this course — security, performance, scalability, deployability, usability — and each has named concerns, measures, and design consequences.**
@@ -665,9 +679,12 @@ Throughput dropped tenfold (work completed per minute); latency rose tenfold (wa
 </panel>
 
 </panel>
+
 <span id="W3-c6"></span>
 
-<panel type="seamless" minimized header="**W3.6 Requirement trade-offs ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.6 Requirement trade-offs ★★</markdown></span>
 
 
 **Improving one quality attribute often degrades another — so attribute selection is a prioritization problem, not a wish list.**
@@ -762,9 +779,12 @@ Pair-wise asks, for every pair, "if we could fund only one of these two, which o
 </panel>
 
 </panel>
+
 <span id="W3-c7"></span>
 
-<panel type="seamless" minimized header="**W3.7 Validating, documenting and managing requirements ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W3.7 Validating, documenting and managing requirements ★★</markdown></span>
 
 
 **Requirements are managed artifacts: they are verified for quality, recorded in documents, traced to work items, and revised as the product learns.**
@@ -863,6 +883,7 @@ Elicitation — persona specification (the deck: the LLM acts "as a domain exper
 </box>
 
 </panel>
+
 ## Connections
 
 * Requirements development, FR/NFR, usage/product-centric ↔ L3 slides 3–9 ↔ Tutorial 1 Q1 (characterize an application) ↔ Quiz 1 Q5, Q9.

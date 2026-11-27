@@ -34,7 +34,9 @@ This chapter builds on [Week 9 — Event-Driven Architecture]({{baseUrl}}/se-boo
 
 <span id="W11-c1"></span>
 
-<panel type="seamless" minimized header="**W11.1 Enterprise integration and the message broker ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.1 Enterprise integration and the message broker ★</markdown></span>
 
 
 **Once an application is split across the network, the hard problem is no longer the components themselves but making them talk to each other.** The lecture's shorthand: every D.A.D (Distributed Application Development) needs M.O.M. (Source: L11 slides 4–5.)
@@ -125,9 +127,12 @@ You remove the *direct* coupling between the two parties and add coupling to the
 </panel>
 
 </panel>
+
 <span id="W11-c2"></span>
 
-<panel type="seamless" minimized header="**W11.2 Message construction: command, document, event ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.2 Message construction: command, document, event ★</markdown></span>
 
 
 **The payload you put in a message decides what the receiver may do with it — confuse an instruction with a record, and the receiver does the wrong thing.** That distinction is examined directly: Quiz 4 Q1 asks you to redesign a mislabelled message.
@@ -206,9 +211,12 @@ The filter's criteria are applied to the message content — the EIP definition 
 </panel>
 
 </panel>
+
 <span id="W11-c3"></span>
 
-<panel type="seamless" minimized header="**W11.3 Message channels ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.3 Message channels ★</markdown></span>
 
 
 **A message needs a road: collaborating senders and receivers exchange messages only through channels they both know.** A channel is the conduit between them. The deck's slide heading calls channels "message queues" because the queue is the channel shape you meet first (and the one vendor APIs name); in general a channel comes in two shapes — a queue (point-to-point: one consumer per message) and a topic (publish-subscribe: all subscribers) — as the next paragraph makes precise. (Source: L11 slides 19–20, 31–32.)
@@ -333,9 +341,12 @@ The message becomes visible again after the visibility timeout — the period du
 </panel>
 
 </panel>
+
 <span id="W11-c4"></span>
 
-<panel type="seamless" minimized header="**W11.4 Message routing ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.4 Message routing ★</markdown></span>
 
 
 **Without routing logic, every sender must know every recipient; routers move that knowledge out of the sender and into reusable components.** A message router consumes messages from one channel and reinserts them into different channels depending on a set of conditions — either the sender decides where each message goes, or a component like this decides for it, reducing the sender's workload. Simple routers connect one inbound channel to one or more outbound channels; composed routers combine several simple routers into more complex flows. (Source: L11 slides 34–35.)
@@ -499,9 +510,12 @@ Treat the two facts as **correlated messages**: store the first one by booking I
 </panel>
 
 </panel>
+
 <span id="W11-c5"></span>
 
-<panel type="seamless" minimized header="**W11.5 Message transformation ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.5 Message transformation ★★</markdown></span>
 
 
 **Systems that agree to exchange messages still disagree on formats — someone has to translate, or every pair must.** Message transformation exists because communicating systems use different data formats. (Source: L11 slides 54–55.)
@@ -583,9 +597,12 @@ A content filter strips the unneeded data items before the message is passed on;
 </panel>
 
 </panel>
+
 <span id="W11-c6"></span>
 
-<panel type="seamless" minimized header="**W11.6 Message endpoints ★★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.6 Message endpoints ★★</markdown></span>
 
 
 **The messaging system does the routing, but *your* application still needs code to connect to it — that code is the endpoint.** A message endpoint is the interface between an application and a messaging system: it encapsulates the messaging APIs (e.g. JMS) and is custom to both the application and the messaging system's client API, so the rest of the application knows little about message formats, channels, or other messaging details. (Source: L11 slide 60.)
@@ -631,9 +648,12 @@ A polling consumer — it proactively reads when *it* is ready — combined with
 </panel>
 
 </panel>
+
 <span id="W11-c7"></span>
 
-<panel type="seamless" minimized header="**W11.7 Asynchronicity in the request-reply pattern ★**">
+
+<panel type="seamless" expanded>
+  <span slot="header" class="card-title"><markdown>### W11.7 Asynchronicity in the request-reply pattern ★</markdown></span>
 
 
 **"Returned immediately" is not the same as "asynchronous" — what matters is whether the sender still depends on the reply to finish its work.** The lecture opens by recapping exactly this distinction from Week 10 (Source: L11 slide 3; L13 slide 5), and Tutorial 8 Q1 examines it.
@@ -720,6 +740,7 @@ Pseudo-asynchronous: control returned early, but the caller still depends on the
 </div>
 
 </panel>
+
 ## Key terms
 
 | Term | Definition | Unit |
