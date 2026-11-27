@@ -223,9 +223,15 @@ renders the panel; do not close it manually.)
 
 ### `chapter-fragment.md` (the textbook chapter — core deliverable)
 Follow the existing skeleton (`h2 #title`, `#prereqs`, `#outcomes`,
-`<div id="body">`) exactly. Concepts come from that week's slides and tutorial
-only. Keep the unit numbering `W<N>.1, W<N>.2, ...` and the permanent anchors
-`<span id="W<n>-c<k>"></span>`. End with `## Key terms` (if not folded into
+`<div id="body">`) exactly. **Units are dropdownified**: each `W<N>.k` unit is
+wrapped as `<panel type="seamless" minimized header="**W<N>.k Title ★**">`
+with the unit's `<span id="W<n>-c<k>">` anchor OUTSIDE (before) the panel, a
+blank line after the panel open and before `</panel>`, and a generated unit-ToC
+bulleted list under `## Core concepts`. When adding a new unit, write it as a
+plain `### W<N>.k Title ★` heading + body and then re-run
+`python3 scripts/dropdownify_units.py --apply all` (idempotent) to convert and
+refresh the ToC — do not hand-write the panel wrapper. Concepts come from that
+week's slides and tutorial only. End with `## Key terms` (if not folded into
 `## Summary`) and `## Summary` per §3.5.
 
 ## 5. Build & verification

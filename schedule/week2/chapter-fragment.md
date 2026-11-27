@@ -30,7 +30,8 @@ This chapter builds on [Week 1]({{baseUrl}}/se-book-adapted/chapters/week-01-sof
 
 <span id="W2-c1"></span>
 
-### W2.1 AI across the software engineering workflow ★
+<panel type="seamless" minimized header="**W2.1 AI across the software engineering workflow ★**">
+
 
 **AI improves software engineers' efficiency in five modes, and the modes differ in where the human review happens.** The deck's arc — autocomplete to autonomous agents — is really a story about the review point moving later in the workflow (Source: L2 slides 2–3).
 
@@ -130,9 +131,11 @@ In collaboration the human reviews each step as it happens (turn-by-turn); in de
 
 </panel>
 
+</panel>
 <span id="W2-c2"></span>
 
-### W2.2 AI in the SDLC: from code generation to requirements ★★
+<panel type="seamless" minimized header="**W2.2 AI in the SDLC: from code generation to requirements ★★**">
+
 
 **AI's contribution now spans every phase of the {{ term("SDLC", "software development life cycle — from conception through development, deployment, and operation to retirement (defined in Week 1)") }}, not just writing code.** The deck maps the real-world usage of {{ term("LLMs", "large language models — AI models trained on vast text and code corpora to predict and generate text (ChatGPT, Copilot, and Claude are LLMs)") }} in software engineering by phase — development, requirements engineering, quality assurance, maintenance, and management (Source: L2 slides 6–7).
 
@@ -169,9 +172,11 @@ The mechanism components are worth remembering: encoded expert knowledge, large 
 
 </panel>
 
+</panel>
 <span id="W2-c3"></span>
 
-### W2.3 What the evidence and the risks say ★★
+<panel type="seamless" minimized header="**W2.3 What the evidence and the risks say ★★**">
+
 
 **The empirical picture is mixed: real time savings on mundane work, real friction everywhere else.** The deck cites three sources — a systematic literature review of LLMs for software engineering (Hou et al. 2024), a study of generative-AI adoption (Russo 2024), and the DORA (DevOps Research and Assessment) *State of AI-assisted Software Development* report (~4900 responses) (Source: L2 slides 7–9).
 
@@ -250,9 +255,11 @@ Benefit: rapid prototyping / a testable MVP that pulls feedback forward (idea �
 
 </panel>
 
+</panel>
 <span id="W2-c4"></span>
 
-### W2.4 From assistants to autonomous development: MCP and A2A ★★★
+<panel type="seamless" minimized header="**W2.4 From assistants to autonomous development: MCP and A2A ★★★**">
+
 
 **End-to-end autonomous development needs more than a good model — it needs plumbing.** For LLMs to carry out software development end to end, the deck lists five requirements:
 
@@ -298,9 +305,11 @@ For A2A, the lecture's (fictitious but buildable) workflow: a developer tells on
 
 </panel>
 
+</panel>
 <span id="W2-c5"></span>
 
-### W2.5 The developer's role when AI does the typing ★★
+<panel type="seamless" minimized header="**W2.5 The developer's role when AI does the typing ★★**">
+
 
 **If agents can carry tasks end to end, what remains for you is exactly what this course teaches.** The lecture closed with a think-pair-share on this question — the class answered first, then the professor gave his own list, deliberately kept off the deck slide (L2 recording, ~[75:00]–[80:00]).
 
@@ -347,6 +356,7 @@ Deciphering what a field requirement actually means — interpreting intent, not
 
 </box>
 
+</panel>
 ## Connections
 
 * AI modes and risks ↔ L2 slides 2–12 ↔ Quiz 1 Q1–Q2 ↔ Tutorial 1 optional Q6 (where would AI help your application most?).

@@ -33,7 +33,8 @@ This chapter builds on [Week 3]({{baseUrl}}/se-book-adapted/chapters/week-03-req
 
 <span id="W4-c1"></span>
 
-### W4.1 What is software architecture? ★
+<panel type="seamless" minimized header="**W4.1 What is software architecture? ★**">
+
 
 **Architecture is the set of decisions about a system's overall organization — made early, expensive to reverse, and visible to everyone who builds on it.**
 
@@ -138,9 +139,11 @@ Because proposed structures are hypotheses: verification against the drivers (FR
 
 </panel>
 
+</panel>
 <span id="W4-c2"></span>
 
-### W4.2 Components, connectors, and configuration ★
+<panel type="seamless" minimized header="**W4.2 Components, connectors, and configuration ★**">
+
 
 **Architecture has exactly three building blocks — and one diagram convention for each.**
 
@@ -206,9 +209,11 @@ Component: the credit service. Synchronous connector: order service → credit s
 
 </panel>
 
+</panel>
 <span id="W4-c3"></span>
 
-### W4.3 Control flow vs data flow ★
+<panel type="seamless" minimized header="**W4.3 Control flow vs data flow ★**">
+
 
 **The same arrow in an architecture diagram can mean two different things — and which one you mean decides what you can reason about.** The deck's setup: two components C1 and C2 joined by an arrow — "what does this arrow mean?" (Source: L4 slide 10).
 
@@ -259,9 +264,11 @@ The instruction generation depends on the earlier computations having finished (
 
 </panel>
 
+</panel>
 <span id="W4-c4"></span>
 
-### W4.4 Call-and-return vs messages and events ★
+<panel type="seamless" minimized header="**W4.4 Call-and-return vs messages and events ★**">
+
 
 **Components interact in two fundamentally different ways: one component drives, or components react.** The choice shapes reliability, coupling, and how you trace an NFR to code.
 
@@ -352,9 +359,11 @@ Immutability (a recorded event cannot be silently altered) and ordering (creatio
 
 </panel>
 
+</panel>
 <span id="W4-c5"></span>
 
-### W4.5 Decomposition, slicing, and modularity ★★
+<panel type="seamless" minimized header="**W4.5 Decomposition, slicing, and modularity ★★**">
+
 
 **"How do you break it up?" is the architecture question — and there are two perpendicular ways to slice the same system.**
 
@@ -467,9 +476,11 @@ The packages are organized by technical layer, so the implementation does not ma
 
 </panel>
 
+</panel>
 <span id="W4-c6"></span>
 
-### W4.6 Coupling and cohesion ★★
+<panel type="seamless" minimized header="**W4.6 Coupling and cohesion ★★**">
+
 
 **Coupling and cohesion are the two dials every decomposition moves — push a module's cohesion up and its coupling to the rest typically falls; the vocabulary below is how you talk about the result.**
 
@@ -560,9 +571,11 @@ The password-hashing module — functional cohesion: one computation, no side ef
 
 </panel>
 
+</panel>
 <span id="W4-c7"></span>
 
-### W4.7 Architectural styles: how code is divided and how it is deployed ★★
+<panel type="seamless" minimized header="**W4.7 Architectural styles: how code is divided and how it is deployed ★★**">
+
 
 **Every architectural style answers the same two questions — how is the code divided, and how is the system deployed — and the answers form a 2×2 you should be able to fill in.**
 
@@ -670,6 +683,7 @@ Either, deliberately: moving to a modular monolith (re-partition by domain withi
 
 </box>
 
+</panel>
 ## Connections
 
 * Architecture definition and building blocks ↔ L4 slides 4–9 ↔ the process Tutorial 2 rehearses (drivers → structure → contracts → verify).

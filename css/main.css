@@ -200,6 +200,14 @@
   display: inline-block;
 }
 
+/* Unit content lives inside collapsible panels; expand them all when
+   printing so the printable Full Book keeps its full text. */
+@media print {
+  #flex-body .card-collapse {
+    display: block !important;
+  }
+}
+
 /* Mermaid diagrams render with light-theme colours in both themes; give
    them a light ground in dark mode (same approach as the se-book's .tbg),
    so arrows and node fills stay legible. */

@@ -27,7 +27,8 @@ Builds on **Week 9** — events, fire-and-forget communication, EDA, and event-d
 
 <span id="W10-c1"></span>
 
-### W10.1 Synchronous vs asynchronous communication ★
+<panel type="seamless" minimized header="**W10.1 Synchronous vs asynchronous communication ★**">
+
 
 **Every inter-service call is a bet on the other side being up — sync or async decides who waits, and who handles the failure.** This unit pins down the two styles the last two weeks have been using informally.
 
@@ -135,9 +136,11 @@ The Research service asks the Archive service to locate an old dataset; the sear
 
 </panel>
 
+</panel>
 <span id="W10-c2"></span>
 
-### W10.2 Events vs messages: intent matters ★
+<panel type="seamless" minimized header="**W10.2 Events vs messages: intent matters ★**">
+
 
 **Same broker, same wire, same asynchronous mechanics — what makes an event an event is the *intent* with which it is sent.** Getting this classification right decides receivers, channels, and who owns what.
 
@@ -239,9 +242,11 @@ The recording works through the trade-offs the slides only imply (L10 recording,
 
 </panel>
 
+</panel>
 <span id="W10-c3"></span>
 
-### W10.3 Single vs multiple receivers ★
+<panel type="seamless" minimized header="**W10.3 Single vs multiple receivers ★**">
+
 
 **How many services must react decides the channel — and the channel decides ordering, scaling, and delivery guarantees.** Point-to-point and pub/sub are the two receiver topologies (slide 20).
 
@@ -359,9 +364,11 @@ In all four, the guarantee is the same: the message **will** be delivered — ne
 
 </panel>
 
+</panel>
 <span id="W10-c4"></span>
 
-### W10.4 Persistent vs transient communication ★★
+<panel type="seamless" minimized header="**W10.4 Persistent vs transient communication ★★**">
+
 
 **When the receiver is down, persistence decides whether "offline" means "later" or "never".** This is the third axis of component communication, and it combines with the first two.
 
@@ -446,6 +453,7 @@ A transport operator requires every submitted incident to be analyzed within fiv
 * **Persistence is the third axis:** store-and-forward survives outages and guarantees eventual delivery; transient buffers vanish with their applications — and neither persistence nor asynchronicity is a timeliness or capacity guarantee.
 </box>
 
+</panel>
 ## Key terms
 
 <span id="W10-key-terms"></span>

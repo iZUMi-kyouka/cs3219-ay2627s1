@@ -32,7 +32,8 @@
 
 <span id="W7-c1"></span>
 
-### W7.1 The microservice architectural style ★
+<panel type="seamless" minimized header="**W7.1 The microservice architectural style ★**">
+
 
 **When one application grows too large for one team, one codebase, and one deployment, the microservice style is the lecture's structural answer.** The lecture sets the scene with the question: what happens when the system becomes too large for a single application? A large codebase, slow deployment, multiple teams involved, and scaling issues — no independent scaling. (Source: L7 slide 3.)
 
@@ -145,9 +146,11 @@ flowchart LR
 
 </panel>
 
+</panel>
 <span id="W7-c2"></span>
 
-### W7.2 Organized around business capabilities ★
+<panel type="seamless" minimized header="**W7.2 Organized around business capabilities ★**">
+
 
 **Microservice boundaries follow the business, not the code — a service is a business capability with a team attached.** "A microservice offers a well-defined business capability", and microservice boundaries are closely aligned with business capabilities. (Source: L7 slides 8–9.)
 
@@ -215,9 +218,11 @@ Not capability-aligned: it is a technical resource, not a well-defined business 
 
 </panel>
 
+</panel>
 <span id="W7-c3"></span>
 
-### W7.3 Monolith vs microservices: the trade-offs ★
+<panel type="seamless" minimized header="**W7.3 Monolith vs microservices: the trade-offs ★**">
+
 
 **Splitting is not a free win: the lecture prices every buy in microservices with a matching cost.** Deciding whether to split means weighing both columns for *your* system — the lecture's own think-pair-share (think alone, discuss in pairs, share with the room) drills exactly this. (Source: L7 slides 14–15.)
 
@@ -345,9 +350,11 @@ Exactly-once credit transfer: with a single DB, the transfer is one local transa
 
 </panel>
 
+</panel>
 <span id="W7-c4"></span>
 
-### W7.4 How microservices communicate ★
+<panel type="seamless" minimized header="**W7.4 How microservices communicate ★**">
+
 
 **Independently deployable services must still talk to each other — through well-defined mechanisms, synchronously or asynchronously, and the choice changes what happens when a service is down.** The lecture's invoice example contrasts the two modes directly. (Source: L7 slide 13.)
 
@@ -406,9 +413,11 @@ The middleware stores the `BookingRequested` event until Matching becomes availa
 
 </panel>
 
+</panel>
 <span id="W7-c5"></span>
 
-### W7.5 Domain-driven design: domain, sub-domain, domain model ★
+<panel type="seamless" minimized header="**W7.5 Domain-driven design: domain, sub-domain, domain model ★**">
+
 
 **Before you can cut services along business lines, you need a vocabulary for the business — that is what domain-driven design provides.** DDD is a domain-centric approach to software design for complex problem domains, a collection of patterns, principles, and practices that keeps the domain model isolated from technical complexities so software closely reflects business needs. (Source: L7 slide 20.)
 
@@ -506,9 +515,11 @@ Buy — it is a generic sub-domain: not specific to the business, implemented us
 
 </panel>
 
+</panel>
 <span id="W7-c6"></span>
 
-### W7.6 Bounded contexts and the ubiquitous language ★
+<panel type="seamless" minimized header="**W7.6 Bounded contexts and the ubiquitous language ★**">
+
 
 **Sub-domains are problem-space slices; bounded contexts are where they become buildable — and where a shared language makes them ownable by one small team.** The lecture pairs the two deliberately: a sub-domain is closely aligned with its bounded context. (Source: L7 slide 21.) Close alignment is the *ideal* — "close alignment usually indicates that the modeling has been done well" — but it is not always the reality: one e-commerce bounded context can cover several sub-domains (L7-DDD recording, ~[10:00, ~28:00]).
 
@@ -593,9 +604,11 @@ Option (d) — Order Processing publishes an `OrderPlaced` event that the Wareho
 
 </panel>
 
+</panel>
 <span id="W7-c7"></span>
 
-### W7.7 Aggregates: the consistency unit of DDD ★★
+<panel type="seamless" minimized header="**W7.7 Aggregates: the consistency unit of DDD ★★**">
+
 
 **Inside a bounded context, the aggregate is the unit you may change atomically — get it wrong and either your data is inconsistent or your locks are everywhere.** The lecture calls the aggregate "the consistency unit in DDD". (Source: L7 slide 33.)
 
@@ -641,9 +654,11 @@ The business operations and invariants belong to the ticket as a whole (closing 
 
 </panel>
 
+</panel>
 <span id="W7-c8"></span>
 
-### W7.8 Identifying microservices: DDD and event storming ★★
+<panel type="seamless" minimized header="**W7.8 Identifying microservices: DDD and event storming ★★**">
+
 
 **Ad-hoc service boundaries drift into scope creep (functionality silently expanding beyond what was planned), low cohesion, and high coupling — the lecture's answer is to derive boundaries from the domain, then confirm them with event storming.** (Source: L7 slides 16, 37.) The recorded segment starts from the anti-pattern itself: a reasonable-looking start is to group backlog entries into services — but grouping features ad hoc "can introduce coupling knowingly or unknowingly"; the service accumulates responsibilities that do not belong to it, and as it does, its cohesion drops and its coupling with the rest of the system rises (L7-DDD recording, ~[0:30]).
 
@@ -752,6 +767,7 @@ That you are looking at a potential boundary between microservices — the polic
 
 </box>
 
+</panel>
 ## Connections
 
 | Concept | Lecture | Tutorial | Other weeks |

@@ -27,7 +27,8 @@ Builds on **Weeks 7–8** — the microservice style, DDD and event storming, an
 
 <span id="W9-c1"></span>
 
-### W9.1 Events: the four views ★
+<panel type="seamless" minimized header="**W9.1 Events: the four views ★**">
+
 
 **Everything in this week — and much of the next — hangs off one small idea: a recorded fact.** Get clear on what an event is and is not, and the rest of event-driven design follows.
 
@@ -210,9 +211,11 @@ The same ride-hailing platform (Quiz 2's Grab-like app) can key its car events t
 
 </panel>
 
+</panel>
 <span id="W9-c2"></span>
 
-### W9.2 Fire-and-forget asynchronous communication ★
+<panel type="seamless" minimized header="**W9.2 Fire-and-forget asynchronous communication ★**">
+
 
 **The moment a producer waits for its consumers, it inherits every one of their failures.** Fire-and-forget is the communication style that makes the event cascade of W9.1 possible.
 
@@ -296,9 +299,11 @@ How to read it: above the first note — the Order service cannot create the err
 
 </panel>
 
+</panel>
 <span id="W9-c3"></span>
 
-### W9.3 Event-driven architecture ★
+<panel type="seamless" minimized header="**W9.3 Event-driven architecture ★**">
+
 
 **EDA is what you get when every conversation in the system becomes an event.** One definition, three component roles, and a comparison against the microservice architecture you already know.
 
@@ -418,9 +423,11 @@ Two qualifications from the recorded videos sharpen the deck's comparison:
 
 </panel>
 
+</panel>
 <span id="W9-c4"></span>
 
-### W9.4 Event-driven microservices ★★
+<panel type="seamless" minimized header="**W9.4 Event-driven microservices ★★**">
+
 
 **Microservices give the boundaries; events give the wiring — the hybrid is the event-driven microservice.** The deck asks straight out: "Is this a hybrid: EDA + 𝜇service?" (slide 29 — "𝜇service" is the slide's shorthand for *microservice*: µ is the micro prefix).
 
@@ -556,6 +563,7 @@ How to read it: the User service is the only writer to this topic (single-owner 
 * **EDA routes facts through a broker to subscribers**; event-driven microservices add bounded contexts, single-owner streams, and log semantics (immutability, ordering, offsets, partitions, replay) on top.
 </box>
 
+</panel>
 ## Key terms
 
 <span id="W9-key-terms"></span>

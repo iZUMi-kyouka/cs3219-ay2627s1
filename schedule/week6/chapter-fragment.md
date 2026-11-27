@@ -29,7 +29,8 @@
 
 <span id="W6-c1"></span>
 
-### W6.1 Classifying architectural styles ★
+<panel type="seamless" minimized header="**W6.1 Classifying architectural styles ★**">
+
 
 **Every {{ term("architectural style", "a reusable way of organizing the major parts of a system") }} answers the same two questions — how is the code divided, and how is it deployed — so learning the taxonomy tells you where each new style lives.** The lecture introduces styles as "many software architectural styles exist — each follows a specific philosophy", because software is built for a specific purpose. (Source: L6-Architecture slide 4.)
 
@@ -94,9 +95,11 @@ Team 1: technical division, single deployed unit (layered). Team 2: domain divis
 
 </panel>
 
+</panel>
 <span id="W6-c2"></span>
 
-### W6.2 Layered architecture ★
+<panel type="seamless" minimized header="**W6.2 Layered architecture ★**">
+
 
 **Layering is the default way engineers organize a codebase, and its costs — not its benefits — are what exam questions probe.** The style supports independent development and evolution of the system's parts by giving each layer one distinct responsibility. (Source: L6-Architecture slides 6–8.)
 
@@ -196,9 +199,11 @@ The system can no longer swap the database technology easily — upper layers no
 
 </panel>
 
+</panel>
 <span id="W6-c3"></span>
 
-### W6.3 Pipe-and-filter ★
+<panel type="seamless" minimized header="**W6.3 Pipe-and-filter ★**">
+
 
 **When the work is a stream of data to transform rather than a user to serve, pipe-and-filter divides the task into replaceable, replicable steps.** Data enters the system and flows through the components one at a time until it reaches a final destination (the data sink), with a series of transformations applied on the way. (Source: L6-Architecture slide 9.)
 
@@ -325,9 +330,11 @@ Pipe-and-filter: data flows in streams through independent transformations, thro
 
 </panel>
 
+</panel>
 <span id="W6-c4"></span>
 
-### W6.4 Modular monolith: package by domain ★★
+<panel type="seamless" minimized header="**W6.4 Modular monolith: package by domain ★★**">
+
 
 **The modular monolith keeps one deployable but changes the dividing lines from technical concerns to business domains — and that single change buys feature ownership.** Where the layered architecture separates by technical concern, the modular monolith separates by domain (business) concern, with individual domains making up the modules. (Source: L6-Architecture slide 13.)
 
@@ -386,9 +393,11 @@ In spirit: call inventory's availability-check API (explicit, narrow contract). 
 
 </panel>
 
+</panel>
 <span id="W6-c5"></span>
 
-### W6.5 MVC and Web MVC ★
+<panel type="seamless" minimized header="**W6.5 MVC and Web MVC ★**">
+
 
 **MVC exists because UI-heavy programs mix three concerns that change for different reasons — what is shown, what input means, and what is true.** The style separates code into three components and is mostly applicable to programs with (graphical) user interfaces — (G)UIs: mobile apps, games, web apps. (Source: L6-Architecture slide 18.)
 
@@ -483,9 +492,11 @@ Page controller: handles requests for a specific page. Front controller: the sin
 
 </panel>
 
+</panel>
 <span id="W6-c6"></span>
 
-### W6.6 Single-page applications (SPA) ★
+<panel type="seamless" minimized header="**W6.6 Single-page applications (SPA) ★**">
+
 
 **The SPA trades page refreshes for a program that lives in the browser — better experience, new security bill.** The lecture sets it up by contrasting two web-app flows: the classic form POST (HTML page back, more refreshes, more server work) versus the {{ term("Ajax", "a browser technique where a script sends HTTP requests and processes responses in the background — no page refresh") }} flow (a script posts in the background, JSON comes back, fewer refreshes). (Source: L6-Architecture slide 23.)
 
@@ -580,9 +591,11 @@ Client-side security exposure: XSS vulnerability and reduced client-side trust (
 
 </box>
 
+</panel>
 <span id="W6-c7"></span>
 
-### W6.7 REST: an architectural style for the web ★
+<panel type="seamless" minimized header="**W6.7 REST: an architectural style for the web ★**">
+
 
 **REST is the style that made the web's API layer uniform: one set of constraints, exploited everywhere, for any client.** It was originated by Roy Thomas Fielding — principal author of the HTTP specification and co-founder of the Apache HTTP server — in his dissertation *Architectural Styles and the Design of Network-based Software Architectures*. (Source: L6-REST slide 3.)
 
@@ -630,9 +643,11 @@ A style choice. REST is a set of constraints for creating web services, not an a
 
 </panel>
 
+</panel>
 <span id="W6-c8"></span>
 
-### W6.8 The REST constraints ★
+<panel type="seamless" minimized header="**W6.8 The REST constraints ★**">
+
 
 **The six constraints are REST's whole content — each buys specific qualities, and each has a cost you can name.** The lecture's overview slide lists them around the word REST: client-server, stateless, cacheable, layered system, uniform interface, and code-on-demand. (Source: L6-REST slide 6.)
 
@@ -744,9 +759,11 @@ Statelessness — no session is kept on the server, so any replica (or a restart
 
 </panel>
 
+</panel>
 <span id="W6-c9"></span>
 
-### W6.9 Resources, representations, and content negotiation ★★
+<panel type="seamless" minimized header="**W6.9 Resources, representations, and content negotiation ★★**">
+
 
 **The uniform interface needs something uniform to point at — REST's answer is the resource, addressed by URI and exchanged as representations.** The lecture unpacks the uniform interface into resource orientation, self-describing messages, and hypermedia links. (Source: L6-REST slides 12–14.)
 
@@ -832,9 +849,11 @@ Self-describing: the message carries its own processing information — `id`, `s
 
 </panel>
 
+</panel>
 <span id="W6-c10"></span>
 
-### W6.10 REST: strengths, limits, and alternatives ★★
+<panel type="seamless" minimized header="**W6.10 REST: strengths, limits, and alternatives ★★**">
+
 
 **REST's strengths and weaknesses come from the same source — its generic, uniform, stateless web plumbing — so knowing when *not* to use it is part of knowing REST.** (Source: L6-REST slide 16.)
 
@@ -904,9 +923,11 @@ REST enforces synchronous request–response coupling: Booking would need to cal
 
 </panel>
 
+</panel>
 <span id="W6-c11"></span>
 
-### W6.11 Communicating the architecture: diagrams and the model-code gap ★★
+<panel type="seamless" minimized header="**W6.11 Communicating the architecture: diagrams and the model-code gap ★★**">
+
 
 **An architecture that lives only in code cannot be argued about — the lecture closes with how to draw the big picture and why a diagram is never the code itself.** The professor's framing of the diagram's purpose: it should contain the big picture and tell how your software is organized — "some people come with very low-level class diagrams... you leave that behind in 2103, 2113 — we graduate from that." Architecture diagrams are free-form diagrams: the big picture of what is being built, a shared vision of the team, a focus for technical conversations, a map for navigating the source code, a communication tool for people outside the team, and an onboarding accelerator. (Source: L6-Architecture slide 27; L6 recording, ~97:00.)
 
@@ -998,6 +1019,7 @@ Any four:
 
 </box>
 
+</panel>
 ## Connections
 
 | Concept | Lecture | Tutorial | Other weeks |

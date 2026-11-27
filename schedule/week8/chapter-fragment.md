@@ -28,7 +28,8 @@ Builds on **Week 4** (architecture and deployment styles), **Week 6** (architect
 
 <span id="W8-c1"></span>
 
-### W8.1 Domain-driven design: from domain to bounded context ★
+<panel type="seamless" minimized header="**W8.1 Domain-driven design: from domain to bounded context ★**">
+
 
 **Microservices fail when they are cut along technical layers instead of business lines, so you need a disciplined way to find the cuts.** {{ term("domain-driven design", "an approach to software design that models a system around the business domain, its subdomains, and bounded contexts") }} (DDD) supplies that discipline: it names the problem space first (domains and subdomains) and only then designs the solution space (bounded contexts).
 
@@ -162,9 +163,11 @@ The professor connected this directly to the project: one of the most common pie
 
 </panel>
 
+</panel>
 <span id="W8-c2"></span>
 
-### W8.2 Data patterns: owning, querying, and reconciling data ★★
+<panel type="seamless" minimized header="**W8.2 Data patterns: owning, querying, and reconciling data ★★**">
+
 
 **A microservice you cannot deploy independently is not a microservice, and a shared table is the classic threat to that independence.** The deck's guiding question is "what is the barrier for independent deployment?" — and its guideline answers it: microservices must own their data (L8 slide 6).
 
@@ -371,9 +374,11 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
 
 </panel>
 
+</panel>
 <span id="W8-c3"></span>
 
-### W8.3 Event sourcing and CQRS ★★
+<panel type="seamless" minimized header="**W8.3 Event sourcing and CQRS ★★**">
+
 
 **Once services stop sharing tables, "current state" needs a source of truth you can trust — and the log of what happened is that source.** Event sourcing makes the log the storage; CQRS splits the readers from the writers (L8 slides 17–28).
 
@@ -488,9 +493,11 @@ An order is accepted in the *orders* service (write path: the order event is rec
 
 </panel>
 
+</panel>
 <span id="W8-c4"></span>
 
-### W8.4 Communication, gateway, and discovery patterns ★★★
+<panel type="seamless" minimized header="**W8.4 Communication, gateway, and discovery patterns ★★★**">
+
 
 **Well-carved services still need to find each other and talk — without the wiring recreating the monolith.** This unit collects the supporting patterns the deck groups under "other patterns": how services interact, how clients enter the system, how processes are coordinated, and how services are located (L8 slides 29–37).
 
@@ -639,6 +646,7 @@ The workflow: create the customer record, create the loyalty record and assign t
 * **The supporting patterns wire it up:** three interprocess styles, an API gateway as the single tailored entry point, orchestration vs choreography for process control, and service discovery via a registry.
 </box>
 
+</panel>
 ## Key terms
 
 | Term | Definition | Unit |
