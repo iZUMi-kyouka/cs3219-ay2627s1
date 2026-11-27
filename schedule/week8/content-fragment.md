@@ -33,7 +33,7 @@ Slides 2–3 → [W8.1]({{baseUrl}}/se-book-adapted/chapters/week-08-microservic
 
 **Event sourcing replaces stored state with stored facts.** Events are immutable, timestamped, and appended in order; the current state is derived by replaying them (chess moves; `OrderPlaced` → `PaymentReceived` → `OrderShipped`). Slides 17–21 → [W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3).
 
-**CQRS separates the write path from the read path, each with its own model.** Commands change state and return nothing; queries return data and change nothing. One write model can feed many materialized views (e.g., via Kafka + KSQL), each scaled and stored independently — and, as the next lecture clarifies, CQRS doesn't *always* need events or event sourcing; they are just mostly used together. Slides 22–28 → [W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3).
+**CQRS separates the write path from the read path, each with its own model; storage may be shared.** Page 26's separate-storage quotation is too restrictive: page 27 shows shared and separate stores. Asynchronous materialized-view maintenance can lag; materialization itself does not mandate eventual consistency. Commands change state and return nothing; queries return data and change nothing. One write model can feed many materialized views (e.g., via Kafka + KSQL), each scaled and stored independently — and, as the next lecture clarifies, CQRS doesn't *always* need events or event sourcing; they are just mostly used together. Slides 22–28 → [W8.3]({{baseUrl}}/se-book-adapted/chapters/week-08-microservices-ii.html#W8-c3).
 
 **The closing set wires services together.**
 

@@ -62,7 +62,7 @@
 
 **Identifying services: three DDD constructs, SRP, and {{ term("event storming", "a lightweight workshop tracing commands → aggregates → events → policies to find boundaries") }} — with cautions.** (Slides 35–43.) → [W7.8]({{baseUrl}}/se-book-adapted/chapters/week-07-microservices-i.html#W7-c8)
 
-- Use sub-domains, bounded contexts, and aggregates to define service candidates.
+- Use subdomains for business responsibilities, bounded contexts for model ownership, and aggregates for consistency units. The expanded examination example in W7.8 distinguishes these from deployment boundaries; none requires a one-to-one service mapping.
 - Decompose by verb (Shipping service) or noun (Account service).
 - Storm the domain: commands → aggregates → events → policies → boundaries.
 - None of the mappings is 1:1 — group by business capability and cohesion, and expect boundaries to evolve.

@@ -388,7 +388,7 @@ How to read it: top to bottom in time order — the two forward steps (reserve, 
   <span slot="header" class="card-title"><markdown>### W8.3 Event sourcing and CQRS ★★</markdown></span>
 
 
-**Once services stop sharing tables, "current state" needs a source of truth you can trust — and the log of what happened is that source.** Event sourcing makes the log the storage; CQRS splits the readers from the writers (L8 slides 17–28).
+**Choosing how to persist changes and how to serve reads are separate design decisions.** Event sourcing makes persisted events authoritative; CQRS separates command and query models. Neither follows automatically from splitting services (L8 slides 17–28).
 
 **Event sourcing and CQRS are a twin pair with different jobs.** Event sourcing is a *data storage* pattern; CQRS is a *data access* pattern (L8 recording, ~[65:00]). The recording adds the adoption logic: teams rarely implement event sourcing for its own sake — the usual reason is that they want to take advantage of CQRS, which is why the two travel together. (What each pattern strictly *requires* is settled below — the deck keeps them decoupled.)
 
@@ -426,6 +426,28 @@ flowchart LR
 
 How to read it: writes only ever append to the log on the left; the view on the right is not written to directly but derived by replaying events in order. If the view is lost or wrong, rebuild it from the log — the log is the source of truth (L8 slides 18–21).
 
+{% call example("Current state versus event history — examination application; external example") %}
+%%External example applying L8 slides 17–24.%%
+A conventional `answers` row for Attempt 123/Q1 changes from A to C. Reading that row returns C; the row alone does not retain the previous selection. An event-sourced stream instead appends `AnswerSelected(Q1,A)` followed by `AnswerChanged(Q1,C)`. Applying those facts in sequence reconstructs C while retaining the history.
+
+**"Derived state" means calculated from events, not a calculus derivative.** A relational database can store an event table: event sourcing is a persistence pattern, not an alternative database product. Publishing messages or maintaining an audit log alone does not make them the authoritative source of state.
+
+**A materialized view stores a calculated result for later queries.** A processor consumes the answer events and maintains `CurrentAnswers(attemptId, questionId, answer)`. Another view can count submissions per exam. Queries read these prepared tables instead of replaying the whole history each time. Snapshots can also shorten state reconstruction, though a snapshot and a query-specific read view have different purposes.
+
+| Time | Authoritative event stream | Asynchronously maintained current-answer view |
+|---|---|---|
+| Before change | Q1 selected A | Q1 = A |
+| Change committed | Q1 changed to C appended | Q1 = A until processed |
+| Processor catches up | Same retained history | Q1 = C |
+
+**Asynchronous maintenance causes the consistency gap.** Replaying all committed events for this stream as of a read reconstructs state through that read point. A projection may lag. Materialization itself does not require lag: if the authoritative change and view update commit atomically in one transaction, they can remain consistent. Rebuilding a view requires sufficient event history and compatible processing logic. (Clarification of L8 slides 21–24.)
+{% endcall %}
+
+<panel type="seamless" minimized header="%%Revision self-check: does storing events automatically mean CQRS?%%">
+
+No. Event sourcing chooses the authoritative persistence format. CQRS separates command/query models. Materialized views precompute query results. Each is a separate choice; asynchronous view maintenance introduces a possible freshness gap. (L8 slides 17–27; L9 slide 2.)
+</panel>
+
 #### CQRS: separating the write path from the read path
 
 **CQRS takes that split and makes it a first-class architectural decision.** The write path and the read path get different models, and often different databases.
@@ -434,15 +456,29 @@ How to read it: writes only ever append to the log on the left; the view on the 
 <include src="../../se-book-adapted/common/defs-week-08.md#def-cqrs" trim />
 </box>
 
+<box type="important" seamless>
+
+**CQRS requires separate command/query responsibilities and models, not separate tables or databases.** Page 26's quotation describes separate storage as mandatory, but page 27's left diagram explicitly shows both models sharing one store. The quotation is too restrictive; page 27's right diagram adds separate stores and synchronization as an implementation option. The [Fowler explanation cited by the slide](https://martinfowler.com/bliki/CQRS.html) explicitly permits shared storage.
+
+| Design choice | CQRS requirement? |
+|---|---|
+| Separate models/responsibilities for updates and queries | Yes |
+| Separate tables, databases or deployed services | No |
+| Event sourcing, Kafka or asynchronous synchronization | No |
+| Eventual consistency | No; depends on the synchronization mechanism |
+
+**A software model and a stored copy are different things.** In the examination example, the command side loads an Exam aggregate to validate `addQuestion`, while the query side joins the same `exams` and `exam_questions` tables into a simple ExamSummary. That is separate models over shared data. Maintaining a second precomputed summary store is an additional choice. %%External example applying L8 slides 25–27.%%
+</box>
+
 **Commands and queries are different animals.** Commands are operations that change application state and return no data — the methods with side effects; queries return data but do not change application state (L8 slide 25, from Bertrand Meyer's command–query separation).
 
-**The split buys two things: recoverability and independent optimization.** Should something go wrong, the internal state of the database can be recovered from the log; and writes and reads can be optimized independently, because nothing forces one model to serve both (L8 slide 22).
+**Model separation supports independent optimization; recovery from an event log additionally depends on retaining that authoritative log.** The combined CQRS/event-sourcing design on slide 22 offers both benefits. CQRS alone does not create a recoverable event history.
 
 {% call example("L8 recording, ~[80:00] — one sale, two different bottlenecks") %}
-During a 10.10 mega-sale, orders flood in: scale and optimize the *write* side, which is where the load is. Two days later the same customers all ask "where is my order?": reads spike while writes are quiet — so now scale and optimize the *read* side. Neither move is available if one model serves both.
+During a 10.10 mega-sale, orders flood in: scale and optimize the *write* side, which is where the load is. Two days later the same customers all ask "where is my order?": reads spike while writes are quiet — so now scale and optimize the *read* side. CQRS makes separate optimization explicit; scaling queries or storage is not exclusive to CQRS.
 {% endcall %}
 
-**One write model can push data into many read models.** Writes go into Kafka on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source — renamed ksqlDB in 2019 %%Confluent docs%%) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24). The recording sharpens three details. KSQL is *not* a "select and get the answer" query — it processes the stream of events to generate the view (L8 recording, ~[75:00]). The views are updated by predefined queries as new events arrive, so they are not real-time (L8 recording, ~[80:00]). And one event stream feeds very different consumers — a system-monitoring view for administrators, an order-history view for customers (L8 recording, ~[80:00]); the recording compares the idea to MVC's many views over one model, with the caveat that the mechanism is entirely different.
+**One write model can push data into many read models.** Writes go into Kafka on the command side rather than updating a table directly; the event stream is transformed to suit each query, typically with KSQL (a SQL-like language for querying Kafka's streams, per the slide's Confluent source — renamed ksqlDB in 2019 %%Confluent docs%%) and materialized as a precomputed view. The underlying events are decoupled from each view, so each can be scaled independently — and read models can live in any database, or a range of different databases (L8 slides 23–24). The recording sharpens three details. KSQL is *not* a "select and get the answer" query — it processes the stream of events to generate the view (L8 recording, ~[75:00]). The views are updated as events arrive; asynchronous processing can introduce lag, rather than guaranteeing immediate freshness (L8 recording, ~[80:00]). And one event stream feeds very different consumers — a system-monitoring view for administrators, an order-history view for customers (L8 recording, ~[80:00]); the recording compares the idea to MVC's many views over one model, with the caveat that the mechanism is entirely different.
 
 <panel type="seamless" minimized header="%%What is Kafka?%%">
 
@@ -458,7 +494,7 @@ During a 10.10 mega-sale, orders flood in: scale and optimize the *write* side, 
 
 <box type="important" seamless>
 
-**CQRS does not always need events or event sourcing — they are just mostly used together.** You can segregate commands from queries with plain CRUD (create, read, update, delete — the basic data-table operations) on two stores; event sourcing simply makes the write side a natural, ready-made event feed for the read side. (Source: L9 slide 2, the deck's own clarification.)
+**CQRS does not always need events or event sourcing — they are just mostly used together.** You can segregate commands from queries without events, using command and query models over shared storage or synchronized separate stores; event sourcing simply makes the write side a natural, ready-made event feed for the read side. (Source: L9 slide 2, the deck's own clarification.)
 </box>
 
 <box type="info" seamless>
@@ -482,7 +518,7 @@ An order is accepted in the *orders* service (write path: the order event is rec
 
 <box type="warning" seamless>
 
-**Pitfall — derived views lag the log.** A materialized view is only as fresh as its last computation, and an event-sourced view is derived by replaying events; a query answered from the read path can trail the most recent write. Design consumers of the view for that gap instead of promising read-your-writes consistency — the guarantee that a user sees the results of their own latest write on their very next read — everywhere (L8 slides 21, 23–24).
+**Pitfall — asynchronously updated views can lag the log.** A materialized view is only as fresh as its last computation, and an event-sourced view is derived by replaying events; a query answered from the read path can trail the most recent write. Design consumers of the view for that gap instead of promising read-your-writes consistency — the guarantee that a user sees the results of their own latest write on their very next read — everywhere (L8 slides 21, 23–24).
 </box>
 
 <panel type="seamless" header=":glyphicon-question-sign: **Self-check**">
@@ -511,6 +547,11 @@ An order is accepted in the *orders* service (write path: the order event is rec
 
 
 **Well-carved services still need to find each other and talk — without the wiring recreating the monolith.** This unit collects the supporting patterns the deck groups under "other patterns": how services interact, how clients enter the system, how processes are coordinated, and how services are located (L8 slides 29–37).
+
+<panel type="seamless" minimized header="%%Revision self-check: must discovery and registration use the same side?%%">
+
+No. Discovery asks who reads the registry and selects a destination; registration asks who maintains registry entries. Client-side discovery can use third-party registration, and server-side discovery can use self-registration. The registry itself is a directory used by both discovery patterns. (L8 slides 33–37.)
+</panel>
 
 #### Interprocess communication styles
 
@@ -616,6 +657,22 @@ The workflow: create the customer record, create the loyalty record and assign t
 
 * **Client-side discovery** — the client queries the service registry, determines the network locations of the available instances, and uses a load-balancing algorithm %%load balancing: spreading requests across multiple instances so no single one is overwhelmed; Week 12 develops it in full%% to pick one (L8 slide 34).
 * **Server-side discovery** — the client makes a request to a load balancer; the load balancer queries the registry and routes each request to an available instance, e.g. NGINX Plus (a commercial version of the widely used NGINX web server, sold with load-balancing features) or an AWS Elastic Load Balancer (ELB — Amazon's managed service that automatically distributes incoming traffic across multiple targets such as EC2 instances and containers) (L8 slide 35).
+
+**The registry is the directory used by discovery, not a third alternative to client-side and server-side discovery.** Its entries map service names to available instance addresses. Here "client" means the caller, which may itself be a microservice or an API gateway. (L8 slides 33–37.)
+
+{% call example("Discovery versus registration — examination application; external example") %}
+%%External example applying L8 slides 33–37.%%
+Exam Service calls Question Bank, whose instances run at A, B and C.
+
+| Choice | Lookup and selection | Actual request path |
+|---|---|---|
+| Client-side discovery | Exam Service's client library reads the registry and selects B | Exam Service directly calls B |
+| Server-side discovery | A router/load balancer reads the registry and selects B | Exam Service calls router; router forwards to B |
+
+The registry returns addresses; it normally does not forward the business request. Lookups can be cached or updated in the background instead of repeated per request.
+
+**Registration answers a separate question: who maintains those directory entries?** Self-registration means B registers itself. Third-party registration means a registrar/platform does so for B. Either registration style can accompany either discovery style. Health checks or heartbeat/lease expiry handle crashes where a clean deregistration is impossible.
+{% endcall %}
 
 **Registration comes in two flavors.** With self-registration, service instances register themselves on startup and deregister on shutdown; with third-party registration, a registrar does it on their behalf. The recording spells out both mechanically (L8 recording, ~[90:00]): in self-registration the registry's address is part of the service's configuration, and on startup the instance tells the registry "I am up — this is my service name, my IP address, my port; please make a note." In third-party registration, the registrar is configured with a range of addresses and health-checks it — "are you alive?" — registering whichever instance answers. Registries in practice include Apache Zookeeper, Consul, and Etcd %%all distributed infrastructure tools commonly repurposed as registries: Zookeeper is a distributed coordination service, while Consul and Etcd are distributed key–value stores that keep one entry per service instance%% — and some systems (Kubernetes, Marathon, AWS ELB) have an implicit registry built in %%they track the instances they deploy themselves, so no separate registry product is needed%% (L8 slides 36–37).
 

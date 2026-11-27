@@ -75,8 +75,8 @@
 
 <span id="def-cqrs">
 
-**CQRS** (command–query responsibility segregation) — a pattern that separates the write path (commands, which change application state and return no data) from the read path (queries, which return data and change nothing), giving each its own model and often its own database. CQRS does not require events or event sourcing; they are just mostly used together.
-%%(Source: L8 slides 22, 25–26; L9 slide 2.)%%
+**CQRS** (command–query responsibility segregation) — a pattern that separates the write path (commands, which change application state and return no data) from the read path (queries, which return data and change nothing), giving each its own model. They may share the same tables/database or use separate synchronized stores. CQRS does not require events or event sourcing; they are just mostly used together.
+%%(Source: L8 slides 22, 25–27; L9 slide 2.)%%
 
 </span>
 

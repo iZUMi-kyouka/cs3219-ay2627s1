@@ -694,10 +694,23 @@ A style choice. REST is a set of constraints for creating web services, not an a
 <include src="../../se-book-adapted/common/defs-week-06.md#def-statelessness" trim />
 </box>
 
-**The mechanism behind the scalability buy is thread (resource) reuse.** In the stateful version, the server must keep the conversation's context across requests — a thread or other resources stay allocated while the client supplies the missing information. In the stateless version, a thread processes the request, returns a response, and is freed — so the server is limited by the number of concurrent *requests*, not the number of connected *clients*. Reliability has the same shape: each request is complete, so a dropped packet or a server failure during processing is recovered by resending the same request — no lost context to reconstruct, no incomplete session to clean up. Monitoring is what you would expect: to understand what happened to a request, examine that request alone — no session logs, no replaying earlier interactions. (Source: L6 recording (REST), ~8:00–10:00.)
+**Statelessness removes the need to retain a client's conversation between requests.** A stateful session can consume memory while its client is idle; it does not inherently require a dedicated thread or connection. Statelessness lets request-processing resources be released and reduces session-management overhead. It also lets another replica handle a subsequent self-contained request, provided it can access the necessary application data. (Clarification of L6-REST slide 8.)
+
+| Benefit | Why statelessness helps | Limit of the claim |
+|---|---|---|
+| Scalability | No conversational session to retain for each idle client; requests can be distributed across replicas | Database, CPU and other resource limits still apply |
+| Reliability | Another server can process the next request without recovering a lost client session | An interrupted payment cannot blindly be retried: duplicate prevention/idempotency still matters |
+| Monitoring | Inspecting the request reveals the requested operation and its context without reconstructing a conversation | Diagnosing a failure can still require server logs, traces and database information |
+
+**Stateless requests can read and change persisted application data.** The restriction concerns remembered client conversation/session context, not accounts, orders or exam records in a database. Request bodies can also carry relevant information; it need not all be in the URI or headers.
 
 {% call example("L6-REST slide 8 — the professor who does not remember you") %}
 A student messages: "Prof, I'm John, Team 3, I need to change the presentation slot." The server-side professor — stateless — replies "Errm! Who are you? Which course?" because nothing from earlier messages is remembered. The stateless client must resend the full context every time: "Prof, to SDA course, I'm John from Team 3, I need to change the presentation slot." Every request carries its whole world; that is the stateless constraint, with its cost — repetitive data sent in a series of queries.
+{% endcall %}
+
+{% call example("Statelessness — examination application; external example") %}
+%%External example applying L6-REST slide 8.%%
+`POST /attempts/123/answers`, with authorization credentials and body `{"questionId":42,"answer":"C"}`, identifies the caller, target and requested change. The server may read Attempt 123, check that it is open, and persist the answer. The operation has a side effect while remaining stateless. By contrast, sending only an answer and relying on a previous request's remembered "currently selected attempt" is session-dependent.
 {% endcall %}
 
 **Cacheable: responses declare whether — and for how long — they may be reused.** The server's response states if the data is cacheable (and for how long) or not; the client returns cached data for subsequent equivalent requests, potentially eliminating interactions and improving efficiency and user-perceived performance. The minus: the client can receive stale data. (Source: L6-REST slide 9.)
@@ -724,11 +737,18 @@ A rarely changing Wikipedia article can be declared cacheable for, say, a week: 
 
 The cost is system-level complexity: routing requests, cache-retention policies, and transformations all need careful decisions. (Source: L6 recording (REST), ~12:00–15:00.)
 
+<box type="info" seamless>
+
+**Layering reduces what each component must know; adding intermediaries increases what operators must manage.** These are different complexity claims. The client treats the implementation behind its immediate neighbor as a black box. Choosing to add a proxy, cache or load balancer introduces configuration, network hops and failure cases. REST permits those intermediaries; it does not require deploying every kind of intermediary. A direct client-server deployment can satisfy the constraint. (Clarification of L6-REST slide 10.)
+</box>
+
 **Uniform interface: one way in, for every client.** There should be a uniform way of interacting with a given server irrespective of device or application type — generality applied to the component interface. Implementations are decoupled from the services they provide; interactions exploit HTTP requests (GET, PUT, POST, DELETE) and responses (status codes like 200 OK, 404 NOT FOUND), with the HTTP body transferring the resource representation. (Source: L6-REST slide 11.)
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-06.md#def-uniform-interface" trim />
 </box>
+
+**Large-grained hypermedia transfer means exchanging meaningful resource representations per interaction.** Fetching an order with its items, total and related links is coarser-grained than separate remote calls for every field. "Large-grained" concerns the unit of interaction, not a minimum byte size or a rule to return enormous payloads. Hypermedia means representations provide links or controls for related resources/actions. (L6-REST slides 11–14; order illustration is an external example.)
 
 **Code-on-demand (optional): extend the client by downloading executable code.** Applets and JavaScript code are the lecture's examples — it simplifies the client from having to pre-implement all functionality and allows extensibility. It is the one constraint REST marks optional. The recording adds the historical why: REST was conceived in the late 1990s, when clients (early browsers such as Netscape Navigator) had limited capabilities and no advanced JavaScript runtimes — servers sent small executable pieces, often Java applets, to insert capabilities the client had not pre-implemented. Today, browsers downloading and executing JavaScript from servers is the everyday example of the same constraint. (Source: L6-REST slide 15; L6 recording (REST), ~26:00–27:00.)
 
@@ -829,7 +849,7 @@ Walk-through from the lecture: `GET /videos/lecture5` → the response carries `
 <include src="../../se-book-adapted/common/defs-week-06.md#def-content-negotiation" trim />
 </box>
 
-**Messages must be self-describing — concretely: "here is data" is not; "here is mp4 video data, 10 MB long, as a binary stream" is.** Each message includes enough information to describe how to process it: the method (what action), the URI (which resource), the headers (how to read the body — the Content-Type of content negotiation), the status code, and the serialized representation. No private agreements with the client, no reliance on earlier requests — any component, whether the server, a proxy, or a cache, can understand the resource and its current state just by inspecting the representation. (Source: L6-REST slide 14; L6 recording (REST), ~23:00–25:00.)
+**Self-describing messages communicate how to interpret the exchange through methods, URIs, headers, status codes and representations.** Shared protocol and media-type semantics are still necessary: knowing JSON syntax alone does not teach a client what the domain-specific field `status` means. Self-description concerns message interpretation; statelessness concerns independence from remembered conversation context. (Clarification of L6-REST slide 14.)
 
 **Hypermedia drives application state: representations carry links.** The representations exchanged should be linked — clients discover and obtain resources from the links, and the links expose new resources and application state transitions. (Source: L6-REST slide 14.)
 
@@ -848,12 +868,18 @@ A client fetches an order and receives:
 }
 ```
 
-The representation is self-describing (the client reads `status: "PAID"` without extra knowledge) and hypermedia-driven: because the order is paid, it advertises `cancel` and `refund` links and no `pay` link — the possible state transitions are discoverable from the representation itself, not from out-of-band documentation (information kept outside the exchanged messages, such as human-written API docs).
+The links advertise related resources and possible next actions. A client must understand the link relations and the applicable methods/input formats through agreed representation conventions or supplied controls. A bare URL does not by itself specify whether to GET or POST, or what body to send.
 {% endcall %}
 
 <box type="warning" seamless>
 
-**Pitfall:** designing URIs around operations instead of resources. `POST /cancel-order-123` hides what the system manages; the lecture's shape — a resource identified by a stable URI, manipulated through the uniform verbs (`DELETE /orders/123/cancellation`-style paths) — is what keeps clients decoupled from server implementations.
+**A frontend can be programmed with endpoints and workflow rules, but that omits hypermedia-driven discovery.** For example, frontend code might check `status == "PAID"` and construct `/orders/123/refunds` itself. The slide's approach lets the response advertise a refund control instead. Hypermedia still requires client programming; it shifts discovery of locations and available transitions into responses. APIs commonly called "REST APIs" may omit this strict REST requirement. (Clarification of L6-REST slide 14; frontend illustration is an external example.)
+
+**Uniform interface standardizes interaction rules, not resource fields or file formats.** Resource identification answers "which thing?"; representations carry data for viewing/changing it; self-describing messages explain interpretation; hypermedia controls expose next interactions. `Accept` specifies acceptable response formats, whereas `Content-Type` identifies the format of the body actually sent. (L6-REST slides 11–14.)
+
+
+
+**Pitfall:** designing URIs around operations instead of resources. `POST /cancel-order-123` hides what the system manages; the lecture's shape — a resource identified by a stable URI, manipulated through the uniform verbs (`POST /orders/123/refunds`-style resource paths) — is what keeps clients decoupled from server implementations.
 
 </box>
 

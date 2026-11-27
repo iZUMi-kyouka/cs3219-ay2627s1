@@ -168,8 +168,12 @@ A university equipment platform sends a message named `EquipmentReserved` to the
 **Events come in three structural types.** (Source: L9 slide 10.)
 
 * **Unkeyed** — a singular statement of fact with no key. E.g., "user opened a book" on a digital book platform (key `NA`; value: ISBN — the book's International Standard Book Number — plus a timestamp). Aggregate these click events per item and sort, and you have "today's top products" on an e-commerce site or "number one in Singapore this week" on a streaming service — no user login required (L9 recording, ~[27:00]).
-* **Entity** — describes the properties and state of an entity, keyed on that entity's unique ID; it provides a continual history of the entity's state and can materialize it — materialize: reconstruct the entity's current state by replaying its events, giving you a working "current" copy without ever storing one. E.g., key `ISBN=372719`, value: author and other properties.
+* **Entity** — describes the properties and state of an entity, keyed on that entity's unique ID; it provides a continual history of the entity's state and can materialize it — materialize: reconstruct the entity's current state by replaying its events, optionally storing the reconstructed state as a current materialized view. E.g., key `ISBN=372719`, value: author and other properties.
 * **Keyed** — carries a key but does not represent an entity; it partitions the stream to guarantee data locality within a partition %%data locality: every event with the same key lands in the same partition, so a consumer working on that key reads all its events together, in order%%. E.g., key `ISBN=372719`, value: `UserID=AE2341G` (a borrowing activity event).
+
+**Entity and keyed events both have keys; ask what their values describe.** For an entity event keyed by ISBN, a value containing title/author describes that book's state. For an activity event keyed by ISBN, a value containing a user ID and opening timestamp describes an occurrence associated with the book. Multiple opens all matter; the latest open does not supersede earlier opens the way a newer state can supersede an older state in a current-state view. An ISBN appearing only inside an unkeyed event's payload is not automatically the event key. (Clarification of L9 slide 10; book-opening interpretation is illustrative.)
+
+**The slide uses "keyed" narrowly for non-entity occurrences carrying a grouping/routing key.** In broader usage, an entity event is also literally keyed. Key-based locality assumes a consistent partitioning scheme; changing partition assignments/counts needs care.
 
 {% call example("L9 recording ~[30:00] — the key decides which question the stream can answer") %}
 The same ride-hailing platform (Quiz 2's Grab-like app) can key its car events two ways, and each choice enables a different capability. Keyed by **trip ID**, all events of one journey land together: when a taxi breaks down mid-trip, the platform knows the trip's last recorded location and can fire a compensation action — send a replacement car to those coordinates and continue the ride to the destination. Keyed by **locality** instead ("car entered Clementi"), all events about one area land together: counting arrivals reveals how crowded each zone is, feeding demand sensing and dynamic pricing. Either way the key guarantees data locality within a partition — which key you choose decides what the locality is *about*. (Source: L9 recording, ~[29:00]–[31:00]; ride-hailing context from Quiz 2.)
@@ -389,7 +393,7 @@ How to read it: the Order service neither knows nor cares that four consumers ex
 
 * **Communication and performance.** EDA relies on asynchronous communication — fast response to senders; microservices often communicate synchronously (occasionally asynchronously), and synchronous communication creates latency that slows the system (slide 25).
 * **Bounded contexts and data ownership.** Foundational for microservices; nice-to-have for EDA (slide 26).
-* **Event vs request processing.** EDA is built on event processing — responding to something that *has happened*, in turn triggering more events; microservices are built on request processing — responding to something that *needs to happen*, like a command or request (slide 27). **The recorded videos give the design test behind the axis: when designing an interaction, ask whether you are announcing a fact or asking for work to be done — the answer decides event vs command** (L9 recorded videos, ~[07:00]).
+* **Event vs request processing.** Slide 27 contrasts reacting to a fact with processing an explicit request for work. Its wording is not a requirement that microservices only accept commands: an independently deployable microservice can consume and publish events, commands and queries. "Message" is an envelope category that can carry any of these meanings.
 
 <box type="definition" seamless>
 <include src="../../se-book-adapted/common/defs-week-09.md#def-latency" trim />
@@ -401,7 +405,12 @@ The same three axes, side by side:
 |---|---|---|
 | Communication & performance | Asynchronous — fast response to senders (slide 25) | Often synchronous, occasionally asynchronous — sync calls create latency that slows the system (slide 25) |
 | Bounded contexts & data ownership | Nice-to-have (slide 26) | Foundational (slide 26) |
-| What is processed | Events — something that *has happened*, triggering more events (slide 27) | Requests — something that *needs to happen*, like a command or request (slide 27) |
+| What triggers work | Events announce what has happened | Microservices may process requests/commands, events, or both; slide 27 illustrates the request-driven case |
+
+{% call example("Microservices and EDA are compatible — external examination example") %}
+%%External example clarifying L9 slides 25–32.%%
+Exam Delivery, Grading and Notification can be independently deployed microservices. Delivery publishes `AttemptSubmitted`; Grading reacts and publishes `AttemptGraded`; Notification reacts to that. The design is both microservices and EDA. Alternatively, Delivery could explicitly send `GradeAttempt` to Grading. The same service remains a microservice. A single deployed application's modules can also communicate through internal events without being microservices.
+{% endcall %}
 
 %%Dimmed aside (se-book): the price of the event cascade is traceability — to answer "what happens when an invoice is deleted?" you may have to find several handlers, with no single place in the code telling you.%%
 
@@ -424,7 +433,7 @@ Two qualifications from the recorded videos sharpen the deck's comparison:
 <panel type="seamless" minimized header="%%Answer%%">Neither knows the other: producers don't know which consumers listen; consumers know only the topics they subscribe to — location and identity transparency via the broker (slide 21).</panel>
 
 **Q3.** "Microservices respond to requests; EDA responds to facts." Unpack that against slide 27.
-<panel type="seamless" minimized header="%%Answer%%">Microservice architecture is built on request processing — a command/request arrives and the service processes what *needs to happen*. EDA is built on event processing — a service reacts to what *has happened* and may trigger further events (slide 27).</panel>
+<panel type="seamless" minimized header="%%Answer%%">A command asks for work; an event announces a fact. Slide 27 illustrates request-driven services, but microservices can also react to events. Microservices describe deployment/responsibility boundaries; EDA describes event-driven collaboration, so a system can use both.</panel>
 
 **Q4.** Your team goes event-driven, and a teammate proposes deleting the services' REST endpoints because "EDA is asynchronous". What does the recorded lecture say?
 <panel type="seamless" minimized header="%%Answer%%">Don't. Event-driven communication coexists with synchronous request–reply — synchronous calls remain appropriate where they fit (L9 recorded videos, ~[10:00]). EDA changes the default wiring for event flows; it does not ban request–reply, and W9.4 shows the same hybrid — a consumer microservice that also exposes a REST API.</panel>
@@ -508,13 +517,50 @@ Two qualifications from the recorded videos sharpen the deck's comparison:
 <include src="../../se-book-adapted/common/defs-week-09.md#def-replayability" trim />
 </box>
 
+{% call example("Following the broker diagram — L9 slide 34") %}
+Catalog receives `UpdateProduct(pID, {"name":"SuperWidget"})`: this is a command, which can be rejected. After a successful change, it can publish `ProductUpdated` carrying the product ID and new name. The broker receives and retains the event; Inventory and OrderArchive consume it and decide what their own business rules require. Consumer arrows toward the log depict reading/subscribing, not issuing the Catalog command.
+
+**One stored event supports communication and later processing.** A consumer learns about the change and, subject to retention, can catch up after an outage or replay history. This does not automatically make the producer event-sourced. Different logical streams organize product, order and payment events; partitions divide each stream for distributed storage/processing. The analogy to database tables concerns logical organization, not identical storage semantics.
+{% endcall %}
+
 **Scaling falls out of the log model.**
 
 * Producers write over many partitions on many machines.
-* Load-balanced consumers share the partitions.
-* Rate limits (throughput caps per producer, consumer, and group) apply to producers, consumers, and groups — Kafka ties the logs together, routing reliably, replicating for fault tolerance %%replication: Kafka keeps extra copies of each partition on other machines, so one machine failing loses no events%% (slides 39–40).
+* Consumers in the same consumer group share partition assignments; different groups consume independently.
+* Rate limits (throughput caps per producer, consumer, and group) apply to producers, consumers, and groups — Kafka ties the logs together, routing reliably, replicating for fault tolerance %%replication: Kafka keeps extra copies of each partition on other machines, so an eligible replica can take over after failure; durability depends on replication and acknowledgment settings%% (slides 39–40).
 
 Reading and writing proceed in parallel across partitions, and scaling is straightforward: add machines and rebalance — redistributing the partitions across the enlarged set of machines (slide 40). The recorded videos give the mechanism: each partition maintains its own event order, so there is no global sequence to coordinate across the cluster, and producers and consumers scale independently because neither waits for the other to be active at the same moment (L9 recorded videos, ~[14:00]).
+
+#### Consumer assignments and broker replicas solve different problems
+
+**Within a standard Kafka consumer group, a topic partition is assigned to at most one consumer at a time.** One consumer can own several partitions; assignments can change on rebalance. Different groups can independently read the same partition and track separate offsets. This assignment rule does not guarantee exactly-once processing after failures. (Clarification of L9 slide 39; [Kafka consumer groups](https://kafka.apache.org/intro).)
+
+{% call example("Partition sharing — examination application; external example") %}
+%%External example applying L9 slides 37–40.%%
+
+| Group | Worker | Assigned partitions |
+|---|---|---|
+| Grading | A | P0, P1 |
+| Grading | B | P2, P3 |
+| Analytics | C | P0, P1, P2, P3 |
+
+Grading A and Analytics C both read P0 because they belong to different groups. Grading B does not concurrently own P0 in the same group as A. Reading does not delete records; retention governs their lifetime. Grading and Analytics need not be at the same offset. A configured group-level rate cap is a combined allowance, not that allowance for every member; specific quota mechanisms vary by broker/configuration.
+{% endcall %}
+
+**Replication copies partitions to selected broker machines, not automatically to every machine.** Replication factor 2 means two total copies per partition, including its leader. Leaders accept producer writes and normally serve consumer reads; followers continuously copy records and eligible followers can take over. [Kafka's replication design](https://kafka.apache.org/40/design/design/) distinguishes leaders and followers. (Clarification of L9 slides 39–40.)
+
+| Partition | Broker A | Broker B | Broker C |
+|---|---|---|---|
+| P0 | Leader | Follower | No copy |
+| P1 | No copy | Leader | Follower |
+| P2 | Follower | No copy | Leader |
+
+**This example has three brokers and replication factor 2.** If A fails, an up-to-date eligible P0 follower on B can become leader. Followers are actively maintained backups. If all three partitions instead had replication factor 3, all three brokers would store each partition. Distributing partitions and leadership spreads work; replicas provide fault tolerance. Broker replica placement is independent of which consumer group members read the partitions. %%External placement example.%%
+
+<panel type="seamless" minimized header="%%Self-check: two consumers read P0—is that a violation?%%">
+
+Only if they are concurrently assigned P0 within the same standard consumer group. Two different groups may read P0 independently. Two broker replicas of P0 are storage copies and are not consumer-group members.
+</panel>
 
 **The broker also buffers traffic spikes.** Producers keep publishing into the log even while consumers are temporarily slow or unavailable — the property Quiz 4 Q4's upload platform leaned on during the transcoding outage (L9 recorded videos, ~[14:30]).
 
@@ -540,6 +586,16 @@ How to read it: the User service is the only writer to this topic (single-owner 
 
 <box type="important" seamless>
 
+**An event's notification role, data-replication role and source-of-truth role can coexist, but they are different claims.** (Clarification of L9 slide 42 and L8 slides 17–24.)
+
+| Role | Meaning | Product-price example |
+|---|---|---|
+| Notification | Trigger a reaction | Price-alert service checks whether to notify customers |
+| Replication between services | Carry data for a consumer's local copy/view | Inventory stores the new product price |
+| Source of truth in event sourcing | Retained event history authoritatively reconstructs the owner's state | Catalog replays its product events to obtain the price |
+
+**The same `ProductPriceChanged(id, newPrice)` event can serve all three roles.** Source of truth concerns authority; replication concerns distributing data. A conventional database-backed Catalog can publish the same event without making its event history authoritative. An ID-only notification does not itself copy the changed price. Here "replication" means business data moving between services, distinct from Kafka copying partition records between broker machines. %%External price illustration.%%
+
 **Events wear two hats.** The notification hat triggers services into action — the event-notification view of W9.1. The replication hat copies data from one service to another — event-carried state transfer (W9.1) applied at stream scale. Slide 42 adds a related fact: it is common for one event-driven microservice to be a consumer of some input streams and the producer of others. The recorded videos' worked example: the payment service consumes `OrderPlaced`, processes the payment, and publishes `PaymentSucceeded` or `PaymentFailed` for other services to react to (L9 recorded videos, ~[16:00]). All event brokers provide the same platform: append events to persistent logs, deliver them to consumers, and manage partitions and replication for scalability and availability — Kafka being a distributed persistent log store (slide 43).
 </box>
 
@@ -560,7 +616,7 @@ How to read it: the User service is the only writer to this topic (single-owner 
 <panel type="seamless" minimized header="%%Answer%%">The reviewer is incorrect: per-partition ordering does not guarantee the processing order of events in *different* partitions — ordering holds strictly only within a partition (slide 37; Quiz 4 Q8).</panel>
 
 **Q4.** A consumer-group member crashes mid-partition. What happens to its unprocessed events, and why does a *different* group still see them all?
-<panel type="seamless" minimized header="%%Answer%%">Nothing is lost: the offset is maintained at the consumer-group level, so after the crash — or once a new member joins — consumption resumes from the offset of the last processed event (or from the beginning, if chosen). And because reading never removes an event from the partition, a separate group can still read the very same events from its own offset. (L9 recorded videos, ~[13:00])</panel>
+<panel type="seamless" minimized header="%%Answer%%">Nothing is lost: the offset is maintained at the consumer-group level, so after the crash — or once a new member joins — consumption resumes from the committed position; work completed after the last commit may be repeated (or from the beginning, if chosen). And because reading never removes an event from the partition, a separate group can still read the very same events from its own offset. (L9 recorded videos, ~[13:00])</panel>
 
 </panel>
 
@@ -632,7 +688,7 @@ How to read it: the User service is the only writer to this topic (single-owner 
 
 * **An event is a recorded fact with four design views** — storming, sourcing, CQRS, and notification vs state-transfer — and it differs from a command (imperative, addressed, state-changing) and a query (state-asking, reply-needing); every cascade has exactly one initiating event and many derived ones.
 * **Fire-and-forget communication decouples time and place** — producer and consumer need not coexist, and the producer need not know its consumers — while adding event-format coupling and fragmenting error handling.
-* **Event-driven architecture is producers, a broker, and consumers** wired by pub/sub, trading bounded contexts (nice-to-have) for asynchronous speed, in contrast to microservices' request processing with foundational ownership.
+* **Event-driven architecture is producers, a broker, and consumers** wired by pub/sub, with asynchronous distributed collaboration; microservices add independent deployment and coherent ownership. The styles can be combined rather than traded against each other.
 * **Event-driven microservices are the principled hybrid** — one owner per stream, immutable ordered partitioned logs with offsets and replay — buying performance, scalability, evolvability, and fault tolerance at the price of complexity and test effort.
 
 Key terms: see the [Key terms table](#W9-key-terms) above, each linked to its unit.

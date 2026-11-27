@@ -638,6 +638,8 @@ Option (d) — Order Processing publishes an `OrderPlaced` event that the Wareho
 
 **How it works:**
 
+**A bounded context scopes a coherent model; an aggregate scopes related state changes within it.** The [examination walkthrough in W7.8](#W7-c8) follows domain → subdomain → bounded context → individual question/exam aggregates, then uses those distinctions to propose services.
+
 **An aggregate is a hierarchy of entities — business objects the system tracks individually, each with its own identity — with a root.** An entity is an object with its own identity that *persists over time* — an order, a support ticket (L7-DDD recording, ~[25:00]). The aggregate root is the parent entity of the cluster and its public interface; everything outside interacts through it. (Source: L7 slide 33.)
 
 **The boundaries are two boundaries in one.** The consistency boundary: from a visibility and operation perspective, all processes or objects external to the aggregate may only *read* its state — state can only be modified by executing methods of the aggregate's public interface. The transactional boundary: from a transaction perspective, any change to the aggregate either all succeeds or none succeeds. (Source: L7 slide 33.)
@@ -687,7 +689,49 @@ The business operations and invariants belong to the ticket as a whole (closing 
 
 **How it works:**
 
-**Three DDD constructs feed service identification.** Use sub-domains: each subdomain corresponds to a different part of the business — define services corresponding to subdomains (the online store's product catalog, inventory management, order management, delivery management). Use bounded contexts: microservices are bounded contexts — with the caution that **not all bounded contexts are necessarily microservices**, and some have wide functionalities. Use aggregates: a well-designed aggregate exhibits many characteristics of a well-designed microservice — derived from business requirements, high functional cohesion, typically loosely coupled. (Source: L7 slide 35.)
+#### Worked distinction: business problem, model boundary, consistency boundary
+
+**Business needs exist before software; bounded contexts and aggregates are choices in the software design.** A university running paper exams still authors questions, schedules exams and marks scripts. Those responsibilities do not depend on whether we build one application or ten services. (L7 slides 32–35.)
+
+{% call example("Digital examination — external example applying L7 slides 32–35") %}
+%%External example; the following rules are illustrative requirements, not rules imposed by DDD.%%
+
+| Concept | Concrete meaning | Space |
+|---|---|---|
+| Domain | Examination: creating, delivering and evaluating assessments | Problem |
+| Subdomain | Question Authoring, Exam Administration, Exam Taking, Marking | Problem |
+| Bounded context | Our Question Authoring model defines an editable Question, Option, Answer Key and Published Version | Solution |
+| Aggregate | Question #12 and its options, controlled together to enforce its rules | Solution |
+| Aggregate root | The Question #12 object through which changes are requested | Solution |
+| Microservice | An independently deployed Question Bank Service implementing a chosen responsibility | Deployment/design choice |
+
+**The same business needs admit different model boundaries.** Design A could put question authoring and exam assembly in one Assessment Content context. Design B could separate Question Bank and Exam Planning contexts. The business problems remain; the chosen solution boundaries differ. A subdomain and its bounded context may share a name without being the same concept.
+
+**Different contexts can model the same examination content differently.** In Authoring, a Question has editable options and an answer key. In Exam Taking, the published question representation exposes the prompt and options to students, while an Attempt records responses. In Marking, the model relates the question version, answer key/rubric and awarded marks. These need not be one shared class or table.
+
+**An aggregate controls one consistency unit inside a context.** For MCQ #12, suppose exactly one option must be correct. Calling `question12.setCorrectOption("C")` changes the selection through the root, preventing two correct options or none. Owned changes commit together. Question #13 is another aggregate instance. MCQ, MRQ and FITB are possible aggregate types or variants; each individual question is an instance. Having a validation method alone does not establish an aggregate: the boundary groups the state needed to preserve the rules.
+
+**An Exam can be a different aggregate in Exam Administration.** It can own its schedule and question entries (`questionVersionId`, position, allocated marks), enforce start-before-end, and keep a stored total consistent with allocated marks. `exam.changeQuestionMarks(...)` updates related state together. Its entries can reference published question versions without embedding the editable Question Bank aggregates.
+{% endcall %}
+
+**Use each concept as evidence for a different part of the service decision.** This is how to apply slide 35 rather than mechanically copy its nouns into service names:
+
+| Evidence | What it suggests | What it does not require |
+|---|---|---|
+| Subdomain: exam administration is a distinct business capability | Consider an Exam Administration Service | Every subdomain must have exactly one service |
+| Bounded context: scheduling, publication and exam assembly use a coherent model | Give that model an explicit ownership/interface boundary | That boundary must immediately be a separate deployment |
+| Aggregate: an Exam and its owned entries preserve totals/publication rules together | Keep those internal changes under one owner's control | One deployed service per exam, or even per aggregate type |
+
+**Aggregates reveal what would be costly to split.** If one service owns question-mark allocations and another owns the authoritative stored total, changing marks requires distributed coordination. Keeping the aggregate together avoids creating that problem. A service can manage thousands of Exam instances and multiple related aggregate types. A broad bounded context may need multiple collaborating services; a monolith can also contain several contexts. Page 43 qualifies page 35's simplified "microservices are bounded contexts" statement: boundaries inform deployment, not a universal one-to-one mapping.
+
+**Ad-hoc allocation causes scope creep when every vaguely related requirement goes into the same service.** Starting with exam scheduling, then adding question editing, submissions, grading and notifications merely because all relate to "exams" expands responsibility without a deliberate boundary review. That is scope creep; the unrelated reasons for change create low cohesion. Conversely, splitting tightly related aggregate updates creates high coupling. Scheduling, rescheduling and conflict checking form a more cohesive capability. (Application of L7 slides 35–37; examination illustration is an external example.)
+
+<panel type="seamless" minimized header="%%Self-check: does adding a second Question aggregate require another microservice?%%">
+
+No. A Question Bank Service normally manages many question instances and may support several question types. Aggregate boundaries concern consistency; service boundaries concern independently deployable responsibilities.
+</panel>
+
+**Three DDD constructs feed service identification from different perspectives.** Subdomains identify business capabilities; bounded contexts identify coherent model boundaries; aggregates identify consistency units that are costly to split. L7 slide 35 presents them as sources of candidate boundaries; slide 43 explicitly rejects a mandatory one-to-one mapping to services.
 
 **Then apply the {{ term("single-responsibility principle", "each service should have only a small set of responsibilities") }} (SRP) and decompose deliberately.** Each service should have only a small set of responsibilities. Decompose by **verb or use case** — a Shipping service responsible for shipping complete orders; or by **noun/resource** — an Account service responsible for all operations on user accounts. Also consider team size, technologies, and scalability/availability/security requirements; it is possible to further decompose a service, or to combine two into one. (Source: L7 slide 36.) You also have discretion in how you draw the contexts themselves: the recorded segment's online store groups **Checkout and Fulfillment** into one bounded context, "perhaps because they are implemented in the same code base and changed together" — apply SRP to keep contexts small, well-defined, and focused, since how you draw the boundaries reflects how you will implement the system (L7-DDD recording, ~[14:00]).
 
@@ -713,6 +757,21 @@ The business operations and invariants belong to the ticket as a whole (closing 
 </box>
 
 **Drawing the boundaries is the payoff.** Draw boundaries that delimit each consistent context — the relations and communication between contexts follow, and **these boundaries give you microservice boundaries**. A bounded context solves one problem and can contain more than one aggregate: the lecture's example puts an **order aggregate** and a **shipment aggregate** in the same order-management bounded context, because they share a ubiquitous language and collaborate closely to deliver one capability (managing customer orders from placement through delivery) — group aggregates into a context when they change together and deliver value together. (Source: L7 slide 42; L7-EventStorming recording, ~[8:00].)
+
+{% call example("Event-storming workshop — examination application; external example") %}
+%%External example applying L7 slides 38–43.%%
+Business experts and developers first arrange facts such as `ExamPublished`, `AttemptStarted`, `AttemptSubmitted` and `AttemptGraded` on a timeline. They then work backward to the commands and rules, rather than starting from database tables.
+
+| Command | Aggregate checking the change | Successful event | Possible policy |
+|---|---|---|---|
+| Publish exam | Exam: valid schedule/content | ExamPublished | Prepare delivery |
+| Submit attempt | Attempt: open and not already submitted | AttemptSubmitted | Request grading |
+| Finalize grading | Grading record: marks valid | AttemptGraded | Request notification |
+
+**Commands request actions; events record outcomes; policies connect them.** A rejected `SubmitAttempt` does not produce a successful `AttemptSubmitted` event. The policy "when AttemptSubmitted, then GradeSubmission" exposes a collaboration between Exam Taking and Grading. Clusters of related rules and vocabulary suggest context boundaries, which become service candidates after considering operational needs.
+
+**Event storming is a discovery workshop, not a commitment to event sourcing or a broker.** Its output is a shared understanding of workflows, rules, unanswered questions and candidate boundaries. Implementation choices follow.
+{% endcall %}
 
 **Event storming is a discovery process — "brainstorming with events" — not a transcription of what you already know.** Working the event timeline with domain experts uncovers edge cases, missing workflows, and hidden complexity, surfacing requirements that might otherwise be discovered only late in development. (Source: L7-EventStorming recording, ~[9:00].)
 

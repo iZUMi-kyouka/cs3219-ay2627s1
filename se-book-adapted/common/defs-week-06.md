@@ -29,7 +29,7 @@
 
 <span id="def-statelessness">
 
-**Statelessness** is the REST constraint that each client-server interaction must be entirely self-contained: the full information needed to serve a request travels in the request itself (URI, headers, query parameters), and the server maintains no client session state.
+**Statelessness** is the REST constraint that each client-server interaction must be entirely self-contained: the full information needed to serve a request travels in the request itself (URI, headers, query parameters and body as appropriate), and the server maintains no client session state.
 
 %%Source: L6-REST slide 8.%%
 

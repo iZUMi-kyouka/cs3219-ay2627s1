@@ -154,7 +154,7 @@
 
 <span id="def-consumer-group">
 
-**Consumer group** — a set of load-balanced consumers that share the partitions of a stream between them, so the group's consumption capacity scales with its members. The offset is maintained at the group level: within a group, that shared bookkeeping prevents two members from processing the same event, while a separate group can still read the same events from its own position. Rate limits — the broker's caps on how many events each producer or consumer may write or read per time window — are applied to producers, consumers, and groups.
+**Consumer group** — a set of consumers that share partition assignments: within a standard Kafka consumer group, each topic partition is assigned to at most one member at a time. One member may handle several partitions; other groups can independently read the same records. Committed positions are tracked per group and partition; reprocessing after failures is still possible. Capacity scales up to the available partition parallelism. Rate limits can cap producer, consumer or group throughput, depending on the broker/configuration.
 %%(Source: L9 slides 39–40; L9 recorded videos, ~[13:00].)%%
 
 </span>
